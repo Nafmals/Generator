@@ -684,7 +684,7 @@
           </div>
         </div>
 
-        <!-- الصيانة الطارئة (في المنطقة السفلية التي حددتها) -->
+        <!-- الصيانة الطارئة -->
         <hr style="margin:14px 0 10px;border:none;border-top:1px solid #e5e7eb;">
         <h3 style="margin-top:0;">الصيانة الطارئة</h3>
 
@@ -716,6 +716,17 @@
           <div class="field">
             <button id="em-add" class="btn-primary" style="width:100%;">إضافة صيانة طارئة</button>
           </div>
+        </div>
+
+        <!-- سطر المجموع مع مدفوع / غير مدفوع -->
+        <div class="row" style="margin-top:8px;justify-content:flex-start;">
+          <span class="muted">
+            مجموع الصيانة الطارئة: <strong id="em-total">0</strong> IQD
+            &nbsp;|&nbsp;
+            مجموع المدفوع: <strong id="em-total-paid">0</strong> IQD
+            &nbsp;|&nbsp;
+            مجموع غير المدفوع: <strong id="em-total-unpaid">0</strong> IQD
+          </span>
         </div>
 
         <div class="table-wrap" style="margin-top:10px;max-height:220px;">
@@ -816,6 +827,9 @@
     const emPaid = $("em-paid");
     const emAdd  = $("em-add");
     const emBody = $("em-body");
+    const emTotal = $("em-total");
+    const emTotalPaid = $("em-total-paid");
+    const emTotalUnpaid = $("em-total-unpaid");
 
     // ====== صلاحيات ======
     function isAdmin(){
@@ -946,6 +960,26 @@
       });
     }
 
+    // تحديث المجموع (كلي / مدفوع / غير مدفوع)
+    function updateEmergencyTotal(){
+      if(!emTotal) return;
+      let total = 0;
+      let totalPaid = 0;
+      let totalUnpaid = 0;
+
+      emergencyMaintenances.forEach(item=>{
+        const c = Number(item.cost);
+        if(isNaN(c)) return;
+        total += c;
+        if(item.paid) totalPaid += c;
+        else totalUnpaid += c;
+      });
+
+      emTotal.textContent = total;
+      if(emTotalPaid) emTotalPaid.textContent = totalPaid;
+      if(emTotalUnpaid) emTotalUnpaid.textContent = totalUnpaid;
+    }
+
     // رسم جدول الصيانة الطارئة
     function renderEmergencyTable(){
       if(!emBody) return;
@@ -953,6 +987,7 @@
 
       if(!emergencyMaintenances.length){
         emBody.innerHTML = "<tr><td colspan='6' class='muted'>لا توجد صيانات طارئة مسجلة.</td></tr>";
+        updateEmergencyTotal();
         return;
       }
 
@@ -972,11 +1007,14 @@
             <td>${item.paid ? "✅" : "❌"}</td>
             <td class="actions">
               <button class="btn-small" data-eid="${item.id}" data-action="toggle-paid" style="font-size:11px;padding:3px 7px;">تبديل الدفع</button>
+              <button class="btn-small" data-eid="${item.id}" data-action="edit-em" style="font-size:11px;padding:3px 7px;">تعديل</button>
               <button class="btn-small" data-eid="${item.id}" data-action="del-em" style="font-size:11px;padding:3px 7px;">🗑</button>
             </td>
           `;
           emBody.appendChild(tr);
         });
+
+      updateEmergencyTotal();
     }
 
     // ====== عرض قائمة المولدات ======
@@ -1292,6 +1330,32 @@
 
       if(action === "toggle-paid"){
         item.paid = !item.paid;
+      }
+
+      if(action === "edit-em"){
+        if(!isAdmin()){
+          alert("تعديل بيانات الصيانة الطارئة متاح للمشرف فقط.");
+          return;
+        }
+        const newDate = prompt("تعديل تاريخ الصيانة الطارئة:", item.date);
+        if(newDate === null) return;
+        if(!newDate.trim()){
+          alert("لا يمكن ترك التاريخ فارغاً.");
+          return;
+        }
+        const newCostStr = prompt("تعديل مبلغ الصيانة الطارئة (IQD):", String(item.cost));
+        if(newCostStr === null) return;
+        const newCost = Number(newCostStr);
+        if(isNaN(newCost) || newCost <= 0){
+          alert("المبلغ المدخل غير صالح.");
+          return;
+        }
+        const newNote = prompt("تعديل الملاحظة (اختياري):", item.note || "");
+        if(newNote === null) return;
+
+        item.date = newDate.trim();
+        item.cost = newCost;
+        item.note = newNote.trim();
       }
 
       if(action === "del-em"){
