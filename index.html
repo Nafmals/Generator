@@ -411,9 +411,13 @@
       font-size:12px;
     }
 
-    /* كرت الصيانة الطارئة يأخذ عمودين (يسار + وسط) في الديسكتوب */
-    .panel-emergency{
-      grid-column:1 / span 2;
+    /* شبكة الصيانة الطارئة */
+    .emergency-grid{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:10px;
+      margin-top:8px;
+      align-items:end;
     }
 
     @media (max-width:1150px){
@@ -426,7 +430,6 @@
       .panel-left{grid-area:a}
       .panel-center{grid-area:b}
       .panel-right{grid-area:c}
-      /* كرت الطوارئ سيهبط تلقائياً تحت البقية */
     }
 
     @media (max-width:900px){
@@ -436,6 +439,12 @@
           "a"
           "b"
           "c";
+      }
+    }
+
+    @media (max-width:900px){
+      .emergency-grid{
+        grid-template-columns:1fr;
       }
     }
   </style>
@@ -599,69 +608,7 @@
         </div>
       </section>
 
-      <!-- الصيانة الطارئة -->
-      <section class="card panel-emergency">
-        <h2>الصيانة الطارئة</h2>
-
-        <div class="row" style="gap:10px;align-items:flex-end;margin-bottom:8px;">
-          <div class="field" style="flex:1;">
-            <label>تكلفة الصيانة الطارئة (IQD) <small>مثال: 150000</small></label>
-            <input id="em-amount" type="number" min="0" step="1" placeholder="150000">
-          </div>
-          <div class="field" style="flex:1;">
-            <label>تاريخ الصيانة الطارئة</label>
-            <input id="em-date" type="date">
-          </div>
-          <div class="field" style="flex:1;">
-            <label>نوع المولد</label>
-            <select id="em-gen"></select>
-          </div>
-        </div>
-
-        <div class="row" style="gap:10px;align-items:flex-end;margin-bottom:4px;">
-          <div class="field" style="flex:2;">
-            <label>ملاحظة (اختياري)</label>
-            <input id="em-note" placeholder="مثال: صيانة الحاجة تبديل الكاسكيت و السيستم">
-          </div>
-          <div class="field" style="flex:0 0 120px;">
-            <label>تم دفع المبلغ</label>
-            <input id="em-paid" type="checkbox" style="width:auto;margin-top:8px;">
-          </div>
-          <div class="field" style="flex:0 0 200px;">
-            <button class="btn-primary" id="em-add-btn" style="width:100%;margin-top:6px;">إضافة صيانة طارئة</button>
-          </div>
-        </div>
-        <div id="em-err" class="err" style="display:none;"></div>
-
-        <div class="table-wrap" style="margin-top:10px;">
-          <table>
-            <thead>
-              <tr>
-                <th>نوع المولد</th>
-                <th>تاريخ الصيانة</th>
-                <th>المبلغ (IQD)</th>
-                <th>تم الدفع</th>
-                <th>ملاحظة</th>
-                <th>إجراءات</th>
-              </tr>
-            </thead>
-            <tbody id="em-body"></tbody>
-            <tfoot>
-              <tr style="background:#f9fafb;font-weight:700;">
-                <td colspan="2">الإجمالي الكلي</td>
-                <td id="em-total-amount">0</td>
-                <td id="em-total-paid">0</td>
-                <td id="em-total-unpaid" colspan="2">0</td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-        <p class="muted" style="margin-top:4px;font-size:11px;">
-          مجموع المبالغ المدفوعة وغير المدفوعة محسوب للصيانة الطارئة فقط.
-        </p>
-      </section>
-
-      <!-- التقارير -->
+      <!-- التقارير + الصيانة الطارئة -->
       <section class="card panel-right">
         <div class="tab-header">
           <button class="tab-btn active" data-tab="summary">ملخص</button>
@@ -719,7 +666,7 @@
         </div>
 
         <div id="rep-expenses" class="report-tab" style="display:none;">
-          <p class="muted" style="margin:0 0 6px;">تفصيل جميع المصاريف على مستوى المولد والخدمة (دورية + طارئة) للفترة المحددة.</p>
+          <p class="muted" style="margin:0 0 6px;">تفصيل جميع المصاريف على مستوى المولد والخدمة.</p>
           <div class="table-wrap">
             <table>
               <thead>
@@ -736,13 +683,76 @@
             </table>
           </div>
         </div>
+
+        <!-- الصيانة الطارئة -->
+        <hr style="margin:14px 0 10px;border:none;border-top:1px solid #e5e7eb;">
+        <h3 style="margin-top:0;">الصيانة الطارئة</h3>
+
+        <div class="emergency-grid">
+          <div class="field">
+            <label>نوع المولد</label>
+            <select id="em-gen">
+              <option value="">اختر المولد</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>تاريخ الصيانة الطارئة</label>
+            <input id="em-date" type="date">
+          </div>
+          <div class="field">
+            <label>تكلفة الصيانة الطارئة (IQD) <small>مثال: 150000</small></label>
+            <input id="em-cost" type="number" min="0" step="1" placeholder="150000">
+          </div>
+          <div class="field">
+            <label>ملاحظة (اختياري)</label>
+            <input id="em-note" placeholder="مثال: صيانة عاجلة تبديل الكاسكيت والسيستم">
+          </div>
+          <div class="field">
+            <label style="display:inline-flex;align-items:center;gap:6px;font-weight:400;">
+              <input id="em-paid" type="checkbox">
+              تم دفع المبلغ
+            </label>
+          </div>
+          <div class="field">
+            <button id="em-add" class="btn-primary" style="width:100%;">إضافة صيانة طارئة</button>
+          </div>
+        </div>
+
+        <!-- سطر المجموع مع مدفوع / غير مدفوع -->
+        <div class="row" style="margin-top:8px;justify-content:flex-start;">
+          <span class="muted">
+            مجموع الصيانة الطارئة: <strong id="em-total">0</strong> IQD
+            &nbsp;|&nbsp;
+            مجموع المدفوع: <strong id="em-total-paid">0</strong> IQD
+            &nbsp;|&nbsp;
+            مجموع غير المدفوع: <strong id="em-total-unpaid">0</strong> IQD
+          </span>
+        </div>
+
+        <div class="table-wrap" style="margin-top:10px;max-height:220px;">
+          <table>
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>نوع المولد</th>
+                <th>المبلغ (IQD)</th>
+                <th>ملاحظة</th>
+                <th>تم الدفع</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="em-body"></tbody>
+          </table>
+        </div>
+
       </section>
     </main>
   </div>
 
   <script>
     // ====== الحالة العامة ======
-    let state = { generators: [], emergencyMaint: [] };
+    let state = { generators: [] };
+    let emergencyMaintenances = [];   // الصيانة الطارئة
     let selectedId = null;
     const LOCAL_KEY = "generatorSystemData_v1";
 
@@ -755,9 +765,6 @@
       {username:"Jabbar", password:"1234", role:"user"}
     ];
     let currentUser = null;
-
-    // حالة تعديل صيانة طارئة
-    let editingEmergencyId = null;
 
     // ====== DOM helper ======
     const $ = (id) => document.getElementById(id);
@@ -798,20 +805,6 @@
     const rErr = $("r-err");
     const logBody = $("log-body");
 
-    // عناصر الصيانة الطارئة
-    const emGen = $("em-gen");
-    const emDate = $("em-date");
-    const emAmount = $("em-amount");
-    const emNote = $("em-note");
-    const emPaid = $("em-paid");
-    const emAddBtn = $("em-add-btn");
-    const emErr = $("em-err");
-    const emBody = $("em-body");
-    const emTotalAmount = $("em-total-amount");
-    const emTotalPaid = $("em-total-paid");
-    const emTotalUnpaid = $("em-total-unpaid");
-
-    // عناصر التقارير
     const repFrom = $("rep-from");
     const repTo   = $("rep-to");
     const repRefresh = $("rep-refresh");
@@ -825,6 +818,18 @@
     const importJSONWrapper = $("import-json-wrapper");
     const saveLocalBtn = $("save-local");
     const expCSV  = $("export-csv");
+
+    // عناصر الصيانة الطارئة
+    const emGen  = $("em-gen");
+    const emDate = $("em-date");
+    const emCost = $("em-cost");
+    const emNote = $("em-note");
+    const emPaid = $("em-paid");
+    const emAdd  = $("em-add");
+    const emBody = $("em-body");
+    const emTotal = $("em-total");
+    const emTotalPaid = $("em-total-paid");
+    const emTotalUnpaid = $("em-total-unpaid");
 
     // ====== صلاحيات ======
     function isAdmin(){
@@ -930,35 +935,86 @@
       return {label:"آمنة", class:"status-safe"};
     }
 
-    // تحديث قائمة المولدات في حقل الصيانة الطارئة
-    function refreshEmergencyGenOptions(){
-      if(!emGen) return;
-      const prev = emGen.value;
-      emGen.innerHTML = "<option value=''>اختر مولد...</option>";
-      state.generators.forEach(gen=>{
-        const opt = document.createElement("option");
-        opt.value = gen.id;
-        opt.textContent = gen.name;
-        emGen.appendChild(opt);
-      });
-      if(prev && Array.from(emGen.options).some(o=>o.value===prev)){
-        emGen.value = prev;
-      }
+    // ====== تطبيع بيانات الصيانة الطارئة ======
+    function normalizeEmergencyList(list){
+      if(!Array.isArray(list)) return [];
+      return list.map(e=>({
+        id: e.id || crypto.randomUUID(),
+        genId: e.genId || "",
+        date: e.date || todayStr(),
+        cost: e.cost != null ? Number(e.cost) : 0,
+        note: e.note || "",
+        paid: !!e.paid
+      }));
     }
 
-    // صيانة طارئة ضمن مدى التواريخ لتقرير المصاريف
-    function getEmergencyExpensesInRange(from, to){
-      if(!state.emergencyMaint || !Array.isArray(state.emergencyMaint)) return [];
-      return state.emergencyMaint
-        .filter(e => e.date && e.date >= from && e.date <= to && e.amount != null)
-        .map(e => ({
-          gen: e.genName || e.gen || "صيانة طارئة",
-          date: e.date,
-          meter: e.meter != null ? e.meter : "-",
-          cost: Number(e.amount != null ? e.amount : e.cost || 0),
-          currency: (e.currency || "IQD").toUpperCase(),
-          note: (e.note || e.costNote || "").trim() || "الصيانة الطارئة" + (e.isPaid === false ? " (غير مدفوعة)" : "")
-        }));
+    // تحديث قائمة المولدات في حقل الصيانة الطارئة
+    function renderEmergencyGeneratorOptions(){
+      if(!emGen) return;
+      emGen.innerHTML = '<option value="">اختر المولد</option>';
+      state.generators.forEach(g=>{
+        const opt = document.createElement("option");
+        opt.value = g.id;
+        opt.textContent = g.name;
+        emGen.appendChild(opt);
+      });
+    }
+
+    // تحديث المجموع (كلي / مدفوع / غير مدفوع)
+    function updateEmergencyTotal(){
+      if(!emTotal) return;
+      let total = 0;
+      let totalPaid = 0;
+      let totalUnpaid = 0;
+
+      emergencyMaintenances.forEach(item=>{
+        const c = Number(item.cost);
+        if(isNaN(c)) return;
+        total += c;
+        if(item.paid) totalPaid += c;
+        else totalUnpaid += c;
+      });
+
+      emTotal.textContent = total;
+      if(emTotalPaid) emTotalPaid.textContent = totalPaid;
+      if(emTotalUnpaid) emTotalUnpaid.textContent = totalUnpaid;
+    }
+
+    // رسم جدول الصيانة الطارئة
+    function renderEmergencyTable(){
+      if(!emBody) return;
+      emBody.innerHTML = "";
+
+      if(!emergencyMaintenances.length){
+        emBody.innerHTML = "<tr><td colspan='6' class='muted'>لا توجد صيانات طارئة مسجلة.</td></tr>";
+        updateEmergencyTotal();
+        return;
+      }
+
+      const gensById = new Map(state.generators.map(g=>[g.id,g.name]));
+
+      emergencyMaintenances
+        .slice()
+        .sort((a,b)=>a.date.localeCompare(b.date))
+        .forEach(item=>{
+          const tr = document.createElement("tr");
+          const genName = gensById.get(item.genId) || "-";
+          tr.innerHTML = `
+            <td>${item.date}</td>
+            <td>${genName}</td>
+            <td>${item.cost}</td>
+            <td>${item.note || ""}</td>
+            <td>${item.paid ? "✅" : "❌"}</td>
+            <td class="actions">
+              <button class="btn-small" data-eid="${item.id}" data-action="toggle-paid" style="font-size:11px;padding:3px 7px;">تبديل الدفع</button>
+              <button class="btn-small" data-eid="${item.id}" data-action="edit-em" style="font-size:11px;padding:3px 7px;">تعديل</button>
+              <button class="btn-small" data-eid="${item.id}" data-action="del-em" style="font-size:11px;padding:3px 7px;">🗑</button>
+            </td>
+          `;
+          emBody.appendChild(tr);
+        });
+
+      updateEmergencyTotal();
     }
 
     // ====== عرض قائمة المولدات ======
@@ -966,6 +1022,7 @@
       genList.innerHTML = "";
       if(!state.generators.length){
         genList.innerHTML = "<li class='muted' style='list-style:none;padding:2px 0;'>لم يتم إضافة أي مولد بعد.</li>";
+        renderEmergencyGeneratorOptions();
         return;
       }
       state.generators.forEach(gen=>{
@@ -993,6 +1050,8 @@
         `;
         genList.appendChild(li);
       });
+
+      renderEmergencyGeneratorOptions();
     }
 
     // ====== عرض تفاصيل المولد ======
@@ -1094,53 +1153,6 @@
       }
     }
 
-    // ====== جدول الصيانة الطارئة ======
-    function renderEmergencyTable(){
-      if(!emBody) return;
-      emBody.innerHTML = "";
-      const list = (state.emergencyMaint || []).slice().sort((a,b)=>{
-        const d = (a.date||"").localeCompare(b.date||"");
-        if(d!==0) return d;
-        return (a.genName||"").localeCompare(b.genName||"");
-      });
-
-      let totalAmount = 0;
-      let totalPaid = 0;
-      let totalUnpaid = 0;
-
-      if(!list.length){
-        emBody.innerHTML = "<tr><td colspan='6' class='muted'>لا توجد صيانة طارئة بعد.</td></tr>";
-      }else{
-        list.forEach(item=>{
-          const tr = document.createElement("tr");
-          const amount = Number(item.amount != null ? item.amount : item.cost || 0) || 0;
-          totalAmount += amount;
-          if(item.isPaid) totalPaid += amount; else totalUnpaid += amount;
-
-          const paidLabel = item.isPaid ? "✔" : "✖";
-          const paidColor = item.isPaid ? "#16a34a" : "#b91c1c";
-
-          tr.innerHTML = `
-            <td>${item.genName || item.gen || "-"}</td>
-            <td>${item.date || "-"}</td>
-            <td>${amount}</td>
-            <td><span style="color:${paidColor};font-weight:600;">${paidLabel}</span></td>
-            <td>${item.note || item.costNote || ""}</td>
-            <td class="actions">
-              <button class="btn-small" data-em-action="togglePaid" data-id="${item.id}" style="font-size:11px;padding:3px 7px;">تبديل الدفع</button>
-              <button class="btn-small" data-em-action="edit" data-id="${item.id}" style="font-size:11px;padding:3px 7px;">تعديل</button>
-              <button class="btn-small" data-em-action="delete" data-id="${item.id}" style="font-size:11px;padding:3px 7px;">🗑</button>
-            </td>
-          `;
-          emBody.appendChild(tr);
-        });
-      }
-
-      emTotalAmount.textContent = totalAmount;
-      emTotalPaid.textContent = totalPaid;
-      emTotalUnpaid.textContent = totalUnpaid;
-    }
-
     // ====== رسائل خطأ بسيطة ======
     function showError(el, msg){
       el.textContent = msg;
@@ -1178,8 +1190,8 @@
 
       renderGenList();
       renderDetail();
-      refreshEmergencyGenOptions();
       buildReports();
+      renderEmergencyTable();
     });
 
     // ====== اختيار مولد من القائمة ======
@@ -1205,16 +1217,12 @@
       }
       if(!confirm("هل تريد حذف هذا المولد بكل بياناته بالتأكيد؟")) return;
       state.generators = state.generators.filter(g=>g.id!==selectedId);
-
-      // حذف أي صيانة طارئة مرتبطة بالمولد المحذوف
-      state.emergencyMaint = (state.emergencyMaint||[]).filter(e=>e.genId !== gen.id);
-
+      emergencyMaintenances = emergencyMaintenances.filter(e=>e.genId !== gen.id);
       selectedId = state.generators[0]?.id || null;
       renderGenList();
       renderDetail();
-      refreshEmergencyGenOptions();
-      renderEmergencyTable();
       buildReports();
+      renderEmergencyTable();
     });
 
     // ====== تعديل بيانات المولد من التفاصيل ======
@@ -1222,17 +1230,10 @@
       const gen = state.generators.find(g=>g.id===selectedId);
       if(!gen) return;
       gen.name = dName.value.trim();
-
-      // تحديث اسم المولد في الصيانة الطارئة المرتبطة
-      (state.emergencyMaint||[]).forEach(e=>{
-        if(e.genId === gen.id) e.genName = gen.name;
-      });
-
       renderGenList();
       renderDetail();
-      refreshEmergencyGenOptions();
-      renderEmergencyTable();
       buildReports();
+      renderEmergencyTable();
     });
     dSmr.addEventListener("change", ()=>{
       const gen = state.generators.find(g=>g.id===selectedId);
@@ -1251,7 +1252,7 @@
       buildReports();
     });
 
-    // ====== إضافة قراءة ====== 
+    // ====== إضافة قراءة ======
     addReadingBtn.addEventListener("click", ()=>{
       const gen = state.generators.find(g=>g.id===selectedId);
       if(!gen){
@@ -1278,6 +1279,95 @@
       renderGenList();
       renderDetail();
       buildReports();
+    });
+
+    // ====== إضافة صيانة طارئة ======
+    emAdd.addEventListener("click", ()=>{
+      const genId = emGen.value;
+      const date  = emDate.value;
+      const cost  = Number(emCost.value || 0);
+      const note  = emNote.value.trim();
+      const paid  = emPaid.checked;
+
+      if(!genId){
+        alert("رجاءً اختر نوع المولد.");
+        return;
+      }
+      if(!date){
+        alert("رجاءً أدخل تاريخ الصيانة الطارئة.");
+        return;
+      }
+      if(isNaN(cost) || cost <= 0){
+        alert("رجاءً أدخل مبلغ صحيح للصيانة الطارئة.");
+        return;
+      }
+
+      emergencyMaintenances.push({
+        id: crypto.randomUUID(),
+        genId,
+        date,
+        cost,
+        note,
+        paid
+      });
+
+      emDate.value = "";
+      emCost.value = "";
+      emNote.value = "";
+      emPaid.checked = false;
+
+      renderEmergencyTable();
+    });
+
+    // ====== أحداث جدول الصيانة الطارئة ======
+    emBody.addEventListener("click",(e)=>{
+      const btn = e.target.closest("button[data-action]");
+      if(!btn) return;
+      const id = btn.dataset.eid;
+      const action = btn.dataset.action;
+      const item = emergencyMaintenances.find(x=>x.id===id);
+      if(!item) return;
+
+      if(action === "toggle-paid"){
+        item.paid = !item.paid;
+      }
+
+      if(action === "edit-em"){
+        if(!isAdmin()){
+          alert("تعديل بيانات الصيانة الطارئة متاح للمشرف فقط.");
+          return;
+        }
+        const newDate = prompt("تعديل تاريخ الصيانة الطارئة:", item.date);
+        if(newDate === null) return;
+        if(!newDate.trim()){
+          alert("لا يمكن ترك التاريخ فارغاً.");
+          return;
+        }
+        const newCostStr = prompt("تعديل مبلغ الصيانة الطارئة (IQD):", String(item.cost));
+        if(newCostStr === null) return;
+        const newCost = Number(newCostStr);
+        if(isNaN(newCost) || newCost <= 0){
+          alert("المبلغ المدخل غير صالح.");
+          return;
+        }
+        const newNote = prompt("تعديل الملاحظة (اختياري):", item.note || "");
+        if(newNote === null) return;
+
+        item.date = newDate.trim();
+        item.cost = newCost;
+        item.note = newNote.trim();
+      }
+
+      if(action === "del-em"){
+        if(!isAdmin()){
+          alert("حذف الصيانة الطارئة متاح للمشرف فقط.");
+          return;
+        }
+        if(!confirm("حذف هذه الصيانة الطارئة؟")) return;
+        emergencyMaintenances = emergencyMaintenances.filter(x=>x.id!==id);
+      }
+
+      renderEmergencyTable();
     });
 
     // ====== إجراءات على السجل (خدمة / مصروف / حذف) ======
@@ -1350,113 +1440,6 @@
       buildReports();
     });
 
-    // ====== إضافة / تعديل صيانة طارئة ======
-    emAddBtn.addEventListener("click", ()=>{
-      if(!isAdmin()){
-        alert("إضافة / تعديل الصيانة الطارئة متاحة للمشرف فقط.");
-        return;
-      }
-      const genId = emGen.value;
-      const date = emDate.value;
-      const amount = Number(emAmount.value);
-      const note = emNote.value.trim();
-      const isPaid = emPaid.checked;
-
-      if(!genId || !date || isNaN(amount)){
-        showError(emErr,"الرجاء اختيار المولد وإدخال التاريخ والمبلغ.");
-        return;
-      }
-      hideError(emErr);
-
-      const gen = state.generators.find(g=>g.id===genId);
-      const genName = gen ? gen.name : "";
-
-      if(editingEmergencyId){
-        const item = (state.emergencyMaint||[]).find(e=>e.id===editingEmergencyId);
-        if(item){
-          item.genId = genId;
-          item.genName = genName;
-          item.date = date;
-          item.amount = amount;
-          item.note = note;
-          item.isPaid = isPaid;
-        }
-      }else{
-        if(!state.emergencyMaint) state.emergencyMaint = [];
-        state.emergencyMaint.push({
-          id: crypto.randomUUID(),
-          genId,
-          genName,
-          date,
-          amount,
-          currency:"IQD",
-          note,
-          isPaid
-        });
-      }
-
-      // reset form (مع الإبقاء على المولد المحدد)
-      editingEmergencyId = null;
-      emAddBtn.textContent = "إضافة صيانة طارئة";
-      emDate.value = "";
-      emAmount.value = "";
-      emNote.value = "";
-      emPaid.checked = false;
-
-      renderEmergencyTable();
-      buildReports();
-    });
-
-    // أزرار جدول الصيانة الطارئة
-    emBody.addEventListener("click",(e)=>{
-      const btn = e.target.closest("button[data-em-action]");
-      if(!btn) return;
-      const id = btn.dataset.id;
-      const action = btn.dataset.emAction;
-      const list = state.emergencyMaint || [];
-      const item = list.find(x=>x.id===id);
-      if(!item) return;
-
-      if(action==="delete"){
-        if(!isAdmin()){
-          alert("حذف الصيانة الطارئة متاح للمشرف فقط.");
-          return;
-        }
-        if(!confirm("هل تريد حذف هذه الصيانة الطارئة؟")) return;
-        state.emergencyMaint = list.filter(x=>x.id!==id);
-        if(editingEmergencyId === id){
-          editingEmergencyId = null;
-          emAddBtn.textContent = "إضافة صيانة طارئة";
-        }
-      }else if(action==="togglePaid"){
-        if(!isAdmin()){
-          alert("تعديل حالة الدفع متاح للمشرف فقط.");
-          return;
-        }
-        item.isPaid = !item.isPaid;
-      }else if(action==="edit"){
-        if(!isAdmin()){
-          alert("تعديل الصيانة الطارئة متاح للمشرف فقط.");
-          return;
-        }
-        editingEmergencyId = id;
-        emAddBtn.textContent = "حفظ التعديل";
-
-        emGen.value = item.genId || "";
-        if(!emGen.value && item.genName){
-          const opt = Array.from(emGen.options).find(o=>o.textContent===item.genName);
-          if(opt) emGen.value = opt.value;
-        }
-        emDate.value = item.date || "";
-        emAmount.value = item.amount != null ? item.amount : (item.cost || "");
-        emNote.value = item.note || item.costNote || "";
-        emPaid.checked = !!item.isPaid;
-      }
-
-      renderEmergencyTable();
-      buildReports();
-    });
-
     // ====== التقارير ======
     function parseRange(){
       let from = repFrom.value || "0000-01-01";
@@ -1485,15 +1468,6 @@
             if((s.currency||"").toUpperCase()==="USD") costUSD += Number(s.cost);
             else costIQD += Number(s.cost);
           }
-        });
-
-        // إضافة الصيانة الطارئة الخاصة بهذا المولد
-        (state.emergencyMaint||[]).forEach(e=>{
-          if(e.genId !== gen.id) return;
-          if(e.date<from || e.date>to) return;
-          const amt = Number(e.amount != null ? e.amount : e.cost || 0) || 0;
-          if((e.currency||"IQD").toUpperCase()==="USD") costUSD += amt;
-          else costIQD += amt;
         });
 
         rows.push({
@@ -1534,15 +1508,6 @@
           }
         });
 
-        // إضافة صيانة طارئة لهذا المولد (IQD فقط)
-        (state.emergencyMaint||[]).forEach(e=>{
-          if(e.genId !== gen.id) return;
-          if(e.date<from || e.date>to) return;
-          if((e.currency||"IQD").toUpperCase()==="USD") return;
-          const amt = Number(e.amount != null ? e.amount : e.cost || 0) || 0;
-          costIQD += amt;
-        });
-
         let avgPerHour = 0;
         if(hours>0){
           avgPerHour = costIQD / hours;
@@ -1564,8 +1529,6 @@
     function buildExpensesReport(){
       const {from, to} = parseRange();
       const rows = [];
-
-      // 1) مصاريف الصيانة الدورية
       state.generators.forEach(gen=>{
         (gen.serviceHistory||[]).forEach(s=>{
           if(s.date<from || s.date>to) return;
@@ -1580,11 +1543,6 @@
           });
         });
       });
-
-      // 2) مصاريف الصيانة الطارئة
-      const emergencyRows = getEmergencyExpensesInRange(from,to);
-      emergencyRows.forEach(r => rows.push(r));
-
       rows.sort((a,b)=> a.gen.localeCompare(b.gen) || a.date.localeCompare(b.date));
       return rows;
     }
@@ -1822,7 +1780,11 @@
         alert("تصدير JSON متاح للمشرف فقط.");
         return;
       }
-      const blob = new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
+      const fullData = {
+        generators: state.generators,
+        emergencyMaintenances
+      };
+      const blob = new Blob([JSON.stringify(fullData,null,2)],{type:"application/json"});
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -1844,7 +1806,7 @@
         try{
           const data = JSON.parse(String(reader.result));
           if(!data || !Array.isArray(data.generators)) throw new Error("بنية غير صحيحة");
-          data.generators = data.generators.map((g,idx)=>({
+          const mappedGenerators = data.generators.map((g,idx)=>({
             id: g.id || crypto.randomUUID(),
             name: g.name || ("Generator #"+(idx+1)),
             lastServiceMeter: Number(g.lastServiceMeter||0),
@@ -1858,25 +1820,14 @@
               costNote: h.costNote || ""
             })) : []
           }));
+          state = { generators:mappedGenerators };
+          emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
 
-          data.emergencyMaint = Array.isArray(data.emergencyMaint) ? data.emergencyMaint.map(e => ({
-            id: e.id || crypto.randomUUID(),
-            genId: e.genId || e.genID || "",
-            genName: e.genName || e.gen || "",
-            date: e.date || "",
-            amount: e.amount != null ? Number(e.amount) : (e.cost != null ? Number(e.cost) : 0),
-            currency: (e.currency || "IQD").toUpperCase(),
-            note: e.note || e.costNote || "",
-            isPaid: !!e.isPaid
-          })) : [];
-
-          state = data;
           selectedId = state.generators[0]?.id || null;
           renderGenList();
           renderDetail();
-          refreshEmergencyGenOptions();
-          renderEmergencyTable();
           buildReports();
+          renderEmergencyTable();
         }catch(err){
           alert("تعذر استيراد الملف: " + (err.message||err));
         }
@@ -1887,7 +1838,11 @@
     // ====== حفظ البيانات محلياً في المتصفح ======
     saveLocalBtn.addEventListener("click", ()=>{
       try{
-        localStorage.setItem(LOCAL_KEY, JSON.stringify(state));
+        const fullData = {
+          generators: state.generators,
+          emergencyMaintenances
+        };
+        localStorage.setItem(LOCAL_KEY, JSON.stringify(fullData));
         alert("تم حفظ البيانات على هذا الجهاز بنجاح ✅");
       }catch(err){
         console.error("LocalStorage error", err);
@@ -1948,24 +1903,15 @@
                     currency: h.currency || "IQD",
                     costNote: h.costNote || ""
                   })) : []
-                })),
-                emergencyMaint: Array.isArray(data.emergencyMaint) ? data.emergencyMaint.map(e => ({
-                  id: e.id || crypto.randomUUID(),
-                  genId: e.genId || e.genID || "",
-                  genName: e.genName || e.gen || "",
-                  date: e.date || "",
-                  amount: e.amount != null ? Number(e.amount) : (e.cost != null ? Number(e.cost) : 0),
-                  currency: (e.currency || "IQD").toUpperCase(),
-                  note: e.note || e.costNote || "",
-                  isPaid: !!e.isPaid
-                })) : []
+                }))
               };
+              emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
+
               selectedId = state.generators[0]?.id || null;
               renderGenList();
               renderDetail();
-              refreshEmergencyGenOptions();
-              renderEmergencyTable();
               buildReports();
+              renderEmergencyTable();
               console.log("Loaded data from localStorage");
               return;
             }
@@ -2004,25 +1950,15 @@
               currency: h.currency || "IQD",
               costNote: h.costNote || ""
             })) : []
-          })),
-          emergencyMaint: Array.isArray(data.emergencyMaint) ? data.emergencyMaint.map(e => ({
-            id: e.id || crypto.randomUUID(),
-            genId: e.genId || e.genID || "",
-            genName: e.genName || e.gen || "",
-            date: e.date || "",
-            amount: e.amount != null ? Number(e.amount) : (e.cost != null ? Number(e.cost) : 0),
-            currency: (e.currency || "IQD").toUpperCase(),
-            note: e.note || e.costNote || "",
-            isPaid: !!e.isPaid
-          })) : []
+          }))
         };
+        emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
 
         selectedId = state.generators[0]?.id || null;
         renderGenList();
         renderDetail();
-        refreshEmergencyGenOptions();
-        renderEmergencyTable();
         buildReports();
+        renderEmergencyTable();
         console.log("Loaded data from generators.json");
       } catch (err) {
         console.error("خطأ أثناء تحميل البيانات", err);
@@ -2036,9 +1972,9 @@
       repTo.value   = "";
       renderGenList();
       renderDetail();
-      refreshEmergencyGenOptions();
-      renderEmergencyTable();
       buildReports();
+      renderEmergencyGeneratorOptions();
+      renderEmergencyTable();
       loadInitialData();
     })();
 
