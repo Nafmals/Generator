@@ -141,13 +141,24 @@
       box-shadow:0 1px 0 rgba(15,23,42,.03);
     }
 
-    /* ✅ جعل كرت تفاصيل المولد عمودي لدفع السجل إلى الأسفل */
+    /* ✅ كرت تفاصيل المولد عمودي */
     .panel-center{
       display:flex;
       flex-direction:column;
+      min-height:0;
     }
+
+    /* ✅ جزء سجل القراءات يستغل المساحة المتبقية ويكبر */
     .panel-center-log{
-      margin-top:auto;
+      margin-top:14px;
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      min-height:0;
+    }
+    .panel-center-log .table-wrap{
+      flex:1;
+      max-height:none; /* يلغي الحد 360px داخل هذا الكرت فقط */
     }
 
     .card h2{
@@ -661,7 +672,7 @@
         </div>
         <div id="r-err" class="err" style="display:none;"></div>
 
-        <!-- ✅ جزء سجل القراءات في أسفل الكرت -->
+        <!-- ✅ سجل القراءات يستغل المساحة المتبقية -->
         <div class="panel-center-log">
           <h3 style="margin-top:14px;">سجل القراءات / الصيانة</h3>
           <div class="table-wrap">
@@ -794,7 +805,7 @@
           </div>
         </div>
 
-        <!-- سطر المجموع مع مدفوع / غير مدفوع -->
+        <!-- سطر المجموع -->
         <div class="row" style="margin-top:8px;justify-content:flex-start;">
           <span class="muted">
             مجموع الصيانة الطارئة: <strong id="em-total">0</strong> IQD
