@@ -9,13 +9,13 @@
     body{
       margin:0;
       background:#f3f4f6;
-      padding:16px;
+      padding:12px;
     }
 
-    /* شريط علوي بسيط */
+    /* شريط علوي للأزرار (مخفي عند الطباعة) */
     .topbar{
       max-width:900px;
-      margin:0 auto 10px auto;
+      margin:0 auto 8px auto;
       padding:6px 10px;
       border-radius:999px;
       background:#ffffff;
@@ -28,11 +28,11 @@
     .brand{
       display:flex;
       align-items:center;
-      gap:8px;
-      font-size:12px;
+      gap:6px;
+      font-size:11px;
     }
     .brand img{
-      height:28px;
+      height:26px;
     }
     .brand-title{
       font-weight:bold;
@@ -56,49 +56,45 @@
       background:#fff;
       cursor:pointer;
     }
-    .btn:hover{
-      background:#f9fafb;
-    }
+    .btn:hover{background:#f9fafb;}
     .btn-primary{
       background:#111827;
       color:#fff;
       border-color:#111827;
     }
-    .btn-primary:hover{
-      background:#020617;
-    }
+    .btn-primary:hover{background:#020617;}
     .btn-danger{
-      color:#b91c1c;
-      border-color:#fecaca;
       background:#fef2f2;
+      border-color:#fecaca;
+      color:#b91c1c;
     }
 
-    /* ورقة الفاتورة (A4 تقريباً) */
+    /* ورقة الفاتورة (تقريباً A4) */
     .page-wrap{
       display:flex;
       justify-content:center;
     }
     .invoice-page{
-      width:800px;              /* تقريباً A4 */
-      min-height:1123px;
-      background:#fff;
-      border-radius:10px;
-      border:1px solid #e5e7eb;
-      padding:35px 40px;
+      width:800px;
+      min-height:1120px;
+      background:#ffffff;
+      border-radius:4px;
+      border:1px solid #d1d5db;
+      padding:24px 28px;
       position:relative;
       overflow:hidden;
     }
 
-    /* Watermark بصورة حقيقية */
+    /* ووترمارك */
     .watermark{
       position:absolute;
-      right:80px;
-      bottom:80px;
+      right:120px;
+      bottom:120px;
       width:260px;
       opacity:0.06;
       filter:grayscale(1);
-      z-index:0;
       pointer-events:none;
+      z-index:0;
     }
 
     .invoice-inner{
@@ -108,21 +104,22 @@
       color:#111;
     }
 
-    /* رأس الفاتورة */
+    /* رأس الفاتورة مثل النموذج */
     .inv-header{
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
     }
     .inv-company{
-      max-width:280px;
+      max-width:320px;
       line-height:1.35;
+      font-size:11px;
     }
     .inv-company-name{
       font-size:14px;
       font-weight:bold;
       color:#f97316;
-      margin-bottom:4px;
+      margin-bottom:2px;
     }
     .inv-company p{
       margin:0;
@@ -131,35 +128,34 @@
 
     .inv-right{
       text-align:right;
-    }
-    .inv-logo-top{
-      text-align:center;
-      margin-bottom:4px;
+      font-size:10px;
     }
     .inv-logo-top img{
-      height:48px;
+      height:60px;
       display:block;
-      margin:0 auto;
+      margin-left:auto;
     }
-    .inv-logo-top span{
-      display:block;
-      font-size:12px;
+    .inv-logo-title{
+      margin-top:4px;
+      font-size:14px;
       color:#f97316;
-      margin-top:2px;
+      text-align:center;
     }
     .meta{
+      margin-top:8px;
       font-size:10px;
-      margin-top:4px;
     }
     .meta-row{
       display:flex;
       justify-content:flex-end;
       align-items:center;
       margin-bottom:2px;
-      gap:6px;
+      gap:4px;
     }
     .meta-row .label{
       font-weight:bold;
+      min-width:80px;
+      text-align:right;
     }
     .meta-row input{
       border:1px solid #000;
@@ -169,44 +165,43 @@
       min-width:170px;
     }
 
-    .inv-title-center{
-      text-align:center;
-      margin-top:10px;
-      margin-bottom:6px;
-      font-size:14px;
-      color:#4b5563;
-    }
-
-    /* Bill To */
-    .bill-row{
+    /* Bill To + اسم Invoice في الوسط */
+    .bill-title-row{
+      margin-top:12px;
       display:flex;
-      gap:16px;
-      margin-top:4px;
+      justify-content:space-between;
+      align-items:flex-end;
+      font-size:11px;
     }
-    .bill-box{
-      width:50%;
-      font-size:10px;
-    }
-    .bill-label{
+    .bill-to-label{
       font-weight:bold;
       margin-bottom:2px;
     }
-    .bill-textarea{
-      width:100%;
-      min-height:80px;
-      border:1px solid #000;
-      padding:4px;
+    .bill-to-box{
+      margin-top:4px;
+      border-top:1px solid #000;
+      padding-top:4px;
       font-size:10px;
+    }
+    .bill-to-textarea{
+      width:100%;
+      min-height:90px;
+      border:none;
+      padding:0;
+      margin:0;
       resize:vertical;
       white-space:pre-wrap;
+      font-size:10px;
+    }
+    .center-invoice-title{
+      font-size:16px;
+      color:#4b5563;
+      margin-right:40px;
     }
 
-    /* جدول الخدمات */
-    table{
-      border-collapse:collapse;
-      width:100%;
-    }
-    th, td{
+    /* جدول Description of Services */
+    table{border-collapse:collapse;width:100%;}
+    th,td{
       border:1px solid #000;
       padding:3px 4px;
       font-size:10px;
@@ -215,19 +210,20 @@
     th{
       font-weight:bold;
       text-align:center;
-      background:#f5f5f5;
     }
     .desc-header-row th{
       border-bottom:none;
-      background:transparent;
+      background:#ffffff;
     }
     .desc-label-row th{
       border-top:none;
+      background:#f5f5f5;
     }
-    .text-center{ text-align:center; }
-    .text-right{ text-align:right; }
 
-    .cell-input, .cell-textarea{
+    .text-center{text-align:center;}
+    .text-right{text-align:right;}
+
+    .cell-input,.cell-textarea{
       width:100%;
       border:none;
       padding:0;
@@ -239,10 +235,7 @@
       resize:vertical;
       min-height:26px;
     }
-    .cell-input:focus,
-    .cell-textarea:focus{
-      outline:none;
-    }
+    .cell-input:focus,.cell-textarea:focus{outline:none;}
 
     .add-row-bar{
       margin-top:4px;
@@ -256,105 +249,116 @@
       cursor:pointer;
       font-size:10px;
     }
-    .add-row-btn:hover{
-      background:#e5e7eb;
-    }
+    .add-row-btn:hover{background:#e5e7eb;}
 
     .thankyou{
       font-size:9px;
-      text-align:left;
-      margin-top:4px;
-      margin-bottom:8px;
+      margin-top:6px;
+      margin-bottom:6px;
     }
 
+    /* جدول المجاميع يمين مثل النموذج */
+    .totals-wrap{
+      display:flex;
+      justify-content:flex-end;
+    }
     .totals{
-      margin-top:6px;
       width:260px;
-      margin-left:auto;
-      font-size:9px;
       border-collapse:collapse;
+      font-size:9px;
     }
     .totals td{
       padding:2px 4px;
       border:1px solid #000;
     }
     .totals td:first-child{
+      width:60%;
       text-align:right;
       font-weight:bold;
-      width:60%;
     }
     .totals td:last-child{
+      width:40%;
       text-align:right;
       min-width:100px;
     }
     .totals input{
       width:100%;
       border:none;
-      text-align:right;
-      font-size:9px;
-      padding:0;
       background:transparent;
+      font-size:9px;
+      text-align:right;
+      padding:0;
+      margin:0;
     }
     .totals input:focus{outline:none;}
     .balance{font-weight:bold;}
 
+    /* أسفل الصفحة: Scope + Bank details + توقيع */
     .bottom-row{
+      margin-top:18px;
       display:flex;
       justify-content:space-between;
-      margin-top:20px;
-      font-size:9px;
       gap:20px;
+      font-size:9px;
     }
-    .scope-col{width:55%;}
-    .scope-label{font-weight:bold;margin-bottom:3px;}
+    .scope-col{
+      width:55%;
+    }
+    .scope-label{
+      font-weight:bold;
+      margin-bottom:4px;
+    }
     .scope-textarea{
       width:100%;
       min-height:70px;
-      border:1px solid #000;
-      padding:4px;
+      border:none;
+      padding:0;
+      margin:0;
+      white-space:pre-wrap;
       font-size:9px;
       resize:vertical;
-      white-space:pre-wrap;
     }
-    .bank-col{width:40%;}
-    .bank-label{font-weight:bold;margin-bottom:3px;}
+
+    .bank-col{
+      width:38%;
+    }
+    .bank-label{
+      font-weight:bold;
+      margin-bottom:4px;
+    }
     .bank-table{
       width:100%;
       border-collapse:collapse;
+      font-size:9px;
     }
     .bank-table td{
       border:none;
       padding:1px 0;
-      font-size:9px;
+      vertical-align:top;
     }
     .bank-table td:first-child{
-      font-weight:bold;
       width:40%;
+      font-weight:bold;
     }
 
     .sign-row{
-      margin-top:32px;
+      margin-top:40px;
       display:flex;
       justify-content:flex-start;
-      align-items:flex-end;
       font-size:9px;
     }
     .sign-name{
-      margin-top:18px;
       border-top:1px solid #000;
-      width:160px;
       padding-top:3px;
-      font-size:9px;
+      width:200px;
     }
-    .sign-name span:first-child{
-      font-weight:bold;
-    }
+    .sign-name span:first-child{font-weight:bold;}
 
-    /* نافذة الفواتير (تقرير) */
+    /* نافذة تقرير الفواتير */
     .modal-backdrop{
       position:fixed;
       inset:0;
-      background:rgba(15,23,42,.25);
+      background:rgba(15,23,42,.3);
       display:none;
       align-items:center;
       justify-content:center;
@@ -362,9 +366,9 @@
     }
     .modal{
       background:#fff;
-      border-radius:12px;
+      border-radius:10px;
       border:1px solid #e5e7eb;
-      padding:12px 14px 14px;
+      padding:10px 12px 12px;
       width:720px;
       max-width:95vw;
       max-height:80vh;
@@ -395,8 +399,8 @@
     .report-table th,
     .report-table td{
       padding:4px 6px;
-      font-size:11px;
       border-bottom:1px solid #e5e7eb;
+      font-size:11px;
       white-space:nowrap;
       text-align:left;
     }
@@ -407,33 +411,37 @@
       z-index:1;
     }
     .modal-footer{
-      margin-top:6px;
-      text-align:right;
+      margin-top:4px;
       font-size:10px;
       color:#6b7280;
+      text-align:right;
     }
 
     /* للطباعة: تظهر الفاتورة فقط */
     @media print{
       body{background:#fff;padding:0;}
-      .topbar,.modal-backdrop{display:none!important;}
+      .topbar,.modal-backdrop{display:none !important;}
       .page-wrap{margin:0;}
       .invoice-page{
+        width:210mm;
+        min-height:297mm;
         border:none;
         border-radius:0;
-        width:100%;
-        min-height:auto;
-        padding:15mm;
+        padding:15mm 15mm 18mm 15mm;
       }
-      .watermark{opacity:0.04;}
+      .watermark{opacity:0.06;}
+      @page{
+        size:A4;
+        margin:0;
+      }
     }
   </style>
 </head>
 <body>
-  <!-- شريط علوي -->
+  <!-- شريط الأزرار -->
   <div class="topbar">
     <div class="brand">
-      <img src="logo.jpg" alt="Logo">
+      <img src="logo-main.png" alt="Logo">
       <div>
         <div class="brand-title">Nafithat Al-Amal Co.</div>
         <div class="brand-sub">Professional Invoice System</div>
@@ -444,7 +452,7 @@
       <button class="btn btn-primary" id="save-btn">💾 حفظ</button>
       <button class="btn" id="print-btn">🖨 طباعة / PDF</button>
       <button class="btn" id="list-btn">📄 قائمة الفواتير</button>
-      <button class="btn" id="export-btn">⬇ تقرير CSV</button>
+      <button class="btn" id="export-btn">⬇ تقرير Excel (CSV)</button>
       <button class="btn btn-danger" id="delete-btn">🗑 حذف</button>
     </div>
   </div>
@@ -452,9 +460,9 @@
   <!-- ورقة الفاتورة -->
   <div class="page-wrap">
     <div class="invoice-page">
-      <!-- watermark -->
-      <img src="logo.jpg" alt="" class="watermark">
+      <img src="logo-watermark.png" class="watermark" alt="">
       <div class="invoice-inner">
+        <!-- رأس الفاتورة -->
         <div class="inv-header">
           <div class="inv-company">
             <div class="inv-company-name">Nafithat Al-Amal Co.</div>
@@ -464,57 +472,58 @@
             <p>www.nafmals.com</p>
             <p>Phone Number: 07723571779</p>
           </div>
-
           <div class="inv-right">
             <div class="inv-logo-top">
-              <img src="logo.jpg" alt="Logo">
-              <span>Invoice</span>
+              <img src="logo-main.png" alt="Logo">
             </div>
+            <div class="inv-logo-title">Invoice</div>
             <div class="meta">
               <div class="meta-row">
                 <span class="label">Invoice No:</span>
-                <input id="f-number" value="">
+                <input id="f-number">
               </div>
               <div class="meta-row">
                 <span class="label">Invoice Date:</span>
-                <input id="f-date" value="">
+                <input id="f-date">
               </div>
               <div class="meta-row">
                 <span class="label">Contract Number:</span>
-                <input id="f-contract" value="">
+                <input id="f-contract">
               </div>
             </div>
           </div>
         </div>
 
-        <div class="inv-title-center">Invoice</div>
-
-        <div class="bill-row">
-          <div class="bill-box">
-            <div class="bill-label">Bill To:</div>
-            <textarea id="f-billto" class="bill-textarea"></textarea>
+        <!-- Bill To + عنوان Invoice في الوسط -->
+        <div class="bill-title-row">
+          <div style="flex:1;">
+            <div class="bill-to-label">Bill To:</div>
+            <div class="bill-to-box">
+              <textarea id="f-billto" class="bill-to-textarea"></textarea>
+            </div>
           </div>
-          <div class="bill-box"></div>
+          <div class="center-invoice-title">Invoice</div>
         </div>
 
-        <!-- جدول البنود -->
+        <!-- جدول الخدمات -->
         <table style="margin-top:10px;">
           <thead>
             <tr class="desc-header-row">
-              <th colspan="8">Description of Services</th>
+              <th colspan="7">Description of Services</th>
             </tr>
             <tr class="desc-label-row">
-              <th style="width:30px;">No.</th>
+              <th style="width:24px;">No.</th>
               <th>DESCRIPTION</th>
-              <th style="width:80px;">Tower No.</th>
+              <th style="width:90px;">Location</th>
               <th style="width:80px;">DATE</th>
               <th style="width:55px;">UNIT</th>
               <th style="width:50px;">QTY</th>
-              <th style="width:95px;">UNIT PRICE</th>
-              <th style="width:105px;">TOTAL PRICE</th>
+              <th style="width:110px;">UNIT PRICE / TOTAL PRICE</th>
             </tr>
           </thead>
-          <tbody id="items-body"></tbody>
+          <tbody id="items-body">
+            <!-- السطور يتم توليدها جافاسكربت -->
+          </tbody>
         </table>
 
         <div class="add-row-bar">
@@ -523,34 +532,37 @@
 
         <div class="thankyou">Thank you for your business!</div>
 
-        <!-- المجاميع -->
-        <table class="totals">
-          <tr>
-            <td>SUBTOTAL</td>
-            <td><input id="f-subtotal" readonly></td>
-          </tr>
-          <tr>
-            <td>DISCOUNT</td>
-            <td><input id="f-discount" type="number" value="0"></td>
-          </tr>
-          <tr>
-            <td>SUBTOTAL LESS DISCOUNT</td>
-            <td><input id="f-sub-less" readonly></td>
-          </tr>
-          <tr>
-            <td>TAX (%)</td>
-            <td><input id="f-tax" type="number" value="0"></td>
-          </tr>
-          <tr>
-            <td>SHIPPING/HANDLING</td>
-            <td><input id="f-shipping" type="number" value="0"></td>
-          </tr>
-          <tr>
-            <td class="balance">Balance Due</td>
-            <td><input id="f-balance" class="balance" readonly></td>
-          </tr>
-        </table>
+        <!-- المجاميع يمين -->
+        <div class="totals-wrap">
+          <table class="totals">
+            <tr>
+              <td>SUBTOTAL</td>
+              <td><input id="f-subtotal" readonly></td>
+            </tr>
+            <tr>
+              <td>DISCOUNT</td>
+              <td><input id="f-discount" type="number" value="0"></td>
+            </tr>
+            <tr>
+              <td>SUBTOTAL LESS DISCOUNT</td>
+              <td><input id="f-sub-less" readonly></td>
+            </tr>
+            <tr>
+              <td>TAX (0%)</td>
+              <td><input id="f-tax" type="number" value="0"></td>
+            </tr>
+            <tr>
+              <td>SHIPPING/HANDLING</td>
+              <td><input id="f-shipping" type="number" value="0"></td>
+            </tr>
+            <tr>
+              <td class="balance">Balance Due</td>
+              <td><input id="f-balance" class="balance" readonly></td>
+            </tr>
+          </table>
+        </div>
 
+        <!-- أسفل الصفحة -->
         <div class="bottom-row">
           <div class="scope-col">
             <div class="scope-label">Scope of Work:</div>
@@ -559,12 +571,12 @@
           <div class="bank-col">
             <div class="bank-label">Bank Account details</div>
             <table class="bank-table">
-              <tr><td>Account Name:</td><td>Nafithat Al-Amal</td></tr>
-              <tr><td>IBAN Code:</td><td>IQ07NISB002000000314765</td></tr>
-              <tr><td>Account Number:</td><td>314765</td></tr>
-              <tr><td>Bank:</td><td>National Islamic Bank</td></tr>
-              <tr><td>Currency:</td><td>Iraqi Dinar</td></tr>
-              <tr><td>Branch:</td><td>Al-Kadhimiya Branch</td></tr>
+              <tr><td>Account Name</td><td>Nafithat Al-Amal</td></tr>
+              <tr><td>IBAN Code</td><td>IQ07NISB002000000314765</td></tr>
+              <tr><td>Account Number</td><td>314765</td></tr>
+              <tr><td>Bank</td><td>National Islamic Bank</td></tr>
+              <tr><td>Currency</td><td>Iraqi Dinar</td></tr>
+              <tr><td>Branch</td><td>Al-Kadhimiya Branch</td></tr>
             </table>
           </div>
         </div>
@@ -601,16 +613,15 @@
         </table>
       </div>
       <div class="modal-footer">
-        اضغط على أي فاتورة من القائمة لفتحها.
+        اضغط على أي سطر لفتح الفاتورة.
       </div>
     </div>
   </div>
 
   <script>
-    const LOCAL_KEY = "naf_invoice_system_v1";
+    const LOCAL_KEY = "naf_invoice_v2";
     let invoices = [];
     let currentId = null;
-
     const $ = id => document.getElementById(id);
 
     function formatIQD(n){
@@ -628,12 +639,15 @@
       tr.innerHTML = `
         <td class="text-center no-cell"></td>
         <td><textarea class="cell-textarea cell-desc">${data.desc || ""}</textarea></td>
-        <td><input class="cell-input cell-tower" value="${data.tower || ""}"></td>
+        <td><input class="cell-input cell-loc" value="${data.location || ""}"></td>
         <td><input class="cell-input cell-date" value="${data.date || ""}"></td>
         <td class="text-center"><input class="cell-input cell-unit" value="${data.unit || ""}"></td>
         <td class="text-center"><input class="cell-input cell-qty" type="number" min="0" value="${data.qty != null ? data.qty : 1}"></td>
-        <td class="text-right"><input class="cell-input cell-price" type="number" min="0" value="${data.price != null ? data.price : 0}"></td>
-        <td class="text-right"><input class="cell-input cell-total" type="text" readonly></td>
+        <td class="text-right">
+          <input class="cell-input cell-price" type="number" min="0" value="${data.price != null ? data.price : 0}">
+          <br>
+          <input class="cell-input cell-total" type="text" readonly>
+        </td>
       `;
       attachRowEvents(tr);
       return tr;
@@ -646,7 +660,7 @@
     }
 
     function recalcRow(tr){
-      const qty   = parseNumber(tr.querySelector(".cell-qty").value);
+      const qty = parseNumber(tr.querySelector(".cell-qty").value);
       const price = parseNumber(tr.querySelector(".cell-price").value);
       const total = qty * price;
       tr.querySelector(".cell-total").value = formatIQD(total);
@@ -686,12 +700,12 @@
 
       const rows = document.querySelectorAll("#items-body .item-row");
       inv.items = Array.from(rows).map(tr=>({
-        desc:  tr.querySelector(".cell-desc").value.trim(),
-        tower: tr.querySelector(".cell-tower").value.trim(),
-        date:  tr.querySelector(".cell-date").value.trim(),
-        unit:  tr.querySelector(".cell-unit").value.trim(),
-        qty:   parseNumber(tr.querySelector(".cell-qty").value),
-        price: parseNumber(tr.querySelector(".cell-price").value)
+        desc:     tr.querySelector(".cell-desc").value.trim(),
+        location: tr.querySelector(".cell-loc").value.trim(),
+        date:     tr.querySelector(".cell-date").value.trim(),
+        unit:     tr.querySelector(".cell-unit").value.trim(),
+        qty:      parseNumber(tr.querySelector(".cell-qty").value),
+        price:    parseNumber(tr.querySelector(".cell-price").value),
       }));
 
       inv.subtotal = parseNumber($("f-subtotal").value);
@@ -739,8 +753,8 @@
       const today = new Date().toISOString().slice(0,10);
       const inv = {
         id,
-        number: "NA-" + today.replace(/-/g,"") + "-INV",
-        date: today,
+        number:"NA-"+today.replace(/-/g,"")+"-INV",
+        date:today,
         contract:"",
         billTo:"",
         scope:"",
@@ -768,7 +782,7 @@
           tr.innerHTML = `
             <td>${inv.number || ""}</td>
             <td>${inv.date || ""}</td>
-            <td>${inv.billTo ? inv.billTo.split("\n")[0] : ""}</td>
+            <td>${inv.billTo ? inv.billTo.split("\\n")[0] : ""}</td>
             <td>${inv.contract || ""}</td>
             <td style="text-align:right;">${inv.balance != null ? inv.balance.toLocaleString("en-US") : ""}</td>
           `;
@@ -781,7 +795,7 @@
         });
     }
 
-    // --- أزرار الواجهة ---
+    // أزرار
     $("add-row-btn").addEventListener("click", ()=>{
       $("items-body").appendChild(createItemRow({qty:1,price:0}));
       updateRowNumbers();
@@ -794,7 +808,7 @@
 
     $("save-btn").addEventListener("click", ()=>{
       if(!currentId) newInvoice();
-      const inv = invoices.find(i=>i.id===currentId);
+      const inv = invoices.find(i=>i.id === currentId);
       if(!inv) return;
       recalcTotals();
       readForm(inv);
@@ -809,13 +823,12 @@
 
     $("delete-btn").addEventListener("click", ()=>{
       if(!currentId){alert("لا توجد فاتورة محددة.");return;}
-      if(!confirm("هل تريد حذف هذه الفاتورة؟"))return;
-      invoices = invoices.filter(i=>i.id!==currentId);
+      if(!confirm("هل تريد حذف هذه الفاتورة؟")) return;
+      invoices = invoices.filter(i=>i.id !== currentId);
       currentId = invoices[0]?.id || null;
       if(currentId){
         fillForm(invoices[0]);
       }else{
-        $("items-body").innerHTML="";
         fillForm({items:[]});
       }
       saveAll();
@@ -839,7 +852,7 @@
         const row = [
           `"${(inv.number||"").replace(/"/g,'""')}"`,
           `"${(inv.date||"").replace(/"/g,'""')}"`,
-          `"${(inv.billTo ? inv.billTo.split("\n")[0] : "").replace(/"/g,'""')}"`,
+          `"${(inv.billTo ? inv.billTo.split("\\n")[0] : "").replace(/"/g,'""')}"`,
           `"${(inv.contract||"").replace(/"/g,'""')}"`,
           inv.balance != null ? inv.balance : 0
         ];
@@ -854,7 +867,7 @@
       URL.revokeObjectURL(url);
     });
 
-    // === تهيئة أولية ===
+    // تهيئة أولية
     (function init(){
       loadAll();
       if(!invoices.length){
