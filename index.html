@@ -447,6 +447,66 @@
         grid-template-columns:1fr;
       }
     }
+
+    /* ===== مودال إدارة المستخدمين ===== */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.4);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+    }
+    .modal{
+      background:#fff;
+      border-radius:var(--radius);
+      padding:16px 18px;
+      max-width:420px;
+      width:100%;
+      border:1px solid var(--border);
+      box-shadow:0 20px 40px rgba(15,23,42,.25);
+    }
+    .modal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:8px;
+    }
+    .modal-header h3{
+      margin:0;
+      font-size:15px;
+    }
+    .modal-close{
+      border:none;
+      background:transparent;
+      font-size:18px;
+      cursor:pointer;
+      line-height:1;
+    }
+    .users-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+      margin-top:8px;
+    }
+    .users-table th,
+    .users-table td{
+      padding:6px 4px;
+      border-top:1px solid #e5e7eb;
+      text-align:right;
+    }
+    .badge-role{
+      font-size:11px;
+      padding:2px 6px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+    }
+    .badge-admin{
+      background:#eef2ff;
+      border-color:#c7d2fe;
+      color:#3730a3;
+    }
   </style>
 </head>
 <body>
@@ -489,6 +549,9 @@
 
         <button id="save-local">حفظ البيانات</button>
         <button id="export-csv" title="ملخص CSV بسيط لجميع المولدات">ملخص CSV</button>
+
+        <!-- زر إدارة المستخدمين (يظهر للأدمن فقط) -->
+        <button id="manage-users-btn" style="display:none;">إدارة المستخدمين</button>
 
         <span class="muted">المستخدم: <strong id="current-user-label">-</strong></span>
         <button id="logout-btn" class="logout-btn">تسجيل خروج</button>
@@ -749,6 +812,56 @@
     </main>
   </div>
 
+  <!-- مودال إدارة المستخدمين -->
+  <div id="users-modal" class="modal-backdrop" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>إدارة المستخدمين</h3>
+        <button id="users-modal-close" class="modal-close" title="إغلاق">×</button>
+      </div>
+
+      <div class="field">
+        <label>إضافة مستخدم جديد</label>
+      </div>
+      <div class="detail-grid" style="margin-bottom:6px;">
+        <div class="field">
+          <label>اسم المستخدم</label>
+          <input id="new-user-username" placeholder="User123">
+        </div>
+        <div class="field">
+          <label>كلمة المرور</label>
+          <input id="new-user-password" type="password" placeholder="••••••">
+        </div>
+        <div class="field">
+          <label>نوع المستخدم</label>
+          <select id="new-user-role">
+            <option value="user">مستخدم</option>
+            <option value="admin">مشرف</option>
+          </select>
+        </div>
+      </div>
+      <button id="add-user-btn" class="btn-primary" style="width:100%;margin-bottom:8px;">إضافة المستخدم</button>
+
+      <p class="muted" style="margin:4px 0 4px;">
+        الأدمن الرئيسي (Sameer) لا يمكن حذفه أو تغيير صلاحيته.
+      </p>
+
+      <div class="table-wrap" style="max-height:220px;">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>اسم المستخدم</th>
+              <th>كلمة المرور</th>
+              <th>الدور</th>
+              <th>إجراءات</th>
+            </tr>
+          </thead>
+          <tbody id="users-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <script>
     // ====== الحالة العامة ======
     let state = { generators: [] };
@@ -756,14 +869,47 @@
     let selectedId = null;
     const LOCAL_KEY = "generatorSystemData_v1";
 
-    // 🔧 مفتاح تخزين جلسة المستخدم في المتصفح
-    const USER_STORAGE_KEY = "generatorSystemUser_v1";
+    // 🔧 مفاتيح تخزين المستخدمين والجلسة
+    const USER_STORAGE_KEY = "generatorSystemUser_v1";         // جلسة المستخدم الحالي
+    const USERS_KEY = "generatorSystemUsers_v1";                // قائمة المستخدمين
 
-    // ====== مستخدمين ======
-    const USERS = [
+    // ====== مستخدمين (يتم تحميلهم من التخزين أو استخدام الافتراضي) ======
+    const DEFAULT_USERS = [
       {username:"Sameer", password:"Sameer1234", role:"admin"},
       {username:"Jabbar", password:"1234", role:"user"}
     ];
+    let users = [];
+
+    function saveUsers(){
+      try{
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      }catch(e){
+        console.error("خطأ حفظ المستخدمين", e);
+      }
+    }
+
+    function loadUsers(){
+      try{
+        const stored = localStorage.getItem(USERS_KEY);
+        if(stored){
+          const parsed = JSON.parse(stored);
+          if(Array.isArray(parsed) && parsed.length){
+            users = parsed;
+            return;
+          }
+        }
+        // لو ماكو بيانات، نستخدم الإفتراضي ونخزنه
+        users = DEFAULT_USERS.slice();
+        saveUsers();
+      }catch(e){
+        console.error("خطأ تحميل المستخدمين", e);
+        users = DEFAULT_USERS.slice();
+      }
+    }
+
+    // تحميل المستخدمين مباشرةً
+    loadUsers();
+
     let currentUser = null;
 
     // ====== DOM helper ======
@@ -831,6 +977,16 @@
     const emTotalPaid = $("em-total-paid");
     const emTotalUnpaid = $("em-total-unpaid");
 
+    // عناصر إدارة المستخدمين
+    const manageUsersBtn = $("manage-users-btn");
+    const usersModal = $("users-modal");
+    const usersModalClose = $("users-modal-close");
+    const usersTableBody = $("users-table-body");
+    const newUserNameInput = $("new-user-username");
+    const newUserPassInput = $("new-user-password");
+    const newUserRoleSelect = $("new-user-role");
+    const addUserBtn = $("add-user-btn");
+
     // ====== صلاحيات ======
     function isAdmin(){
       return currentUser && currentUser.role === "admin";
@@ -842,6 +998,7 @@
       deleteGenBtn.style.display = isAdmin() ? "" : "none";
       expJSON.style.display = isAdmin() ? "" : "none";
       importJSONWrapper.style.display = isAdmin() ? "inline-flex" : "none";
+      manageUsersBtn.style.display = isAdmin() ? "" : "none";
     }
 
     // ====== تسجيل الدخول ======
@@ -849,7 +1006,7 @@
       e.preventDefault();
       const u = loginUserInput.value.trim();
       const p = loginPassInput.value;
-      const found = USERS.find(x=>x.username===u && x.password===p);
+      const found = users.find(x=>x.username===u && x.password===p);
       if(!found){
         loginError.style.display = "block";
         loginError.textContent = "اسم المستخدم أو كلمة المرور غير صحيحة.";
@@ -878,6 +1035,143 @@
       loginUserInput.value = "";
       loginPassInput.value = "";
       currentUserLabel.textContent = "-";
+    });
+
+    // ====== إدارة المستخدمين (واجهة الأدمن) ======
+    function renderUsersTable(){
+      usersTableBody.innerHTML = "";
+      if(!users.length){
+        usersTableBody.innerHTML = "<tr><td colspan='4' class='muted'>لا يوجد مستخدمون مسجَّلون.</td></tr>";
+        return;
+      }
+
+      users.forEach(u=>{
+        const tr = document.createElement("tr");
+        const isMainAdmin = (u.username === "Sameer");
+        tr.innerHTML = `
+          <td>${u.username}</td>
+          <td>••••••</td>
+          <td>
+            <span class="badge-role ${u.role==="admin"?"badge-admin":""}">
+              ${u.role === "admin" ? "مشرف" : "مستخدم"}
+            </span>
+          </td>
+          <td>
+            ${isMainAdmin ? "" : `
+              <button class="btn-small" data-username="${u.username}" data-action="reset-pass" style="font-size:11px;padding:3px 7px;">كلمة مرور</button>
+              <button class="btn-small" data-username="${u.username}" data-action="toggle-role" style="font-size:11px;padding:3px 7px;">صلاحية</button>
+              <button class="btn-small" data-username="${u.username}" data-action="delete-user" style="font-size:11px;padding:3px 7px;">🗑</button>
+            `}
+          </td>
+        `;
+        usersTableBody.appendChild(tr);
+      });
+    }
+
+    manageUsersBtn.addEventListener("click", ()=>{
+      if(!isAdmin()){
+        alert("إدارة المستخدمين متاحة للمشرف فقط.");
+        return;
+      }
+      newUserNameInput.value = "";
+      newUserPassInput.value = "";
+      newUserRoleSelect.value = "user";
+      renderUsersTable();
+      usersModal.style.display = "flex";
+    });
+
+    usersModalClose.addEventListener("click", ()=>{
+      usersModal.style.display = "none";
+    });
+
+    // إغلاق المودال عند الضغط خارج المحتوى
+    usersModal.addEventListener("click", (e)=>{
+      if(e.target === usersModal){
+        usersModal.style.display = "none";
+      }
+    });
+
+    addUserBtn.addEventListener("click", ()=>{
+      if(!isAdmin()){
+        alert("إضافة المستخدمين متاحة للمشرف فقط.");
+        return;
+      }
+      const username = newUserNameInput.value.trim();
+      const password = newUserPassInput.value;
+      const role = newUserRoleSelect.value === "admin" ? "admin" : "user";
+
+      if(!username || !password){
+        alert("يرجى إدخال اسم مستخدم وكلمة مرور.");
+        return;
+      }
+      if(users.some(u=>u.username === username)){
+        alert("اسم المستخدم هذا موجود مسبقاً.");
+        return;
+      }
+
+      users.push({username, password, role});
+      saveUsers();
+      renderUsersTable();
+      newUserNameInput.value = "";
+      newUserPassInput.value = "";
+      newUserRoleSelect.value = "user";
+    });
+
+    usersTableBody.addEventListener("click", (e)=>{
+      const btn = e.target.closest("button[data-action]");
+      if(!btn) return;
+      const username = btn.dataset.username;
+      const action = btn.dataset.action;
+      const user = users.find(u=>u.username === username);
+      if(!user) return;
+
+      const isMainAdmin = (user.username === "Sameer");
+
+      if(action === "reset-pass"){
+        const newPass = prompt("أدخل كلمة مرور جديدة للمستخدم " + username + ":");
+        if(newPass === null) return;
+        if(!newPass.trim()){
+          alert("لا يمكن ترك كلمة المرور فارغة.");
+          return;
+        }
+        user.password = newPass.trim();
+        saveUsers();
+        alert("تم تحديث كلمة المرور بنجاح.");
+      }
+
+      if(action === "toggle-role"){
+        if(isMainAdmin){
+          alert("لا يمكن تغيير صلاحية الأدمن الرئيسي.");
+          return;
+        }
+        const newRole = user.role === "admin" ? "user" : "admin";
+        if(!confirm(`تغيير صلاحية المستخدم ${username} إلى ${newRole === "admin" ? "مشرف" : "مستخدم"}؟`)) return;
+        user.role = newRole;
+        saveUsers();
+        renderUsersTable();
+
+        // في حال تعديل صلاحية المستخدم الحالي
+        if(currentUser && currentUser.username === username){
+          currentUser.role = newRole;
+          localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(currentUser));
+          applyRoleUI();
+        }
+      }
+
+      if(action === "delete-user"){
+        if(isMainAdmin){
+          alert("لا يمكن حذف الأدمن الرئيسي.");
+          return;
+        }
+        if(currentUser && currentUser.username === username){
+          alert("لا يمكن حذف المستخدم المسجَّل حالياً.");
+          return;
+        }
+        if(!confirm(`حذف المستخدم ${username} نهائياً؟`)) return;
+        users = users.filter(u=>u.username !== username);
+        saveUsers();
+        renderUsersTable();
+      }
     });
 
     // ====== util ======
@@ -1986,8 +2280,8 @@
 
         const parsed = JSON.parse(stored);
 
-        // نتأكد أن المستخدم ما زال موجوداً في قائمة USERS
-        const match = USERS.find(u => u.username === parsed.username && u.role === parsed.role);
+        // نتأكد أن المستخدم ما زال موجوداً في قائمة users
+        const match = users.find(u => u.username === parsed.username && u.role === parsed.role);
         if(!match) return;
 
         // تسجيل الدخول تلقائياً
