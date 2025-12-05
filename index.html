@@ -2202,6 +2202,14 @@
         console.error("خطأ في استرجاع جلسة المستخدم", e);
       }
     })();
+        // ====== فتح صفحة إنشاء فاتورة جديدة ======
+    const openInvoiceBtn = $("open-invoice");
+    if(openInvoiceBtn){
+      openInvoiceBtn.addEventListener("click", ()=>{
+        // يفتح تبويب جديد باسم invoice.html
+        window.open("invoice.html", "_blank");
+      });
+    }
   </script>
 </body>
 </html>
