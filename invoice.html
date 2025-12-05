@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice - Nafithat Al-Amal Co.</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root{
+      --border:#e5e7eb;
+      --muted:#6b7280;
+      --accent:#f97316;
+      --primary:#111827;
+    }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+    body{
+      margin:0;
+      background:#f3f4f6;
+      padding:20px;
+      display:flex;
+      justify-content:center;
+    }
+    .invoice-wrap{
+      background:#fff;
+      max-width:1000px;
+      width:100%;
+      padding:24px 26px;
+      border-radius:14px;
+      box-shadow:0 10px 30px rgba(15,23,42,.15);
+      border:1px solid var(--border);
+    }
+    .top-bar{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:16px;
+      margin-bottom:16px;
+    }
+    .company-block h1{
+      margin:0;
+      font-size:22px;
+      color:#111827;
+    }
+    .company-block p{
+      margin:2px 0;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .invoice-meta{
+      text-align:right;
+      font-size:12px;
+    }
+    .invoice-meta h2{
+      margin:0 0 4px;
+      font-size:18px;
+    }
+    .meta-row{
+      display:flex;
+      gap:10px;
+    }
+    .meta-row span:first-child{
+      font-weight:600;
+    }
+
+    .row{
+      display:flex;
+      gap:16px;
+      margin-top:10px;
+    }
+    .col{
+      flex:1;
+    }
+    .box{
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:10px 12px;
+      font-size:12px;
+    }
+    .box h3{
+      margin:0 0 6px;
+      font-size:13px;
+    }
+    .box small{
+      color:var(--muted);
+      font-size:11px;
+    }
+    textarea,input{
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:6px 8px;
+      font-size:12px;
+      margin-top:4px;
+    }
+    textarea{
+      min-height:60px;
+      resize:vertical;
+    }
+    input:focus,textarea:focus{
+      outline:none;
+      border-color:#94a3b8;
+      box-shadow:0 0 0 2px rgba(148,163,184,.3);
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:16px;
+      font-size:12px;
+    }
+    thead{
+      background:#f9fafb;
+    }
+    th,td{
+      border:1px solid var(--border);
+      padding:6px 5px;
+      text-align:left;
+      vertical-align:middle;
+    }
+    th{
+      font-weight:600;
+    }
+    td input{
+      width:100%;
+      border:none;
+      border-radius:0;
+      padding:4px 6px;
+      margin:0;
+    }
+    td input:focus{
+      outline:none;
+      box-shadow:none;
+      border:none;
+    }
+
+    .add-row-btn{
+      margin-top:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:12px;
+      cursor:pointer;
+    }
+
+    .totals-row{
+      margin-top:14px;
+      display:flex;
+      justify-content:flex-end;
+    }
+    .totals-box{
+      width:280px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      padding:8px 10px;
+      font-size:12px;
+    }
+    .totals-box .line{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin:2px 0;
+    }
+    .totals-box .line label{
+      font-size:12px;
+    }
+    .totals-box .line input{
+      width:120px;
+      text-align:right;
+    }
+    .totals-box .balance{
+      margin-top:4px;
+      padding-top:4px;
+      border-top:1px dashed var(--border);
+      font-weight:700;
+    }
+
+    .scope-bank-row{
+      display:flex;
+      gap:16px;
+      margin-top:16px;
+      font-size:12px;
+    }
+    .scope-bank-row .col{
+      flex:1;
+    }
+    .scope-bank-row h3{
+      margin:0 0 6px;
+      font-size:13px;
+    }
+    .scope-bank-row p{
+      margin:2px 0;
+    }
+    .muted{
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .footer-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      margin-top:20px;
+      font-size:12px;
+    }
+    .signature-box{
+      width:220px;
+      text-align:center;
+    }
+    .signature-line{
+      margin-top:40px;
+      border-top:1px solid var(--border);
+      padding-top:2px;
+      font-size:11px;
+      color:var(--muted);
+    }
+
+    .actions{
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+      margin-top:16px;
+    }
+    .btn{
+      border-radius:999px;
+      padding:7px 14px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:12px;
+      cursor:pointer;
+    }
+    .btn-primary{
+      background:var(--primary);
+      color:#fff;
+      border-color:var(--primary);
+    }
+    .btn-primary:hover{background:#020617;}
+    .btn:hover{background:#f9fafb;}
+  </style>
+</head>
+<body>
+  <div class="invoice-wrap">
+    <div class="top-bar">
+      <div class="company-block">
+        <h1>Nafithat Al-Amal Co.</h1>
+        <p>Address: Baghdad - Al-Wahda, District - Street 52</p>
+        <p>Email: sales@nafmals.com</p>
+        <p>www.nafmals.com</p>
+        <p>Phone Number: 07723571779</p>
+      </div>
+
+      <div class="invoice-meta">
+        <h2>Invoice</h2>
+        <div class="meta-row"><span>Invoice No:</span><span><input id="inv-no" value="NA-2025-D-INV00040"></span></div>
+        <div class="meta-row"><span>Invoice Date:</span><span><input id="inv-date"></span></div>
+        <div class="meta-row"><span>Contract Number:</span><span><input id="inv-contract" value="4400013503"></span></div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col">
+        <div class="box">
+          <h3>Bill To:</h3>
+          <textarea id="bill-to" placeholder="Customer name, address, phone..."></textarea>
+        </div>
+      </div>
+      <div class="col">
+        <div class="box">
+          <h3>Description of Services</h3>
+          <small>وصف مختصر يظهر في الفاتورة</small>
+          <textarea id="short-desc" placeholder="Provision of Generator Maintenance and Operation as per PO ..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <table id="items-table">
+      <thead>
+        <tr>
+          <th style="width:40px;">No.</th>
+          <th>DESCRIPTION</th>
+          <th style="width:120px;">Location</th>
+          <th style="width:100px;">DATE</th>
+          <th style="width:70px;">UNIT</th>
+          <th style="width:60px;">QTY</th>
+          <th style="width:110px;">UNIT PRICE</th>
+          <th style="width:120px;">TOTAL PRICE</th>
+        </tr>
+      </thead>
+      <tbody id="items-body">
+        <tr>
+          <td><input class="cell-no" value="1"></td>
+          <td><input class="cell-desc" value="Provision of Generator Maintenance and Operation as per PO 4400013503"></td>
+          <td><input class="cell-loc" value="Diyala KAI"></td>
+          <td><input class="cell-date" value="December-25"></td>
+          <td><input class="cell-unit" value="Lot"></td>
+          <td><input class="cell-qty" type="number" value="1"></td>
+          <td><input class="cell-unitprice" type="number" value="7200000"></td>
+          <td><input class="cell-total" type="number" value="7200000" readonly></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <button id="add-row" class="add-row-btn">+ إضافة سطر جديد</button>
+
+    <div class="totals-row">
+      <div class="totals-box">
+        <div class="line">
+          <label>SUBTOTAL (IQD)</label>
+          <input id="subtotal" type="number" value="0" readonly>
+        </div>
+        <div class="line">
+          <label>DISCOUNT (IQD)</label>
+          <input id="discount" type="number" value="0">
+        </div>
+        <div class="line">
+          <label>SUBTOTAL LESS DISCOUNT (IQD)</label>
+          <input id="subtotal-less" type="number" value="0" readonly>
+        </div>
+        <div class="line">
+          <label>TAX (%)</label>
+          <input id="tax-percent" type="number" value="0">
+        </div>
+        <div class="line">
+          <label>SHIPPING/HANDLING (IQD)</label>
+          <input id="shipping" type="number" value="0">
+        </div>
+        <div class="line balance">
+          <label>Balance Due (IQD)</label>
+          <input id="balance" type="number" value="0" readonly>
+        </div>
+      </div>
+    </div>
+
+    <div class="scope-bank-row">
+      <div class="col">
+        <h3>Scope of Work</h3>
+        <textarea id="scope" placeholder="Provision of operation and maintenance services for 10 generators (Perkins &amp; Isuzu), including routine inspections, preventive servicing, and daily operation as per PO 4400013503."></textarea>
+      </div>
+      <div class="col">
+        <h3>Bank Account details</h3>
+        <p><strong>Account Name:</strong> Nafithat Al-Amal</p>
+        <p><strong>IBAN Code:</strong> IQ07NISB002000000314765</p>
+        <p><strong>Account Number:</strong> 314765</p>
+        <p><strong>Bank:</strong> National Islamic Bank</p>
+        <p><strong>Currency:</strong> Iraqi Dinar</p>
+        <p><strong>Branch:</strong> Al-Kadhimiya Branch</p>
+        <p><strong>Address:</strong> Baghdad - Al-Wahda District - Street 52</p>
+      </div>
+    </div>
+
+    <div class="footer-row">
+      <div>
+        <p class="muted">Thank you for your business!</p>
+      </div>
+      <div class="signature-box">
+        <div class="signature-line">Signature</div>
+        <div style="margin-top:4px;">Ayad Kazem</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn" onclick="window.print()">🖨 طباعة / PDF</button>
+      <button class="btn-primary" id="recalc-btn">إعادة حساب الإجمالي</button>
+    </div>
+  </div>
+
+  <script>
+    function formatNumber(n){
+      n = Number(n)||0;
+      return n;
+    }
+
+    function recalcRow(tr){
+      const qty = Number(tr.querySelector(".cell-qty").value) || 0;
+      const up  = Number(tr.querySelector(".cell-unitprice").value) || 0;
+      const total = qty * up;
+      tr.querySelector(".cell-total").value = total;
+      return total;
+    }
+
+    function recalcAll(){
+      const rows = document.querySelectorAll("#items-body tr");
+      let subtotal = 0;
+      rows.forEach(tr=>{
+        subtotal += recalcRow(tr);
+      });
+      const discount = Number(document.getElementById("discount").value)||0;
+      const taxPercent = Number(document.getElementById("tax-percent").value)||0;
+      const shipping = Number(document.getElementById("shipping").value)||0;
+
+      const subtotalLess = subtotal - discount;
+      const taxValue = subtotalLess * (taxPercent/100);
+      const balance = subtotalLess + taxValue + shipping;
+
+      document.getElementById("subtotal").value = formatNumber(subtotal);
+      document.getElementById("subtotal-less").value = formatNumber(subtotalLess);
+      document.getElementById("balance").value = formatNumber(balance);
+    }
+
+    document.getElementById("add-row").addEventListener("click", ()=>{
+      const body = document.getElementById("items-body");
+      const tr = document.createElement("tr");
+      const index = body.querySelectorAll("tr").length + 1;
+      tr.innerHTML = `
+        <td><input class="cell-no" value="${index}"></td>
+        <td><input class="cell-desc"></td>
+        <td><input class="cell-loc"></td>
+        <td><input class="cell-date"></td>
+        <td><input class="cell-unit" value="Lot"></td>
+        <td><input class="cell-qty" type="number" value="1"></td>
+        <td><input class="cell-unitprice" type="number" value="0"></td>
+        <td><input class="cell-total" type="number" value="0" readonly></td>
+      `;
+      body.appendChild(tr);
+      attachRowEvents(tr);
+    });
+
+    function attachRowEvents(tr){
+      ["cell-qty","cell-unitprice"].forEach(cls=>{
+        const input = tr.querySelector("."+cls);
+        input.addEventListener("input", recalcAll);
+      });
+    }
+
+    document.querySelectorAll("#items-body tr").forEach(attachRowEvents);
+    document.getElementById("discount").addEventListener("input", recalcAll);
+    document.getElementById("tax-percent").addEventListener("input", recalcAll);
+    document.getElementById("shipping").addEventListener("input", recalcAll);
+    document.getElementById("recalc-btn").addEventListener("click", recalcAll);
+
+    // تعبئة تاريخ اليوم تلقائياً
+    (function(){
+      const d = new Date();
+      const iso = d.toISOString().slice(0,10);
+      document.getElementById("inv-date").value = iso;
+      recalcAll();
+    })();
+  </script>
+</body>
+</html>
