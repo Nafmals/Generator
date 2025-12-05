@@ -40,7 +40,7 @@
     .filters-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
     .po-filter{font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;}
 
-    .summary-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:10px;}
+    .summary-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px;}
     .card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:8px 10px;font-size:11px;position:relative;overflow:hidden;cursor:pointer;transition:box-shadow .12s,border-color .12s,transform .12s;}
     .card::after{content:"";position:absolute;inset:auto -40px -40px auto;width:80px;height:80px;border-radius:999px;background:radial-gradient(circle,#e5e7eb 0,transparent 60%);opacity:.8;}
     .card:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.2);}
@@ -62,7 +62,6 @@
     .badge-overdue{background:#fef2f2;color:#b91c1c;border-color:#fecaca;}
     .badge-draft{background:#f9fafb;color:#6b7280;border-color:#e5e7eb;}
 
-    #contracts{margin-top:8px;display:none;}
     #editor{margin-top:8px;display:none;}
 
     .editor-topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;}
@@ -142,7 +141,7 @@
 
     @media print{
       body{background:#fff;padding:0;}
-      .topbar-main,#dashboard,#contracts,.modal-backdrop,.editor-topbar{display:none !important;}
+      .topbar-main,#dashboard,.modal-backdrop,.editor-topbar{display:none !important;}
       #editor{display:block !important;}
       .invoice-page{width:210mm;min-height:297mm;border:none;border-radius:0;padding:15mm 15mm 18mm 15mm;margin:0;}
       .watermark{opacity:0.06;}
@@ -167,7 +166,7 @@
     </div>
     <div class="top-actions">
       <button class="btn btn-primary" id="btn-dashboard">📊 لوحة الفواتير</button>
-      <button class="btn" id="btn-contracts">📑 العقود (PO)</button>
+      <!-- تم إلغاء شاشة العقود -->
       <button class="btn" id="btn-report">📄 تقرير الفواتير</button>
       <!-- مهم: استدعاء الدالة مباشرة -->
       <button class="btn" id="btn-new" onclick="createNewInvoice()">+ فاتورة جديدة</button>
@@ -198,7 +197,6 @@
           <button class="status-pill active" data-filter="all">الكل</button>
           <button class="status-pill" data-filter="paid">مدفوعة</button>
           <button class="status-pill" data-filter="unpaid">غير مدفوعة</button>
-          <button class="status-pill" data-filter="overdue">متأخرة</button>
           <button class="status-pill" data-filter="draft">مسودة</button>
         </div>
         <div class="filters-right">
@@ -220,14 +218,6 @@
           <div class="card-value" id="card-total-amount">IQD 0</div>
           <div class="card-sub" id="card-total-count">0 فاتورة</div>
         </div>
-        <div class="card" id="card-overdue" data-type="overdue">
-          <div class="card-label">
-            الفواتير المتأخرة
-            <span>غير مدفوعة بعد تاريخ الاستحقاق</span>
-          </div>
-          <div class="card-value" id="card-overdue-amount">IQD 0</div>
-          <div class="card-sub" id="card-overdue-count">0 فاتورة</div>
-        </div>
         <div class="card" id="card-soon" data-type="soon">
           <div class="card-label">
             تستحق خلال 30 يوم
@@ -247,7 +237,7 @@
         <div class="card" id="card-unpaid" data-type="unpaid">
           <div class="card-label">
             غير المدفوع
-            <span>بما في ذلك المتأخرة</span>
+            <span>يشمل كل الفواتير غير المدفوعة</span>
           </div>
           <div class="card-value" id="card-unpaid-amount">IQD 0</div>
           <div class="card-sub" id="card-unpaid-count">0 فاتورة</div>
@@ -271,36 +261,6 @@
             </tr>
           </thead>
           <tbody id="invoice-table-body"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- ========= شاشة العقود ========= -->
-    <section id="contracts">
-      <div class="dashboard-header">
-        <div class="dashboard-title">
-          العقود / أوامر الشراء (PO)
-          <span>ملخّص الفواتير حسب العقد</span>
-        </div>
-        <div style="font-size:10px;color:#6b7280;">
-          اضغط على أي عقد لعرض فواتيره في لوحة الفواتير
-        </div>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>رقم العقد (PO)</th>
-              <th>عدد الفواتير</th>
-              <th>المبلغ المدفوع</th>
-              <th>المبلغ غير المدفوع</th>
-              <th>الإجمالي</th>
-              <th>أول فاتورة</th>
-              <th>آخر فاتورة</th>
-              <th>حالة العقد</th>
-            </tr>
-          </thead>
-          <tbody id="contracts-table-body"></tbody>
         </table>
       </div>
     </section>
@@ -495,7 +455,7 @@
     let currentId = null;
     let currentFilter = "all";
     let currentPoFilter = "all";
-    let specialFilter = "none"; // none | soon  (خاصة بكرت "تستحق خلال 30 يوم")
+    let specialFilter = "none"; // none | soon
     const $ = id => document.getElementById(id);
 
     function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -617,24 +577,15 @@
       renderPoFilterOptions();
       renderDashboard();
       renderReport();
-      renderContracts();
     }
 
     function showDashboard(){
       $("dashboard").style.display = "";
       $("editor").style.display = "none";
-      $("contracts").style.display = "none";
     }
     function showEditor(){
       $("dashboard").style.display = "none";
       $("editor").style.display = "";
-      $("contracts").style.display = "none";
-    }
-    function showContracts(){
-      $("dashboard").style.display = "none";
-      $("editor").style.display = "none";
-      $("contracts").style.display = "";
-      renderContracts();
     }
 
     function openEditor(id){
@@ -666,9 +617,8 @@
       let cls="badge-draft",txt="مسودة";
       if(status==="paid"){cls="badge-paid";txt="مدفوعة";}
       else if(status==="unpaid"){
-        const overdue = isOverdue(inv);
-        cls = overdue?"badge-overdue":"badge-unpaid";
-        txt = overdue?"متأخرة":"غير مدفوعة";
+        cls = isOverdue(inv)?"badge-overdue":"badge-unpaid";
+        txt = isOverdue(inv)?"متأخرة":"غير مدفوعة";
       }
       return `<span class="badge ${cls}">${txt}</span>`;
     }
@@ -697,15 +647,13 @@
         if(!hay.includes(searchText)) return false;
       }
 
-      // specialFilter خاص بكرت "تستحق خلال 30 يوم"
       if(specialFilter === "soon"){
         return isDueSoon(inv);
       }
 
       if(currentFilter==="paid")   return inv.status==="paid";
       if(currentFilter==="draft")  return inv.status==="draft";
-      if(currentFilter==="unpaid") return inv.status==="unpaid" && !isOverdue(inv);
-      if(currentFilter==="overdue")return isOverdue(inv);
+      if(currentFilter==="unpaid") return inv.status==="unpaid"; // يشمل المتأخرة
       return true;
     }
 
@@ -725,17 +673,16 @@
       const searchText = $("search-input").value.trim().toLowerCase();
       const filtered = invoices.filter(inv => matchesFilters(inv, searchText));
 
-      let total=0,paid=0,unpaid=0,overdueAmt=0,soonAmt=0;
-      let countTotal=0,countPaid=0,countUnpaid=0,countOverdue=0,countSoon=0;
+      let total=0,paid=0,unpaid=0,soonAmt=0;
+      let countTotal=0,countPaid=0,countUnpaid=0,countSoon=0;
 
       filtered.forEach(inv=>{
         total += inv.balance || 0; countTotal++;
         if(inv.status==="paid"){paid+=inv.balance||0;countPaid++;}
-        else{unpaid+=inv.balance||0;countUnpaid++;}
+        else if(inv.status==="unpaid"){unpaid+=inv.balance||0;countUnpaid++;}
       });
 
       invoices.forEach(inv=>{
-        if(isOverdue(inv)){overdueAmt+=inv.balance||0;countOverdue++;}
         if(isDueSoon(inv)){soonAmt+=inv.balance||0;countSoon++;}
       });
 
@@ -745,8 +692,6 @@
       $("card-paid-count").textContent     = countPaid + " فاتورة";
       $("card-unpaid-amount").textContent  = formatIQD(unpaid);
       $("card-unpaid-count").textContent   = countUnpaid + " فاتورة";
-      $("card-overdue-amount").textContent = formatIQD(overdueAmt);
-      $("card-overdue-count").textContent  = countOverdue + " فاتورة";
       $("card-soon-amount").textContent    = formatIQD(soonAmt);
       $("card-soon-count").textContent     = countSoon + " فاتورة";
 
@@ -805,59 +750,6 @@
           });
           tbody.appendChild(tr);
         });
-    }
-
-    function renderContracts(){
-      const tbody = $("contracts-table-body");
-      tbody.innerHTML = "";
-      if(!invoices.length){
-        tbody.innerHTML = `<tr><td colspan="8" style="font-size:11px;color:#6b7280;">لا توجد عقود بعد.</td></tr>`;
-        return;
-      }
-      const map = {};
-      invoices.forEach(inv=>{
-        const key = inv.contract && inv.contract.trim() ? inv.contract.trim() : "بدون رقم عقد";
-        if(!map[key]) map[key] = [];
-        map[key].push(inv);
-      });
-      Object.keys(map).sort().forEach(contractNo=>{
-        const arr = map[contractNo];
-        let total=0,paid=0,unpaid=0;
-        let firstDate=null,lastDate=null;
-        let hasUnpaid=false;
-        arr.forEach(inv=>{
-          const bal = inv.balance || 0;
-          total+=bal;
-          if(inv.status==="paid") paid+=bal; else {unpaid+=bal;hasUnpaid=true;}
-          const start=inv.issueDate||inv.dueDate;
-          const end=inv.dueDate||inv.issueDate;
-          if(start){if(!firstDate||start<firstDate)firstDate=start;}
-          if(end){if(!lastDate||end>lastDate)lastDate=end;}
-        });
-        const statusText = hasUnpaid ? "يوجد مبالغ غير مدفوعة" : "مدفوع بالكامل";
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${contractNo}</td>
-          <td>${arr.length}</td>
-          <td>${formatIQD(paid)}</td>
-          <td>${formatIQD(unpaid)}</td>
-          <td>${formatIQD(total)}</td>
-          <td>${firstDate || ""}</td>
-          <td>${lastDate || ""}</td>
-          <td style="color:${hasUnpaid ? '#b91c1c' : '#166534'};">${statusText}</td>`;
-        tr.addEventListener("click", ()=>{
-          currentPoFilter = contractNo;
-          $("po-filter").value = contractNo;
-          showDashboard();
-          // نعيد الفلاتر إلى الكل عند اختيار عقد
-          currentFilter = "all";
-          specialFilter = "none";
-          updateActiveStatusPills();
-          highlightCard("total");
-          renderDashboard();
-        });
-        tbody.appendChild(tr);
-      });
     }
 
     function generateId(){
@@ -1029,8 +921,6 @@
       specialFilter = "none";
       if(type === "total"){
         currentFilter = "all";
-      }else if(type === "overdue"){
-        currentFilter = "overdue";
       }else if(type === "soon"){
         currentFilter = "all";
         specialFilter = "soon";
@@ -1049,7 +939,6 @@
         showDashboard();
         highlightCard("total");
       });
-      $("btn-contracts").addEventListener("click", showContracts);
       $("btn-report").addEventListener("click", ()=>{ $("modal-backdrop").style.display="flex"; renderReport(); });
       $("btn-back").addEventListener("click", showDashboard);
       $("btn-print").addEventListener("click", ()=>window.print());
@@ -1099,7 +988,7 @@
       $("po-filter").addEventListener("change", ()=>{ currentPoFilter = $("po-filter").value; renderDashboard(); });
 
       // كروت المجاميع كفلاتر
-      [["card-total","total"],["card-overdue","overdue"],["card-soon","soon"],["card-paid","paid"],["card-unpaid","unpaid"]]
+      [["card-total","total"],["card-soon","soon"],["card-paid","paid"],["card-unpaid","unpaid"]]
         .forEach(([id,type])=>{
           const el = $(id);
           if(el) el.addEventListener("click", ()=>setFilterFromCard(type));
@@ -1113,13 +1002,12 @@
 
     (function init(){
       setupEvents();
-      loadInvoices();      // يبدأ فارغ أو ببيانات مخزنة سابقاً
+      loadInvoices();
       renderPoFilterOptions();
       showDashboard();
       highlightCard("total");
       renderDashboard();
       renderReport();
-      renderContracts();
     })();
   </script>
 </body>
