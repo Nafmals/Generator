@@ -202,7 +202,7 @@
             <option value="all">كل العقود</option>
           </select>
           <div style="font-size:10px;color:#6b7280;">
-            اضغط على أي سطر لفتح الفاتورة
+            اضغط على أي سطر أو زر <b>تعديل</b> لفتح الفاتورة
           </div>
         </div>
       </div>
@@ -263,6 +263,7 @@
               <th>تفاصيل</th>
               <th>الحالة</th>
               <th>المبلغ (Balance)</th>
+              <th>إجراءات</th>
             </tr>
           </thead>
           <tbody id="invoice-table-body"></tbody>
@@ -484,7 +485,6 @@
   </div>
 
   <script>
-    // مفتاح التخزين (ثابت)
     const STORAGE_KEY = "naf_invoice_system_advanced_main";
 
     let invoices = [];
@@ -501,11 +501,8 @@
     function formatIQD(n){ n = Number(n)||0; return "IQD " + n.toLocaleString("en-US"); }
     function parseNumber(v){ if(typeof v!=="string") v=String(v||""); return Number(v.replace(/[^\d.-]/g,"")) || 0; }
 
-    /* بيانات الإكسل كـ Seed أول مرة */
     function getSeedInvoices(){
       const base = [];
-
-      // --- PO00023 + 4400013837 ---
       base.push(
         {id:"seed-1",number:"CP-INV00001",issueDate:"2024-03-01",dueDate:"2024-03-31",contract:"PO00023",billTo:"",customerName:"",scope:DESC1,note:"",
           items:[{desc:DESC1,location:"",date:"01-Mar-24 - 31-Mar-24",unit:"Lot",qty:1,price:5500000}],
@@ -576,7 +573,6 @@
           subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"unpaid"}
       );
 
-      // --- 4400013503 ---
       base.push(
         {id:"seed-23",number:"CP-INV-D-00001",issueDate:"2025-02-01",dueDate:"2025-02-28",contract:"4400013503",billTo:"",customerName:"",scope:DESC3,note:"",
           items:[{desc:DESC3,location:"",date:"01-Feb-25 - 28-Feb-25",unit:"Lot",qty:1,price:12000000}],
@@ -603,7 +599,6 @@
           items:[{desc:DESC3,location:"",date:"01-Dec-25 - 31-Dec-25",unit:"Lot",qty:1,price:12000000}],
           subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"}
       );
-
       return base;
     }
 
@@ -808,6 +803,18 @@
       return true;
     }
 
+    function editInvoice(id){
+      openEditor(id);
+    }
+
+    function deleteInvoiceById(id, ask){
+      if(ask && !confirm("هل أنت متأكد من حذف هذه الفاتورة؟ لا يمكن التراجع.")) return;
+      invoices = invoices.filter(inv => inv.id !== id);
+      if(currentId === id) currentId = null;
+      saveInvoices();
+      showDashboard();
+    }
+
     function renderDashboard(){
       const tbody = $("invoice-table-body");
       tbody.innerHTML = "";
@@ -838,7 +845,7 @@
 
       const sorted = filtered.slice().sort((a,b)=>(b.issueDate||"").localeCompare(a.issueDate||""));
       if(!sorted.length){
-        tbody.innerHTML = `<tr><td colspan="9" style="font-size:11px;color:#6b7280;">لا توجد فواتير مطابقة.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="font-size:11px;color:#6b7280;">لا توجد فواتير مطابقة.</td></tr>`;
         return;
       }
 
@@ -856,7 +863,11 @@
           <td>${shortDesc}</td>
           <td>${noteSnippet || "-"}</td>
           <td>${getStatusBadge(inv.status,inv)}</td>
-          <td style="text-align:right;">${formatIQD(inv.balance || 0)}</td>`;
+          <td style="text-align:right;">${formatIQD(inv.balance || 0)}</td>
+          <td>
+            <button class="btn btn-sm" onclick="event.stopPropagation(); editInvoice('${inv.id}')">تعديل</button>
+            <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteInvoiceById('${inv.id}', true)">حذف</button>
+          </td>`;
         tr.addEventListener("click", ()=>openEditor(inv.id));
         tbody.appendChild(tr);
       });
@@ -987,11 +998,7 @@
 
     function deleteCurrentInvoice(){
       if(!currentId){ alert("لا توجد فاتورة محددة لحذفها."); return; }
-      if(!confirm("هل أنت متأكد من حذف هذه الفاتورة؟ لا يمكن التراجع.")) return;
-      invoices = invoices.filter(inv => inv.id !== currentId);
-      currentId = null;
-      saveInvoices();
-      showDashboard();
+      deleteInvoiceById(currentId, true);
       alert("تم حذف الفاتورة ✅");
     }
 
