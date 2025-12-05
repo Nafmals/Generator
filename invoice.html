@@ -575,7 +575,7 @@
     /* للطباعة: نظهر صفحة الفاتورة فقط */
     @media print{
       body{background:#fff;padding:0;}
-      .topbar-main,#dashboard,.modal-backdrop,.editor-topbar{display:none !important;}
+      .topbar-main,#dashboard,#contracts,.modal-backdrop,.editor-topbar{display:none !important;}
       #editor{display:block !important;}
       .invoice-page{
         width:210mm;
@@ -603,7 +603,6 @@
   <!-- الشريط العلوي -->
   <div class="topbar-main">
     <div class="brand">
-      <!-- غيّر المسار إلى شعارك الفعلي إن أحببت -->
       <img src="logo-main.png" alt="Logo">
       <div>
         <div class="brand-name">Nafithat Al-Amal Co.</div>
@@ -612,6 +611,8 @@
     </div>
     <div class="top-actions">
       <button class="btn btn-primary" id="btn-dashboard">📊 لوحة الفواتير</button>
+      <button class="btn" id="btn-contracts">📑 العقود</button>
+      <button class="btn" id="btn-report">📄 تقرير الفواتير</button>
       <button class="btn" id="btn-new">+ فاتورة جديدة</button>
       <button class="btn" id="btn-export">⬇ تقرير Excel (CSV)</button>
     </div>
@@ -684,6 +685,33 @@
           </thead>
           <tbody id="invoice-table-body">
           </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========= شاشة العقود ========= -->
+    <section id="contracts" style="display:none;margin-top:8px;">
+      <div class="dashboard-header">
+        <div class="dashboard-title">العقود / أوامر الشراء (PO)</div>
+        <div style="font-size:10px;color:#6b7280;">
+          اضغط على أي عقد لعرض فواتيره في لوحة الفواتير
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>رقم العقد (PO)</th>
+              <th>عدد الفواتير</th>
+              <th>المبلغ المدفوع</th>
+              <th>المبلغ غير المدفوع</th>
+              <th>الإجمالي</th>
+              <th>أول فاتورة</th>
+              <th>آخر فاتورة</th>
+              <th>حالة العقد</th>
+            </tr>
+          </thead>
+          <tbody id="contracts-table-body"></tbody>
         </table>
       </div>
     </section>
@@ -868,9 +896,6 @@
   </div>
 
   <script>
-    // ======================
-    // إعداد عام + تخزين محلي
-    // ======================
     const STORAGE_KEY = "naf_invoice_system_local_v1";
     let invoices = [];
     let currentId = null;
@@ -880,29 +905,17 @@
     const DESC1 = "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.";
     const DESC2 = "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.";
 
-    function todayStr(){
-      return new Date().toISOString().slice(0,10);
-    }
+    function todayStr(){ return new Date().toISOString().slice(0,10); }
+    function formatIQD(n){ n = Number(n) || 0; return "IQD " + n.toLocaleString("en-US"); }
+    function parseNumber(v){ if(typeof v !== "string") v = String(v || ""); return Number(v.replace(/[^\d.-]/g,"")) || 0; }
 
-    function formatIQD(n){
-      n = Number(n) || 0;
-      return "IQD " + n.toLocaleString("en-US");
-    }
-    function parseNumber(v){
-      if(typeof v !== "string") v = String(v || "");
-      return Number(v.replace(/[^\d.-]/g,"")) || 0;
-    }
-
-    // 🎯 التخزين المحلي: نقطة التبديل مستقبلاً إلى API ستكون هنا
     function loadInvoices(){
       try{
         const raw = localStorage.getItem(STORAGE_KEY);
         if(!raw) return;
         const arr = JSON.parse(raw);
         if(Array.isArray(arr)) invoices = arr;
-      }catch(e){
-        console.error("Error loading invoices:", e);
-      }
+      }catch(e){ console.error("Error loading invoices:", e); }
     }
 
     function saveInvoices(){
@@ -911,9 +924,6 @@
       renderReport();
     }
 
-    // ======================
-    // بيانات مبدئية من الجدول الذي أرسلته
-    // ======================
     function getSeedInvoices(){
       return [
         {
@@ -925,20 +935,8 @@
           billTo: "",
           customerName: "",
           scope: DESC1,
-          items: [{
-            desc: DESC1,
-            location: "",
-            date: "01-Mar-24 - 31-Mar-24",
-            unit: "Lot",
-            qty: 1,
-            price: 5500000
-          }],
-          subtotal: 5500000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 5500000,
-          status: "paid"
+          items: [{ desc: DESC1, location: "", date: "01-Mar-24 - 31-Mar-24", unit: "Lot", qty: 1, price: 5500000 }],
+          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
         },
         {
           id: "seed-2",
@@ -946,23 +944,9 @@
           issueDate: "2024-04-01",
           dueDate: "2024-04-30",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC1,
-          items: [{
-            desc: DESC1,
-            location: "",
-            date: "01-Apr-24 - 30-Apr-24",
-            unit: "Lot",
-            qty: 1,
-            price: 5500000
-          }],
-          subtotal: 5500000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 5500000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC1,
+          items: [{ desc: DESC1, location: "", date: "01-Apr-24 - 30-Apr-24", unit: "Lot", qty: 1, price: 5500000 }],
+          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
         },
         {
           id: "seed-3",
@@ -970,23 +954,9 @@
           issueDate: "2024-05-01",
           dueDate: "2024-05-31",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC1,
-          items: [{
-            desc: DESC1,
-            location: "",
-            date: "01-May-24 - 31-May-24",
-            unit: "Lot",
-            qty: 1,
-            price: 5500000
-          }],
-          subtotal: 5500000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 5500000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC1,
+          items: [{ desc: DESC1, location: "", date: "01-May-24 - 31-May-24", unit: "Lot", qty: 1, price: 5500000 }],
+          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
         },
         {
           id: "seed-4",
@@ -994,23 +964,9 @@
           issueDate: "2024-06-01",
           dueDate: "2024-06-30",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC1,
-          items: [{
-            desc: DESC1,
-            location: "",
-            date: "01-Jun-24 - 30-Jun-24",
-            unit: "Lot",
-            qty: 1,
-            price: 5500000
-          }],
-          subtotal: 5500000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 5500000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC1,
+          items: [{ desc: DESC1, location: "", date: "01-Jun-24 - 30-Jun-24", unit: "Lot", qty: 1, price: 5500000 }],
+          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
         },
         {
           id: "seed-5",
@@ -1018,23 +974,9 @@
           issueDate: "2024-07-01",
           dueDate: "2024-07-31",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Jul-24 - 31-Jul-24",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Jul-24 - 31-Jul-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
         },
         {
           id: "seed-6",
@@ -1042,23 +984,9 @@
           issueDate: "2024-08-01",
           dueDate: "2024-08-31",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Aug-24 - 31-Aug-24",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Aug-24 - 31-Aug-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
         },
         {
           id: "seed-7",
@@ -1066,23 +994,9 @@
           issueDate: "2024-09-01",
           dueDate: "2024-09-30",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Sep-24 - 30-Sep-24",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Sep-24 - 30-Sep-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
         },
         {
           id: "seed-8",
@@ -1090,23 +1004,9 @@
           issueDate: "2024-10-01",
           dueDate: "2024-10-30",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Oct-24 - 30-Oct-24",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Oct-24 - 30-Oct-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
         },
         {
           id: "seed-9",
@@ -1114,23 +1014,9 @@
           issueDate: "2024-11-01",
           dueDate: "2024-11-30",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Nov-24 - 30-Nov-24",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Nov-24 - 30-Nov-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
         },
         {
           id: "seed-10",
@@ -1138,23 +1024,9 @@
           issueDate: "2024-12-01",
           dueDate: "2024-12-31",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Dec-24 - 31-Dec-24",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Dec-24 - 31-Dec-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
         },
         {
           id: "seed-11",
@@ -1162,23 +1034,9 @@
           issueDate: "2025-01-01",
           dueDate: "2025-01-31",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Jan-25 - 31-Jan-25",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Jan-25 - 31-Jan-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
         },
         {
           id: "seed-12",
@@ -1186,23 +1044,9 @@
           issueDate: "2025-02-01",
           dueDate: "2025-02-28",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Feb-25 - 28-Feb-25",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Feb-25 - 28-Feb-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
         },
         {
           id: "seed-13",
@@ -1210,23 +1054,9 @@
           issueDate: "2025-03-01",
           dueDate: "2025-03-31",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Mar-25 - 31-Mar-25",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Mar-25 - 31-Mar-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
         },
         {
           id: "seed-14",
@@ -1234,23 +1064,9 @@
           issueDate: "2025-04-01",
           dueDate: "2025-04-30",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Apr-25 - 30-Apr-25",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "unpaid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Apr-25 - 30-Apr-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
         },
         {
           id: "seed-15",
@@ -1258,23 +1074,9 @@
           issueDate: "2025-05-01",
           dueDate: "2025-05-31",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-May-25 - 31-May-25",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "unpaid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-May-25 - 31-May-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
         },
         {
           id: "seed-16",
@@ -1282,23 +1084,9 @@
           issueDate: "2025-06-01",
           dueDate: "2025-06-30",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Jun-25 - 30-Jun-25",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "unpaid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Jun-25 - 30-Jun-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
         },
         {
           id: "seed-17",
@@ -1306,23 +1094,9 @@
           issueDate: "2025-07-01",
           dueDate: "2025-07-31",
           contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Jul-25 - 31-Jul-25",
-            unit: "Lot",
-            qty: 2,
-            price: 3375000
-          }],
-          subtotal: 6750000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 6750000,
-          status: "unpaid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Jul-25 - 31-Jul-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
         },
         {
           id: "seed-18",
@@ -1330,23 +1104,9 @@
           issueDate: "2025-08-01",
           dueDate: "2025-08-31",
           contract: "4400013837",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Aug-25 - 31-Aug-25",
-            unit: "Lot",
-            qty: 2,
-            price: 4325000
-          }],
-          subtotal: 8650000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 8650000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Aug-25 - 31-Aug-25", unit: "Lot", qty: 2, price: 4325000 }],
+          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "paid"
         },
         {
           id: "seed-19",
@@ -1354,23 +1114,9 @@
           issueDate: "2025-09-01",
           dueDate: "2025-09-30",
           contract: "4400013837",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Sep-25 - 30-Sep-25",
-            unit: "Lot",
-            qty: 2,
-            price: 4325000
-          }],
-          subtotal: 8650000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 8650000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Sep-25 - 30-Sep-25", unit: "Lot", qty: 2, price: 4325000 }],
+          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "paid"
         },
         {
           id: "seed-20",
@@ -1378,23 +1124,9 @@
           issueDate: "2025-10-01",
           dueDate: "2025-10-31",
           contract: "4400013837",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Oct-25 - 31-Oct-25",
-            unit: "Lot",
-            qty: 2,
-            price: 4325000
-          }],
-          subtotal: 8650000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 8650000,
-          status: "paid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Oct-25 - 31-Oct-25", unit: "Lot", qty: 2, price: 4325000 }],
+          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "paid"
         },
         {
           id: "seed-21",
@@ -1402,23 +1134,9 @@
           issueDate: "2025-11-01",
           dueDate: "2025-11-30",
           contract: "4400013837",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Nov-25 - 30-Nov-25",
-            unit: "Lot",
-            qty: 2,
-            price: 4325000
-          }],
-          subtotal: 8650000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 8650000,
-          status: "unpaid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Nov-25 - 30-Nov-25", unit: "Lot", qty: 2, price: 4325000 }],
+          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "unpaid"
         },
         {
           id: "seed-22",
@@ -1426,30 +1144,13 @@
           issueDate: "2025-12-01",
           dueDate: "2025-12-31",
           contract: "4400013837",
-          billTo: "",
-          customerName: "",
-          scope: DESC2,
-          items: [{
-            desc: DESC2,
-            location: "",
-            date: "01-Dec-25 - 31-Dec-25",
-            unit: "Lot",
-            qty: 2,
-            price: 4325000
-          }],
-          subtotal: 8650000,
-          discount: 0,
-          taxPerc: 0,
-          shipping: 0,
-          balance: 8650000,
-          status: "unpaid"
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Dec-25 - 31-Dec-25", unit: "Lot", qty: 2, price: 4325000 }],
+          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "unpaid"
         }
       ];
     }
 
-    // ======================
-    // إنشاء / إدارة بنود الفاتورة
-    // ======================
     function createItemRow(data={}){
       const tr = document.createElement("tr");
       tr.className = "item-row";
@@ -1471,9 +1172,7 @@
     }
 
     function updateRowNumbers(){
-      document.querySelectorAll(".item-row .no-cell").forEach((td,i)=>{
-        td.textContent = i+1;
-      });
+      document.querySelectorAll(".item-row .no-cell").forEach((td,i)=>{ td.textContent = i+1; });
     }
 
     function recalcRow(tr){
@@ -1508,9 +1207,6 @@
       });
     }
 
-    // ======================
-    // قراءة / تعبئة النموذج
-    // ======================
     function readForm(inv){
       inv.number      = $("f-number").value.trim();
       inv.issueDate   = $("f-date").value.trim();
@@ -1563,16 +1259,21 @@
       $("editor-subtitle").textContent = inv.number ? `(${inv.number})` : "";
     }
 
-    // ======================
-    // واجهة اللوحة (Dashboard)
-    // ======================
     function showDashboard(){
       $("dashboard").style.display = "";
       $("editor").style.display = "none";
+      $("contracts").style.display = "none";
     }
     function showEditor(){
       $("dashboard").style.display = "none";
       $("editor").style.display = "";
+      $("contracts").style.display = "none";
+    }
+    function showContracts(){
+      $("dashboard").style.display = "none";
+      $("editor").style.display = "none";
+      $("contracts").style.display = "";
+      renderContracts();
     }
 
     function openEditor(id){
@@ -1649,7 +1350,7 @@
       $("card-overdue-amount").textContent = formatIQD(overdueAmt);
       $("card-overdue-count").textContent  = countOverdue + " فاتورة";
       $("card-soon-amount").textContent    = formatIQD(soonAmt);
-      $("card-soon-count").textContent     = countSoon + " فاتورة";
+      $("card-soon-count").textContent     = countSoon;
 
       const filtered = invoices.slice().filter(inv=>{
         if(searchText){
@@ -1691,9 +1392,6 @@
       });
     }
 
-    // ======================
-    // تقرير الفواتير (النافذة)
-    // ======================
     function renderReport(){
       const tbody = $("report-body");
       tbody.innerHTML = "";
@@ -1723,13 +1421,68 @@
         });
     }
 
-    // ======================
-    // إنشاء / حذف / نسخ الفواتير (محليًا)
-    // ======================
-    function generateId(){
-      if(window.crypto && crypto.randomUUID){
-        return crypto.randomUUID();
+    function renderContracts(){
+      const tbody = $("contracts-table-body");
+      tbody.innerHTML = "";
+
+      if(!invoices.length){
+        tbody.innerHTML = `<tr><td colspan="8" style="font-size:11px;color:#6b7280;">لا توجد عقود بعد.</td></tr>`;
+        return;
       }
+
+      const map = {};
+      invoices.forEach(inv=>{
+        const key = inv.contract && inv.contract.trim() ? inv.contract.trim() : "بدون رقم عقد";
+        if(!map[key]) map[key] = [];
+        map[key].push(inv);
+      });
+
+      const keys = Object.keys(map).sort();
+      keys.forEach(contractNo=>{
+        const arr = map[contractNo];
+        let total=0, paid=0, unpaid=0;
+        let firstDate=null, lastDate=null;
+        let hasUnpaid=false;
+
+        arr.forEach(inv=>{
+          const bal = inv.balance || 0;
+          total += bal;
+          if(inv.status==="paid") paid += bal;
+          else { unpaid += bal; hasUnpaid = true; }
+
+          const start = inv.issueDate || inv.dueDate;
+          const end = inv.dueDate || inv.issueDate;
+          if(start){ if(!firstDate || start < firstDate) firstDate = start; }
+          if(end){ if(!lastDate || end > lastDate) lastDate = end; }
+        });
+
+        const statusText = hasUnpaid ? "يوجد مبالغ غير مدفوعة" : "مدفوع بالكامل";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${contractNo}</td>
+          <td>${arr.length}</td>
+          <td>${formatIQD(paid)}</td>
+          <td>${formatIQD(unpaid)}</td>
+          <td>${formatIQD(total)}</td>
+          <td>${firstDate || ""}</td>
+          <td>${lastDate || ""}</td>
+          <td style="color:${hasUnpaid ? '#b91c1c' : '#166534'};">${statusText}</td>
+        `;
+        tr.addEventListener("click", ()=>{
+          $("search-input").value = contractNo;
+          currentFilter = "all";
+          document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
+          const allBtn = document.querySelector('.status-pill[data-filter="all"]');
+          if(allBtn) allBtn.classList.add("active");
+          showDashboard();
+          renderDashboard();
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    function generateId(){
+      if(window.crypto && crypto.randomUUID){ return crypto.randomUUID(); }
       return String(Date.now()) + "-" + String(Math.random()).slice(2);
     }
 
@@ -1814,9 +1567,6 @@
       alert("تم إنشاء نسخة من الفاتورة ✅");
     }
 
-    // ======================
-    // تصدير CSV
-    // ======================
     function exportCsv(){
       if(!invoices.length){
         alert("لا توجد فواتير لتصديرها.");
@@ -1848,11 +1598,13 @@
       URL.revokeObjectURL(url);
     }
 
-    // ======================
-    // ربط الأحداث
-    // ======================
     function setupEvents(){
       $("btn-dashboard").addEventListener("click", showDashboard);
+      $("btn-contracts").addEventListener("click", showContracts);
+      $("btn-report").addEventListener("click", ()=>{
+        $("modal-backdrop").style.display = "flex";
+        renderReport();
+      });
       $("btn-new").addEventListener("click", createNewInvoice);
       $("btn-back").addEventListener("click", showDashboard);
       $("btn-print").addEventListener("click", ()=>window.print());
@@ -1870,15 +1622,6 @@
         }
       });
 
-      // زر تقرير الفواتير
-      document.getElementById("btn-dashboard").insertAdjacentHTML("afterend",
-        '<button class="btn" id="btn-report">📄 تقرير الفواتير</button>');
-      document.getElementById("btn-report").addEventListener("click", ()=>{
-        $("modal-backdrop").style.display = "flex";
-        renderReport();
-      });
-
-      // فلاتر الحالة
       document.querySelectorAll(".status-pill").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
@@ -1888,12 +1631,8 @@
         });
       });
 
-      // البحث
-      $("search-input").addEventListener("input", ()=>{
-        renderDashboard();
-      });
+      $("search-input").addEventListener("input", ()=>{ renderDashboard(); });
 
-      // تغيّر الحالة من الـ select
       $("status-select").addEventListener("change", ()=>{
         if(!currentId) return;
         const inv = invoices.find(i=>i.id===currentId);
@@ -1902,12 +1641,10 @@
         saveInvoices();
       });
 
-      // حقول المجاميع
       ["f-discount","f-tax","f-shipping"].forEach(id=>{
         $(id).addEventListener("input", recalcTotals);
       });
 
-      // زر إضافة بند
       $("add-row-btn").addEventListener("click", ()=>{
         $("items-body").appendChild(createItemRow({qty:1,price:0}));
         updateRowNumbers();
@@ -1915,19 +1652,13 @@
       });
     }
 
-    // ======================
-    // تهيئة أولية
-    // ======================
     (function init(){
       setupEvents();
       loadInvoices();
-
-      // أول تشغيل: لو لا توجد بيانات في التخزين المحلي، نملأها من الجدول الذي أرسلته
       if(!invoices.length){
         invoices = getSeedInvoices();
         saveInvoices();
       }
-
       if(!invoices.length){
         createNewInvoice();
       }else{
