@@ -603,7 +603,7 @@
   <!-- الشريط العلوي -->
   <div class="topbar-main">
     <div class="brand">
-      <!-- يمكنك استبدال src بشعارك الفعلي -->
+      <!-- غيّر المسار إلى شعارك الفعلي إن أحببت -->
       <img src="logo-main.png" alt="Logo">
       <div>
         <div class="brand-name">Nafithat Al-Amal Co.</div>
@@ -877,6 +877,9 @@
     let currentFilter = "all";
     const $ = id => document.getElementById(id);
 
+    const DESC1 = "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.";
+    const DESC2 = "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.";
+
     function todayStr(){
       return new Date().toISOString().slice(0,10);
     }
@@ -890,7 +893,7 @@
       return Number(v.replace(/[^\d.-]/g,"")) || 0;
     }
 
-    // 🎯 التخزين المحلي: ممكن تغييره لاحقاً لـ API فقط من هنا
+    // 🎯 التخزين المحلي: نقطة التبديل مستقبلاً إلى API ستكون هنا
     function loadInvoices(){
       try{
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -906,6 +909,542 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
       renderDashboard();
       renderReport();
+    }
+
+    // ======================
+    // بيانات مبدئية من الجدول الذي أرسلته
+    // ======================
+    function getSeedInvoices(){
+      return [
+        {
+          id: "seed-1",
+          number: "CP-INV00001",
+          issueDate: "2024-03-01",
+          dueDate: "2024-03-31",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC1,
+          items: [{
+            desc: DESC1,
+            location: "",
+            date: "01-Mar-24 - 31-Mar-24",
+            unit: "Lot",
+            qty: 1,
+            price: 5500000
+          }],
+          subtotal: 5500000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 5500000,
+          status: "paid"
+        },
+        {
+          id: "seed-2",
+          number: "CP-INV00001",
+          issueDate: "2024-04-01",
+          dueDate: "2024-04-30",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC1,
+          items: [{
+            desc: DESC1,
+            location: "",
+            date: "01-Apr-24 - 30-Apr-24",
+            unit: "Lot",
+            qty: 1,
+            price: 5500000
+          }],
+          subtotal: 5500000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 5500000,
+          status: "paid"
+        },
+        {
+          id: "seed-3",
+          number: "CP-INV00003",
+          issueDate: "2024-05-01",
+          dueDate: "2024-05-31",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC1,
+          items: [{
+            desc: DESC1,
+            location: "",
+            date: "01-May-24 - 31-May-24",
+            unit: "Lot",
+            qty: 1,
+            price: 5500000
+          }],
+          subtotal: 5500000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 5500000,
+          status: "paid"
+        },
+        {
+          id: "seed-4",
+          number: "CP-INV00004",
+          issueDate: "2024-06-01",
+          dueDate: "2024-06-30",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC1,
+          items: [{
+            desc: DESC1,
+            location: "",
+            date: "01-Jun-24 - 30-Jun-24",
+            unit: "Lot",
+            qty: 1,
+            price: 5500000
+          }],
+          subtotal: 5500000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 5500000,
+          status: "paid"
+        },
+        {
+          id: "seed-5",
+          number: "CP-INV00005",
+          issueDate: "2024-07-01",
+          dueDate: "2024-07-31",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Jul-24 - 31-Jul-24",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "paid"
+        },
+        {
+          id: "seed-6",
+          number: "CP-INV00006",
+          issueDate: "2024-08-01",
+          dueDate: "2024-08-31",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Aug-24 - 31-Aug-24",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "paid"
+        },
+        {
+          id: "seed-7",
+          number: "CP-INV00009",
+          issueDate: "2024-09-01",
+          dueDate: "2024-09-30",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Sep-24 - 30-Sep-24",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "paid"
+        },
+        {
+          id: "seed-8",
+          number: "CP-INV00010",
+          issueDate: "2024-10-01",
+          dueDate: "2024-10-30",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Oct-24 - 30-Oct-24",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "paid"
+        },
+        {
+          id: "seed-9",
+          number: "CP-INV00012",
+          issueDate: "2024-11-01",
+          dueDate: "2024-11-30",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Nov-24 - 30-Nov-24",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "paid"
+        },
+        {
+          id: "seed-10",
+          number: "CP-INV00012",
+          issueDate: "2024-12-01",
+          dueDate: "2024-12-31",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Dec-24 - 31-Dec-24",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "paid"
+        },
+        {
+          id: "seed-11",
+          number: "CP-INV00013",
+          issueDate: "2025-01-01",
+          dueDate: "2025-01-31",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Jan-25 - 31-Jan-25",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "paid"
+        },
+        {
+          id: "seed-12",
+          number: "CP-INV00015",
+          issueDate: "2025-02-01",
+          dueDate: "2025-02-28",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Feb-25 - 28-Feb-25",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "paid"
+        },
+        {
+          id: "seed-13",
+          number: "CP-INV00015",
+          issueDate: "2025-03-01",
+          dueDate: "2025-03-31",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Mar-25 - 31-Mar-25",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "paid"
+        },
+        {
+          id: "seed-14",
+          number: "CP-INV00016",
+          issueDate: "2025-04-01",
+          dueDate: "2025-04-30",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Apr-25 - 30-Apr-25",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "unpaid"
+        },
+        {
+          id: "seed-15",
+          number: "CP-INV00016",
+          issueDate: "2025-05-01",
+          dueDate: "2025-05-31",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-May-25 - 31-May-25",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "unpaid"
+        },
+        {
+          id: "seed-16",
+          number: "CP-INV00018",
+          issueDate: "2025-06-01",
+          dueDate: "2025-06-30",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Jun-25 - 30-Jun-25",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "unpaid"
+        },
+        {
+          id: "seed-17",
+          number: "CP-INV00018",
+          issueDate: "2025-07-01",
+          dueDate: "2025-07-31",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Jul-25 - 31-Jul-25",
+            unit: "Lot",
+            qty: 2,
+            price: 3375000
+          }],
+          subtotal: 6750000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 6750000,
+          status: "unpaid"
+        },
+        {
+          id: "seed-18",
+          number: "NA-2025-INV00024",
+          issueDate: "2025-08-01",
+          dueDate: "2025-08-31",
+          contract: "4400013837",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Aug-25 - 31-Aug-25",
+            unit: "Lot",
+            qty: 2,
+            price: 4325000
+          }],
+          subtotal: 8650000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 8650000,
+          status: "paid"
+        },
+        {
+          id: "seed-19",
+          number: "NA-2025-INV00026",
+          issueDate: "2025-09-01",
+          dueDate: "2025-09-30",
+          contract: "4400013837",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Sep-25 - 30-Sep-25",
+            unit: "Lot",
+            qty: 2,
+            price: 4325000
+          }],
+          subtotal: 8650000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 8650000,
+          status: "paid"
+        },
+        {
+          id: "seed-20",
+          number: "NA-2025-INV00031",
+          issueDate: "2025-10-01",
+          dueDate: "2025-10-31",
+          contract: "4400013837",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Oct-25 - 31-Oct-25",
+            unit: "Lot",
+            qty: 2,
+            price: 4325000
+          }],
+          subtotal: 8650000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 8650000,
+          status: "paid"
+        },
+        {
+          id: "seed-21",
+          number: "NA-2025-INV00036",
+          issueDate: "2025-11-01",
+          dueDate: "2025-11-30",
+          contract: "4400013837",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Nov-25 - 30-Nov-25",
+            unit: "Lot",
+            qty: 2,
+            price: 4325000
+          }],
+          subtotal: 8650000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 8650000,
+          status: "unpaid"
+        },
+        {
+          id: "seed-22",
+          number: "NA-2025-D-INV00039",
+          issueDate: "2025-12-01",
+          dueDate: "2025-12-31",
+          contract: "4400013837",
+          billTo: "",
+          customerName: "",
+          scope: DESC2,
+          items: [{
+            desc: DESC2,
+            location: "",
+            date: "01-Dec-25 - 31-Dec-25",
+            unit: "Lot",
+            qty: 2,
+            price: 4325000
+          }],
+          subtotal: 8650000,
+          discount: 0,
+          taxPerc: 0,
+          shipping: 0,
+          balance: 8650000,
+          status: "unpaid"
+        }
+      ];
     }
 
     // ======================
@@ -1225,7 +1764,6 @@
 
     function saveCurrentInvoice(){
       if(!currentId){
-        // في حالة تم فتح المحرر بدون id (نادرًا)
         createNewInvoice();
         return;
       }
@@ -1383,8 +1921,14 @@
     (function init(){
       setupEvents();
       loadInvoices();
+
+      // أول تشغيل: لو لا توجد بيانات في التخزين المحلي، نملأها من الجدول الذي أرسلته
       if(!invoices.length){
-        // أول مرة: أنشئ فاتورة مسودة مباشرة لسهولة الاستخدام
+        invoices = getSeedInvoices();
+        saveInvoices();
+      }
+
+      if(!invoices.length){
         createNewInvoice();
       }else{
         showDashboard();
