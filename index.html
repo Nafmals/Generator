@@ -464,14 +464,6 @@
         <label>كلمة المرور</label>
         <input id="login-password" type="password" autocomplete="current-password" placeholder="••••••">
       </div>
-
-      <!-- زر إعادة تعيين كلمة المرور -->
-      <div class="field" style="align-items:flex-end;margin-bottom:4px;">
-        <button type="button" id="reset-password-btn" style="font-size:11px;padding:4px 10px;">
-          إعادة تعيين كلمة المرور
-        </button>
-      </div>
-
       <button class="btn-primary" type="submit" style="width:100%;margin-top:6px;">دخول</button>
       <div id="login-error"></div>
       <p style="margin-top:10px;font-size:11px;color:#6b7280;">
@@ -497,9 +489,6 @@
 
         <button id="save-local">حفظ البيانات</button>
         <button id="export-csv" title="ملخص CSV بسيط لجميع المولدات">ملخص CSV</button>
-
-        <!-- زر إنشاء فاتورة تأجير -->
-        <button id="new-rental-invoice">فاتورة تأجير</button>
 
         <span class="muted">المستخدم: <strong id="current-user-label">-</strong></span>
         <button id="logout-btn" class="logout-btn">تسجيل خروج</button>
@@ -619,7 +608,7 @@
         </div>
       </section>
 
-      <!-- التقارير + الصيانة الطارئة + الفواتير -->
+      <!-- التقارير + الصيانة الطارئة -->
       <section class="card panel-right">
         <div class="tab-header">
           <button class="tab-btn active" data-tab="summary">ملخص</button>
@@ -756,29 +745,6 @@
           </table>
         </div>
 
-        <!-- الفواتير -->
-        <hr style="margin:14px 0 10px;border:none;border-top:1px solid #e5e7eb;">
-        <h3 style="margin-top:0;">Invoices</h3>
-        <p class="muted" style="margin:0 0 6px;">
-          Maintenance & Rental invoices generated from the system.
-        </p>
-
-        <div class="table-wrap" style="margin-top:8px;max-height:220px;">
-          <table>
-            <thead>
-              <tr>
-                <th>Invoice No.</th>
-                <th>Type</th>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Amount</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="inv-body"></tbody>
-          </table>
-        </div>
-
       </section>
     </main>
   </div>
@@ -787,49 +753,17 @@
     // ====== الحالة العامة ======
     let state = { generators: [] };
     let emergencyMaintenances = [];   // الصيانة الطارئة
-    let invoices = [];                // الفواتير (صيانة + تأجير)
     let selectedId = null;
     const LOCAL_KEY = "generatorSystemData_v1";
 
-    // 🔧 مفاتيح التخزين في المتصفح
+    // 🔧 مفتاح تخزين جلسة المستخدم في المتصفح
     const USER_STORAGE_KEY = "generatorSystemUser_v1";
-    const USERS_KEY = "generatorSystemUsers_v1";
 
-    // ====== مستخدمين افتراضيين ======
-    const DEFAULT_USERS = [
+    // ====== مستخدمين ======
+    const USERS = [
       {username:"Sameer", password:"Sameer1234", role:"admin"},
       {username:"Jabbar", password:"1234", role:"user"}
     ];
-
-    // مصفوفة المستخدمين الفعلية (يمكن تعديلها وإعادة حفظها)
-    let USERS = [...DEFAULT_USERS];
-
-    // تحميل المستخدمين من التخزين (إن وجد)
-    (function loadUsersFromLocal(){
-      try{
-        const stored = localStorage.getItem(USERS_KEY);
-        if(!stored) return;
-        const parsed = JSON.parse(stored);
-        if(Array.isArray(parsed) && parsed.length){
-          USERS = parsed.map(u => ({
-            username: String(u.username || "").trim(),
-            password: String(u.password || ""),
-            role: u.role === "admin" ? "admin" : "user"
-          }));
-        }
-      }catch(e){
-        console.error("خطأ في تحميل المستخدمين من التخزين", e);
-      }
-    })();
-
-    function saveUsersToLocal(){
-      try{
-        localStorage.setItem(USERS_KEY, JSON.stringify(USERS));
-      }catch(e){
-        console.error("خطأ في حفظ المستخدمين", e);
-      }
-    }
-
     let currentUser = null;
 
     // ====== DOM helper ======
@@ -844,7 +778,6 @@
     const loginError = $("login-error");
     const currentUserLabel = $("current-user-label");
     const logoutBtn = $("logout-btn");
-    const resetPasswordBtn = $("reset-password-btn");
 
     // عناصر النظام
     const genName   = $("gen-name");
@@ -898,11 +831,7 @@
     const emTotalPaid = $("em-total-paid");
     const emTotalUnpaid = $("em-total-unpaid");
 
-    // الفواتير
-    const invBody = $("inv-body");
-    const newRentalInvoiceBtn = $("new-rental-invoice");
-
-    // ====== صلاحيات ====== 
+    // ====== صلاحيات ======
     function isAdmin(){
       return currentUser && currentUser.role === "admin";
     }
@@ -937,50 +866,6 @@
       appRoot.style.display = "block";
       applyRoleUI();
     });
-
-    // ====== إعادة تعيين كلمة المرور من شاشة الدخول ======
-    if(resetPasswordBtn){
-      resetPasswordBtn.addEventListener("click", ()=>{
-        const username = prompt("أدخل اسم المستخدم الذي تريد تغيير كلمة مروره:");
-        if(username === null) return;
-        const uname = username.trim();
-        if(!uname){
-          alert("لم يتم إدخال اسم مستخدم.");
-          return;
-        }
-
-        const user = USERS.find(u => u.username === uname);
-        if(!user){
-          alert("المستخدم غير موجود.");
-          return;
-        }
-
-        const oldPass = prompt("أدخل كلمة المرور الحالية:");
-        if(oldPass === null) return;
-        if(oldPass !== user.password){
-          alert("كلمة المرور الحالية غير صحيحة.");
-          return;
-        }
-
-        const newPass = prompt("أدخل كلمة المرور الجديدة:");
-        if(newPass === null) return;
-        if(!newPass){
-          alert("لا يمكن ترك كلمة المرور الجديدة فارغة.");
-          return;
-        }
-
-        const confirmPass = prompt("تأكيد كلمة المرور الجديدة:");
-        if(confirmPass === null) return;
-        if(confirmPass !== newPass){
-          alert("كلمة المرور الجديدة غير متطابقة.");
-          return;
-        }
-
-        user.password = newPass;
-        saveUsersToLocal();
-        alert("تم تحديث كلمة المرور بنجاح. يمكنك الآن تسجيل الدخول باستخدام كلمة المرور الجديدة.");
-      });
-    }
 
     // ====== تسجيل الخروج ======
     logoutBtn.addEventListener("click", ()=>{
@@ -1123,7 +1008,6 @@
             <td class="actions">
               <button class="btn-small" data-eid="${item.id}" data-action="toggle-paid" style="font-size:11px;padding:3px 7px;">تبديل الدفع</button>
               <button class="btn-small" data-eid="${item.id}" data-action="edit-em" style="font-size:11px;padding:3px 7px;">تعديل</button>
-              <button class="btn-small" data-eid="${item.id}" data-action="invoice-em" style="font-size:11px;padding:3px 7px;">🧾 فاتورة</button>
               <button class="btn-small" data-eid="${item.id}" data-action="del-em" style="font-size:11px;padding:3px 7px;">🗑</button>
             </td>
           `;
@@ -1258,7 +1142,6 @@
           <td class="actions">
             <button class="btn-small" data-action="mark" data-date="${r.date}" data-meter="${r.meter}" style="font-size:11px;padding:3px 7px;">🔧 خدمة</button>
             <button class="btn-small" data-action="expense" data-date="${r.date}" data-meter="${r.meter}" style="font-size:11px;padding:3px 7px;">💰 مصروف</button>
-            <button class="btn-small" data-action="invoice" data-date="${r.date}" data-meter="${r.meter}" style="font-size:11px;padding:3px 7px;">🧾 فاتورة</button>
             <button class="btn-small" data-action="del" data-date="${r.date}" data-meter="${r.meter}" style="font-size:11px;padding:3px 7px;">🗑</button>
           </td>
         `;
@@ -1436,490 +1319,6 @@
       renderEmergencyTable();
     });
 
-    // ====== الفواتير (صيانة + تأجير) ======
-    function createInvoice(type, defaults = {}){
-      // نوع الفاتورة: maintenance | rental
-      const today = todayStr();
-
-      const defaultCustomer = defaults.customerName || "CRESCENT PETROLEUM DIYALA WEST LIMITED (IRAQ BRANCH)";
-      const customerName = prompt("Customer Name (Bill To):", defaultCustomer);
-      if(customerName === null) return;
-
-      const invoiceNo = prompt("Invoice No.:", type === "maintenance" ? "NA-2025-D-INV00001" : "CP-INV-D-00001");
-      if(invoiceNo === null) return;
-
-      const invoiceDate = prompt("Invoice Date:", today);
-      if(invoiceDate === null) return;
-
-      const contractNumber = prompt("Contract / PO Number:", defaults.contractNumber || "");
-      if(contractNumber === null) return;
-
-      let currency = (defaults.currency || "IQD").toUpperCase();
-      currency = prompt("Currency:", currency);
-      if(currency === null) return;
-      currency = currency.toUpperCase();
-
-      // بيانات السطر الواحد للجدول
-      let lineDescription, location, unit, qty, unitPrice, durationFrom, durationTo, lineDate;
-
-      if(type === "maintenance"){
-        lineDescription = prompt(
-          "Service Description (table):",
-          defaults.description || "Provision of Generator Maintenance and Operation as per PO " + contractNumber
-        );
-        if(lineDescription === null) return;
-
-        location = prompt("Location:", defaults.location || "Diyala KAI");
-        if(location === null) return;
-
-        lineDate = prompt("Service Period (DATE column):", defaults.period || "December-25");
-        if(lineDate === null) return;
-
-        unit = prompt("Unit:", defaults.unit || "Lot");
-        if(unit === null) return;
-
-        qty = Number(prompt("QTY:", defaults.qty != null ? String(defaults.qty) : "1"));
-        if(!qty || isNaN(qty)) return;
-
-        unitPrice = Number(prompt("Unit Price:", defaults.unitPrice != null ? String(defaults.unitPrice) : String(defaults.amount || 0)));
-        if(isNaN(unitPrice)) return;
-      } else { // rental
-        lineDescription = prompt(
-          "Rental Description (below table):",
-          defaults.description || "Rental of 2 Electric Power Generators : 150 KVA, including 24/7 operator, ATS, and a 5000-liter fuel tank."
-        );
-        if(lineDescription === null) return;
-
-        durationFrom = prompt("Duration FROM (e.g. 1-Dec-25):", defaults.durationFrom || today);
-        if(durationFrom === null) return;
-
-        durationTo = prompt("Duration TO (e.g. 31-Dec-25):", defaults.durationTo || today);
-        if(durationTo === null) return;
-
-        unit = prompt("Unit:", defaults.unit || "Lot");
-        if(unit === null) return;
-
-        qty = Number(prompt("QTY:", defaults.qty != null ? String(defaults.qty) : "1"));
-        if(!qty || isNaN(qty)) return;
-
-        unitPrice = Number(prompt("Unit Price:", defaults.unitPrice != null ? String(defaults.unitPrice) : String(defaults.amount || 0)));
-        if(isNaN(unitPrice)) return;
-      }
-
-      const lineTotal = qty * unitPrice;
-      const discount = Number(prompt("DISCOUNT:", "0")) || 0;
-      const taxPercent = Number(prompt("Tax % (0 for now):", "0")) || 0;
-      const shipping = Number(prompt("SHIPPING/HANDLING:", "0")) || 0;
-
-      const subtotal = lineTotal;
-      const subtotalLessDiscount = subtotal - discount;
-      const taxValue = subtotalLessDiscount * (taxPercent / 100);
-      const balanceDue = subtotalLessDiscount + taxValue + shipping;
-
-      const inv = {
-        id: crypto.randomUUID(),
-        type,
-        invoiceNo,
-        invoiceDate,
-        contractNumber,
-        customerName,
-        currency,
-        lineDescription,
-        location,
-        lineDate,
-        unit,
-        qty,
-        unitPrice,
-        lineTotal,
-        subtotal,
-        discount,
-        subtotalLessDiscount,
-        taxPercent,
-        taxValue,
-        shipping,
-        balanceDue,
-        durationFrom,
-        durationTo,
-        createdAt: today
-      };
-
-      invoices.push(inv);
-      renderInvoicesTable();
-
-      if(type === "maintenance") openInvoicePrintMaintenance(inv);
-      else openInvoicePrintRental(inv);
-    }
-
-    function renderInvoicesTable(){
-      if(!invBody) return;
-      invBody.innerHTML = "";
-
-      if(!invoices.length){
-        invBody.innerHTML = "<tr><td colspan='6' class='muted'>No invoices yet.</td></tr>";
-        return;
-      }
-
-      invoices
-        .slice()
-        .sort((a,b)=>a.createdAt.localeCompare(b.createdAt))
-        .forEach(inv=>{
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${inv.invoiceNo}</td>
-            <td>${inv.type === "maintenance" ? "Maintenance" : "Rental"}</td>
-            <td>${inv.invoiceDate}</td>
-            <td>${inv.customerName}</td>
-            <td>${inv.balanceDue} ${inv.currency}</td>
-            <td class="actions">
-              <button class="btn-small" data-iid="${inv.id}" data-action="print" style="font-size:11px;padding:3px 7px;">Print</button>
-              <button class="btn-small" data-iid="${inv.id}" data-action="del" style="font-size:11px;padding:3px 7px;">🗑</button>
-            </td>
-          `;
-          invBody.appendChild(tr);
-        });
-    }
-
-    if(invBody){
-      invBody.addEventListener("click",(e)=>{
-        const btn = e.target.closest("button[data-action]");
-        if(!btn) return;
-        const id = btn.dataset.iid;
-        const action = btn.dataset.action;
-        const inv = invoices.find(i=>i.id===id);
-        if(!inv) return;
-
-        if(action === "print"){
-          if(inv.type === "maintenance") openInvoicePrintMaintenance(inv);
-          else openInvoicePrintRental(inv);
-        }
-
-        if(action === "del"){
-          if(!confirm("Delete this invoice?")) return;
-          invoices = invoices.filter(i=>i.id!==id);
-          renderInvoicesTable();
-        }
-      });
-    }
-
-    // ====== فورمات طباعة فاتورة الصيانة (Nafithat Al-Amal) ======
-    function openInvoicePrintMaintenance(inv){
-      const w = window.open("", "_blank");
-      if(!w) return;
-
-      const amountFmt = (x)=> x.toLocaleString(undefined, {maximumFractionDigits:0});
-
-      w.document.write(`
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-  <meta charset="UTF-8">
-  <title>Invoice ${inv.invoiceNo}</title>
-  <style>
-    body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:24px;background:#ffffff;}
-    .page{max-width:900px;margin:0 auto;}
-    .top-row{display:flex;justify-content:space-between;align-items:flex-start;}
-    .logo{text-align:right;}
-    .logo img{height:70px;}
-    .company{
-      font-size:13px;
-      line-height:1.4;
-    }
-    .company h1{
-      margin:0 0 4px;
-      color:#f97316;
-      font-size:20px;
-    }
-    h2{
-      margin:4px 0 8px;
-      font-size:18px;
-    }
-    .muted{color:#6b7280;font-size:11px;}
-    .box{border:1px solid #e5e7eb;padding:8px 10px;font-size:12px;}
-    .bill-to-title{font-weight:bold;margin-bottom:4px;}
-    .inv-info{font-size:12px;line-height:1.7;text-align:left;}
-    .inv-info span{display:inline-block;width:110px;font-weight:bold;}
-    .section-title{
-      margin:14px 0 4px;
-      font-weight:bold;
-      font-size:13px;
-    }
-    table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;}
-    th,td{border:1px solid #e5e7eb;padding:6px 8px;text-align:left;}
-    thead th{text-align:center;background:#f3f4f6;font-weight:bold;}
-    .right{text-align:right;}
-    .summary-table{margin-top:10px;width:50%;margin-left:auto;font-size:12px;}
-    .summary-table td{border:none;padding:3px 4px;}
-    .summary-table td.label{text-align:right;font-weight:bold;}
-    .summary-table td.value{text-align:right;}
-    .scope{margin-top:14px;font-size:12px;line-height:1.5;}
-    .bottom-row{display:flex;justify-content:space-between;align-items:flex-start;margin-top:24px;font-size:12px;}
-    .signature-block{width:45%;}
-    .bank-block{width:45%;}
-    .signature-name{margin-top:40px;}
-  </style>
-</head>
-<body onload="window.print()">
-  <div class="page">
-    <div class="top-row">
-      <div class="company">
-        <h1>Nafithat Al-Amal Co.</h1>
-        <div>Address: Baghdad - Al-Wahda</div>
-        <div>District - Street 52</div>
-        <div>Email: sales@nafmals.com</div>
-        <div>www.nafmals.com</div>
-        <div>Phone Number: 07723571779</div>
-      </div>
-      <div class="logo">
-        <h2>Invoice</h2>
-      </div>
-    </div>
-
-    <div style="display:flex;justify-content:space-between;gap:16px;margin-top:16px;">
-      <div style="flex:1;">
-        <div class="bill-to-title">Bill To:</div>
-        <div class="box">
-          ${inv.customerName.replace(/\\n/g,"<br>")}
-        </div>
-      </div>
-      <div class="inv-info">
-        <div><span>Invoice No:</span> ${inv.invoiceNo}</div>
-        <div><span>Invoice Date:</span> ${inv.invoiceDate}</div>
-        <div><span>Contract Number</span> ${inv.contractNumber || ""}</div>
-      </div>
-    </div>
-
-    <div class="section-title">Description of Services</div>
-    <table>
-      <thead>
-        <tr>
-          <th>No.</th>
-          <th>DESCRIPTION</th>
-          <th>Location</th>
-          <th>DATE</th>
-          <th>UNIT</th>
-          <th>QTY</th>
-          <th>UNIT PRICE</th>
-          <th>TOTAL PRICE</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="text-align:center;">1</td>
-          <td>${inv.lineDescription}</td>
-          <td>${inv.location || ""}</td>
-          <td>${inv.lineDate || ""}</td>
-          <td style="text-align:center;">${inv.unit}</td>
-          <td style="text-align:center;">${inv.qty}</td>
-          <td class="right">${amountFmt(inv.unitPrice)} ${inv.currency}</td>
-          <td class="right">${amountFmt(inv.lineTotal)} ${inv.currency}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <table class="summary-table">
-      <tr>
-        <td class="label">SUBTOTAL</td>
-        <td class="value">${amountFmt(inv.subtotal)} ${inv.currency}</td>
-      </tr>
-      <tr>
-        <td class="label">DISCOUNT</td>
-        <td class="value">${amountFmt(inv.discount)} ${inv.currency}</td>
-      </tr>
-      <tr>
-        <td class="label">SUBTOTAL LESS DISCOUNT</td>
-        <td class="value">${amountFmt(inv.subtotalLessDiscount)} ${inv.currency}</td>
-      </tr>
-      <tr>
-        <td class="label">TAX (${inv.taxPercent}%)</td>
-        <td class="value">${amountFmt(inv.taxValue)} ${inv.currency}</td>
-      </tr>
-      <tr>
-        <td class="label">SHIPPING/HANDLING</td>
-        <td class="value">${amountFmt(inv.shipping)} ${inv.currency}</td>
-      </tr>
-      <tr>
-        <td class="label">Balance Due</td>
-        <td class="value"><strong>${amountFmt(inv.balanceDue)} ${inv.currency}</strong></td>
-      </tr>
-    </table>
-
-    <div class="scope">
-      <strong>Scope of Work:</strong><br>
-      ${inv.lineDescription}
-    </div>
-
-    <div class="bottom-row">
-      <div class="signature-block">
-        <div class="signature-name">Ayad Kazem</div>
-        <div>Signature</div>
-      </div>
-      <div class="bank-block">
-        <strong>Bank Account details</strong><br>
-        Account Name Nafithat Al-Amal<br>
-        IBAN Code: IQ07NISB002000000314765<br>
-        Account Number: 314765<br>
-        Branch: National Islamic Bank<br>
-        Currency: Iraqi Dinar<br>
-        Branch: Al-Kadhimiya Branch<br>
-        Address: Baghdad - Al-Wahda District - Street 52<br>
-        Phone Number: 07723571779
-      </div>
-    </div>
-
-    <div style="margin-top:14px;font-size:11px;">Thank you for your business!</div>
-  </div>
-</body>
-</html>
-      `);
-      w.document.close();
-    }
-
-    // ====== فورمات طباعة فاتورة التأجير (ALMUSTAFA OFFICE) ======
-    function openInvoicePrintRental(inv){
-      const w = window.open("", "_blank");
-      if(!w) return;
-
-      const amountFmt = (x)=> x.toLocaleString(undefined, {maximumFractionDigits:0});
-
-      w.document.write(`
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-<head>
-  <meta charset="UTF-8">
-  <title>Invoice ${inv.invoiceNo}</title>
-  <style>
-    body{font-family:Arial,Helvetica,sans-serif;margin:0;padding:24px;background:#ffffff;}
-    .page{max-width:900px;margin:0 auto;}
-    .top-row{display:flex;justify-content:space-between;align-items:flex-start;}
-    .company h1{margin:0 0 4px;font-size:20px;}
-    .company{font-size:13px;line-height:1.4;}
-    .muted{color:#6b7280;font-size:11px;}
-    .inv-info{font-size:12px;line-height:1.7;text-align:left;}
-    .inv-info span{display:inline-block;width:110px;font-weight:bold;}
-    .box{border:1px solid #e5e7eb;padding:8px 10px;font-size:12px;}
-    .section-title{margin:14px 0 4px;font-weight:bold;font-size:13px;}
-    table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px;}
-    th,td{border:1px solid #e5e7eb;padding:6px 8px;text-align:left;}
-    thead th{text-align:center;background:#f3f4f6;font-weight:bold;}
-    .right{text-align:right;}
-    .summary-table{margin-top:10px;width:50%;margin-left:auto;font-size:12px;}
-    .summary-table td{border:none;padding:3px 4px;}
-    .summary-table td.label{text-align:right;font-weight:bold;}
-    .summary-table td.value{text-align:right;}
-    .bottom-row{display:flex;justify-content:space-between;align-items:flex-start;margin-top:24px;font-size:12px;}
-    .signature-block{width:45%;}
-    .bank-block{width:45%;}
-    .signature-name{margin-top:40px;}
-  </style>
-</head>
-<body onload="window.print()">
-  <div class="page">
-    <div class="top-row">
-      <div class="company">
-        <h1>ALMUSTAFA OFFICE</h1>
-        <div>52mustafs@gmail.com</div>
-      </div>
-      <div style="text-align:right;">
-        <h2 style="margin:0 0 4px;">INVOICE</h2>
-      </div>
-    </div>
-
-    <div style="display:flex;justify-content:space-between;gap:16px;margin-top:16px;">
-      <div style="flex:1;">
-        <div class="muted" style="font-weight:bold;margin-bottom:4px;">Customer:</div>
-        <div class="box">
-          ${inv.customerName.replace(/\\n/g,"<br>")}
-        </div>
-      </div>
-      <div class="inv-info">
-        <div><span>Invoice No:</span> ${inv.invoiceNo}</div>
-        <div><span>Invoice Date:</span> ${inv.invoiceDate}</div>
-        <div><span>Contract Number :</span> ${inv.contractNumber || ""}</div>
-      </div>
-    </div>
-
-    <div class="section-title">DESCRIPTION</div>
-    <table>
-      <thead>
-        <tr>
-          <th>No.</th>
-          <th>DURATION FROM</th>
-          <th>DURATION TO</th>
-          <th>UNIT</th>
-          <th>QTY</th>
-          <th>UNIT PRICE</th>
-          <th>TOTAL</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="text-align:center;">1</td>
-          <td>${inv.durationFrom || ""}</td>
-          <td>${inv.durationTo || ""}</td>
-          <td style="text-align:center;">${inv.unit}</td>
-          <td style="text-align:center;">${inv.qty}</td>
-          <td class="right">${amountFmt(inv.unitPrice)} ${inv.currency}</td>
-          <td class="right">${amountFmt(inv.lineTotal)} ${inv.currency}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div style="margin-top:8px;font-size:12px;">
-      ${inv.lineDescription}
-    </div>
-
-    <table class="summary-table">
-      <tr>
-        <td class="label">SUBTOTAL</td>
-        <td class="value">${amountFmt(inv.subtotal)} ${inv.currency}</td>
-      </tr>
-      <tr>
-        <td class="label">DISCOUNT</td>
-        <td class="value">${amountFmt(inv.discount)} ${inv.currency}</td>
-      </tr>
-      <tr>
-        <td class="label">SUBTOTAL LESS DISCOUNT</td>
-        <td class="value">${amountFmt(inv.subtotalLessDiscount)} ${inv.currency}</td>
-      </tr>
-      <tr>
-        <td class="label">TAX (${inv.taxPercent}%)</td>
-        <td class="value">${amountFmt(inv.taxValue)} ${inv.currency}</td>
-      </tr>
-      <tr>
-        <td class="label">SHIPPING/HANDLING</td>
-        <td class="value">${amountFmt(inv.shipping)} ${inv.currency}</td>
-      </tr>
-      <tr>
-        <td class="label">Balance Due</td>
-        <td class="value"><strong>${amountFmt(inv.balanceDue)} ${inv.currency}</strong></td>
-      </tr>
-    </table>
-
-    <div class="bottom-row">
-      <div class="signature-block">
-        <div class="signature-name">Ayad Kazem</div>
-        <div>Signature</div>
-      </div>
-      <div class="bank-block">
-        <strong>Bank Account details</strong><br>
-        Account Name Nafithat Al-Amal<br>
-        IBAN Code: IQ07NISB002000000314765<br>
-        Account Number: 314765<br>
-        Branch: National Islamic Bank<br>
-        Currency: Iraqi Dinar<br>
-        Branch: Al-Kadhimiya Branch<br>
-        Phone number: 07723571779
-      </div>
-    </div>
-
-    <div style="margin-top:14px;font-size:11px;">Thank you for your business!</div>
-  </div>
-</body>
-</html>
-      `);
-      w.document.close();
-    }
-
     // ====== أحداث جدول الصيانة الطارئة ======
     emBody.addEventListener("click",(e)=>{
       const btn = e.target.closest("button[data-action]");
@@ -1959,18 +1358,6 @@
         item.note = newNote.trim();
       }
 
-      if(action === "invoice-em"){
-        const gen = state.generators.find(g=>g.id===item.genId);
-        const genName = gen ? gen.name : "-";
-
-        const descDefault = `Emergency maintenance for generator ${genName} on ${item.date}`;
-        createInvoice("maintenance",{
-          description: descDefault,
-          amount: item.cost,
-          currency: "IQD"
-        });
-      }
-
       if(action === "del-em"){
         if(!isAdmin()){
           alert("حذف الصيانة الطارئة متاح للمشرف فقط.");
@@ -1983,14 +1370,7 @@
       renderEmergencyTable();
     });
 
-    // زر فاتورة تأجير من الهيدر
-    if(newRentalInvoiceBtn){
-      newRentalInvoiceBtn.addEventListener("click", ()=>{
-        createInvoice("rental",{});
-      });
-    }
-
-    // ====== إجراءات على السجل (خدمة / مصروف / حذف / فاتورة) ======
+    // ====== إجراءات على السجل (خدمة / مصروف / حذف) ======
     logBody.addEventListener("click", (e)=>{
       const btn = e.target.closest("button[data-action]");
       if(!btn) return;
@@ -2054,23 +1434,6 @@
         svc.cost = valCost.trim() ? Number(valCost.trim()) : null;
         svc.currency = valCurrency.trim().toUpperCase();
         svc.costNote = valNote.trim();
-      }
-
-      if(action === "invoice"){
-        if(!gen.serviceHistory) gen.serviceHistory = [];
-        const svc = gen.serviceHistory.find(h=>h.date===d && Number(h.meter)===m && h.cost != null);
-
-        if(!svc){
-          alert("لا يوجد مصروف مسجل على هذه القراءة لإنشاء فاتورة. سجّل المصروف أولاً من زر 💰 مصروف.");
-          return;
-        }
-
-        const descDefault = `Provision of maintenance for generator ${gen.name} on ${d} (meter ${m})`;
-        createInvoice("maintenance",{
-          description: descDefault,
-          amount: svc.cost,
-          currency: (svc.currency || "IQD")
-        });
       }
 
       renderDetail();
@@ -2419,8 +1782,7 @@
       }
       const fullData = {
         generators: state.generators,
-        emergencyMaintenances,
-        invoices
+        emergencyMaintenances
       };
       const blob = new Blob([JSON.stringify(fullData,null,2)],{type:"application/json"});
       const url = URL.createObjectURL(blob);
@@ -2460,14 +1822,12 @@
           }));
           state = { generators:mappedGenerators };
           emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
-          invoices = Array.isArray(data.invoices) ? data.invoices : [];
 
           selectedId = state.generators[0]?.id || null;
           renderGenList();
           renderDetail();
           buildReports();
           renderEmergencyTable();
-          renderInvoicesTable();
         }catch(err){
           alert("تعذر استيراد الملف: " + (err.message||err));
         }
@@ -2480,8 +1840,7 @@
       try{
         const fullData = {
           generators: state.generators,
-          emergencyMaintenances,
-          invoices
+          emergencyMaintenances
         };
         localStorage.setItem(LOCAL_KEY, JSON.stringify(fullData));
         alert("تم حفظ البيانات على هذا الجهاز بنجاح ✅");
@@ -2547,14 +1906,12 @@
                 }))
               };
               emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
-              invoices = Array.isArray(data.invoices) ? data.invoices : [];
 
               selectedId = state.generators[0]?.id || null;
               renderGenList();
               renderDetail();
               buildReports();
               renderEmergencyTable();
-              renderInvoicesTable();
               console.log("Loaded data from localStorage");
               return;
             }
@@ -2596,14 +1953,12 @@
           }))
         };
         emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
-        invoices = Array.isArray(data.invoices) ? data.invoices : [];
 
         selectedId = state.generators[0]?.id || null;
         renderGenList();
         renderDetail();
         buildReports();
         renderEmergencyTable();
-        renderInvoicesTable();
         console.log("Loaded data from generators.json");
       } catch (err) {
         console.error("خطأ أثناء تحميل البيانات", err);
@@ -2620,7 +1975,6 @@
       buildReports();
       renderEmergencyGeneratorOptions();
       renderEmergencyTable();
-      renderInvoicesTable();
       loadInitialData();
     })();
 
