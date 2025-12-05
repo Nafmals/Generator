@@ -17,17 +17,17 @@
       padding:20px;
     }
 
-    /* صفحة الفاتورة */
+    /* صفحة الفاتورة (تقريباً A4) */
     .page{
       width:800px;
-      min-height:1123px;           /* قريب من A4 */
+      min-height:1123px;
       padding:40px 45px;
       position:relative;
       border:1px solid #ddd;
       background:#fff;
     }
 
-    /* الشعار الشفاف في الخلفية (نفس logo.png مع شفافية) */
+    /* شعار شفاف في الخلفية (Watermark) */
     .page::before{
       content:"";
       position:absolute;
@@ -35,9 +35,10 @@
       bottom:80px;
       width:260px;
       height:120px;
-      background:url("logo.png") no-repeat center center; /* استعمل logo-faded.png لو عندك */
+      background:url("logo.jpg") no-repeat center center;
       background-size:contain;
-      opacity:0.07;
+      opacity:0.05;
+      filter:grayscale(1);
       pointer-events:none;
       z-index:0;
     }
@@ -133,16 +134,25 @@
       border-radius:0;
       padding:2px 4px;
       font-size:10px;
-      min-width:160px;
-      text-align:left;
+      min-width:170px;
+    }
+
+    /* العنوان في الوسط */
+    .invoice-center-title{
+      text-align:center;
+      margin-top:10px;
+      margin-bottom:6px;
+      font-size:14px;
+      font-weight:normal;
+      color:#555;
     }
 
     /* Bill To + Description */
     .top-blocks{
       display:flex;
       justify-content:space-between;
-      margin-top:18px;
       gap:16px;
+      margin-top:4px;
     }
     .bill-box{
       width:48%;
@@ -154,7 +164,7 @@
     }
     .bill-textarea{
       width:100%;
-      min-height:90px;
+      min-height:85px;
       border:1px solid #000;
       padding:4px;
       font-size:10px;
@@ -162,7 +172,7 @@
       white-space:pre-wrap;
     }
 
-    /* جدول الوصف الرئيسي */
+    /* جدول الخدمات */
     table{
       border-collapse:collapse;
       width:100%;
@@ -185,8 +195,10 @@
     .desc-label-row th{
       border-top:none;
     }
+    .text-right{ text-align:right; }
+    .text-center{ text-align:center; }
 
-    .cell-input{
+    .cell-input, .cell-textarea{
       width:100%;
       border:none;
       padding:0;
@@ -194,14 +206,28 @@
       font-size:10px;
       background:transparent;
     }
-    .cell-input:focus{
+    .cell-textarea{
+      resize:vertical;
+      min-height:28px;
+    }
+    .cell-input:focus,
+    .cell-textarea:focus{
       outline:none;
     }
-    .text-right{
-      text-align:right;
+
+    /* زر إضافة سطر */
+    .add-row-bar{
+      text-align:left;
+      margin-top:4px;
+      font-size:10px;
     }
-    .text-center{
-      text-align:center;
+    .add-row-btn{
+      padding:4px 8px;
+      border:1px solid #ccc;
+      background:#f5f5f5;
+      font-size:10px;
+      cursor:pointer;
+      border-radius:3px;
     }
 
     /* شكر */
@@ -231,7 +257,7 @@
     }
     .totals td:last-child{
       text-align:right;
-      min-width:90px;
+      min-width:100px;
     }
     .totals input{
       width:100%;
@@ -248,7 +274,7 @@
       font-weight:bold;
     }
 
-    /* أسفل الصفحة: Scope + Bank */
+    /* Scope + Bank */
     .bottom-row{
       display:flex;
       justify-content:space-between;
@@ -270,6 +296,7 @@
       padding:4px;
       font-size:9px;
       resize:vertical;
+      white-space:pre-wrap;
     }
 
     .bank-col{
@@ -308,7 +335,7 @@
     .sign-name{
       margin-top:18px;
       border-top:1px solid #000;
-      width:140px;
+      width:160px;
       padding-top:3px;
       font-size:9px;
     }
@@ -336,8 +363,7 @@
       <div class="header">
         <div class="company-info">
           <div class="company-name">Nafithat Al-Amal Co.</div>
-          <p>Address: Baghdad - Al-Wahda</p>
-          <p>District - Street 52</p>
+          <p>Address: Baghdad - Al-Wahda District - Street 52</p>
           <p>&nbsp;</p>
           <p>Email: sales@nafmals.com</p>
           <p>www.nafmals.com</p>
@@ -346,46 +372,45 @@
 
         <div class="invoice-right">
           <div class="invoice-logo">
-            <img src="logo.png" alt="Logo">
+            <img src="logo.jpg" alt="Logo">
             <span>Invoice</span>
           </div>
           <div class="invoice-meta">
             <div class="meta-row">
               <span class="label">Invoice No:</span>
-              <input id="inv-no" value="NA-2025-D-INV00039">
+              <input id="inv-no" value="NA-2025-D-INV00038">
             </div>
             <div class="meta-row">
               <span class="label">Invoice Date:</span>
-              <input id="inv-date" value="2025-12-05">
+              <input id="inv-date" value="5-Dec-25">
             </div>
             <div class="meta-row">
-              <span class="label">Contract Number:</span>
+              <span class="label">Contract Number</span>
               <input id="inv-contract" value="4400013503">
             </div>
           </div>
         </div>
       </div>
 
+      <!-- كلمة Invoice في المنتصف مثل النموذج -->
+      <div class="invoice-center-title">Invoice</div>
+
       <!-- Bill To + Description -->
       <div class="top-blocks">
         <div class="bill-box">
           <div class="bill-label">Bill To:</div>
-          <textarea class="bill-textarea" id="bill-to">CRESCENT PETROLEUM DIYALA WEST LIMITED
-(IRAQ BRANCH)
-REGISTRATION CD 6309
-BUILDING 2, STREET 6, DISTRICT
-228, AL SALHIYA AL SALHIYA, BAGHDAD, IRAQ
+          <textarea class="bill-textarea" id="bill-to">Crescent Petroleum
+Iraq-Baghdad -Al Mansur
 Mr. Mohammad Rida
-Phone number: 07859311969</textarea>
+Phone number: 07859311699</textarea>
         </div>
         <div class="bill-box">
-          <div class="bill-label">Description of Services</div>
-          <textarea class="bill-textarea" id="short-desc">Provision of Generator Maintenance and Operation as per PO 4400013503</textarea>
+          <!-- تركنا هذه الخانة فارغة حسب النموذج (العنوان في الوسط) -->
         </div>
       </div>
 
       <!-- جدول الخدمات -->
-      <table style="margin-top:14px;">
+      <table style="margin-top:10px;">
         <thead>
           <tr class="desc-header-row">
             <th colspan="8">Description of Services</th>
@@ -393,51 +418,130 @@ Phone number: 07859311969</textarea>
           <tr class="desc-label-row">
             <th style="width:30px;">No.</th>
             <th>DESCRIPTION</th>
-            <th style="width:90px;">Location</th>
+            <th style="width:80px;">Tawer No.</th>
             <th style="width:80px;">DATE</th>
             <th style="width:55px;">UNIT</th>
             <th style="width:50px;">QTY</th>
-            <th style="width:100px;">UNIT PRICE</th>
-            <th style="width:110px;">TOTAL PRICE</th>
+            <th style="width:95px;">UNIT PRICE</th>
+            <th style="width:105px;">TOTAL PRICE</th>
           </tr>
         </thead>
         <tbody id="items-body">
-          <tr>
-            <td class="text-center">
-              <input class="cell-input cell-no" value="1">
+          <!-- سطر افتراضي 1 -->
+          <tr class="item-row">
+            <td class="text-center no-cell">1</td>
+            <td>
+              <textarea class="cell-textarea cell-desc">Site Visit</textarea>
             </td>
             <td>
-              <textarea class="cell-input" style="height:48px;resize:vertical;">Provision of Generator
-Maintenance and Operation
-as per PO 4400013503</textarea>
+              <input class="cell-input cell-tower" value="Diyala KAI">
             </td>
             <td>
-              <input class="cell-input cell-loc" value="Diyala KAI">
-            </td>
-            <td>
-              <input class="cell-input cell-date" value="December-25">
+              <input class="cell-input cell-date" value="29-11-25">
             </td>
             <td class="text-center">
-              <input class="cell-input cell-unit" value="Lot">
+              <input class="cell-input cell-unit" value="Trip">
             </td>
             <td class="text-center">
               <input class="cell-input cell-qty" type="number" value="1" min="0">
             </td>
             <td class="text-right">
-              <input class="cell-input cell-unitprice" type="number" value="7200000" min="0">
+              <input class="cell-input cell-unitprice" type="number" value="0" min="0">
             </td>
             <td class="text-right">
-              <input class="cell-input cell-total" type="number" value="7200000" readonly>
+              <input class="cell-input cell-total" type="text" value="IQD 0" readonly>
+            </td>
+          </tr>
+
+          <!-- سطر افتراضي 2 -->
+          <tr class="item-row">
+            <td class="text-center no-cell">2</td>
+            <td>
+              <textarea class="cell-textarea cell-desc">Preventive Maintenance (4×30 kVA units)</textarea>
+            </td>
+            <td>
+              <input class="cell-input cell-tower" value="Tower 7">
+            </td>
+            <td>
+              <input class="cell-input cell-date" value="29-11-25">
+            </td>
+            <td class="text-center">
+              <input class="cell-input cell-unit" value="EA">
+            </td>
+            <td class="text-center">
+              <input class="cell-input cell-qty" type="number" value="1" min="0">
+            </td>
+            <td class="text-right">
+              <input class="cell-input cell-unitprice" type="number" value="150000" min="0">
+            </td>
+            <td class="text-right">
+              <input class="cell-input cell-total" type="text" value="" readonly>
+            </td>
+          </tr>
+
+          <!-- سطر افتراضي 3 -->
+          <tr class="item-row">
+            <td class="text-center no-cell">3</td>
+            <td>
+              <textarea class="cell-textarea cell-desc">Supply of materials, including Rocker Arm refurbishment and replacement of worn components as part of the engine maintenance, along with engine oil, filters, water, coolant, O-rings, and other related components.</textarea>
+            </td>
+            <td>
+              <input class="cell-input cell-tower" value="Tower 7">
+            </td>
+            <td>
+              <input class="cell-input cell-date" value="29-11-25">
+            </td>
+            <td class="text-center">
+              <input class="cell-input cell-unit" value="lot">
+            </td>
+            <td class="text-center">
+              <input class="cell-input cell-qty" type="number" value="1" min="0">
+            </td>
+            <td class="text-right">
+              <input class="cell-input cell-unitprice" type="number" value="1150000" min="0">
+            </td>
+            <td class="text-right">
+              <input class="cell-input cell-total" type="text" value="" readonly>
+            </td>
+          </tr>
+
+          <!-- سطر افتراضي 4 -->
+          <tr class="item-row">
+            <td class="text-center no-cell">4</td>
+            <td>
+              <textarea class="cell-textarea cell-desc">Motor fixing due to water ingress into the display screen</textarea>
+            </td>
+            <td>
+              <input class="cell-input cell-tower" value="Tower 5">
+            </td>
+            <td>
+              <input class="cell-input cell-date" value="29-11-25">
+            </td>
+            <td class="text-center">
+              <input class="cell-input cell-unit" value="EA">
+            </td>
+            <td class="text-center">
+              <input class="cell-input cell-qty" type="number" value="1" min="0">
+            </td>
+            <td class="text-right">
+              <input class="cell-input cell-unitprice" type="number" value="0" min="0">
+            </td>
+            <td class="text-right">
+              <input class="cell-input cell-total" type="text" value="IQD 0" readonly>
             </td>
           </tr>
         </tbody>
       </table>
 
+      <div class="add-row-bar">
+        <button type="button" class="add-row-btn" id="add-row-btn">+ إضافة سطر جديد</button>
+      </div>
+
       <div class="thankyou">
         Thank you for your business!
       </div>
 
-      <!-- جدول المجاميع -->
+      <!-- المجاميع -->
       <table class="totals">
         <tr>
           <td>SUBTOTAL</td>
@@ -452,7 +556,7 @@ as per PO 4400013503</textarea>
           <td><input id="subtotal-less" readonly></td>
         </tr>
         <tr>
-          <td>TAX (%)</td>
+          <td>TAX (0%)</td>
           <td><input id="tax-percent" type="number" value="0"></td>
         </tr>
         <tr>
@@ -469,7 +573,9 @@ as per PO 4400013503</textarea>
       <div class="bottom-row">
         <div class="scope-col">
           <div class="scope-label">Scope of Work:</div>
-          <textarea class="scope-textarea" id="scope-text">Provision of operation and maintenance services for 10 generators (Perkins &amp; Isuzu), including routine inspections, preventive servicing, and daily operation as per PO 4400013503.</textarea>
+          <textarea class="scope-textarea" id="scope-text">1-The scope covers the provision of all materials required for engine maintenance, including Rocker Arm refurbishment and replacement of worn components, in addition to engine oil, filters, water, coolant, O-rings, and all other related parts and consumables necessary to return the engine to full operational efficiency.
+
+2-Inspection and corrective repair of the motor affected by water ingress into the display screen. The service covers troubleshooting, drying/cleaning of internal components, restoring display functionality, and ensuring reliable operation of the unit after repair.</textarea>
         </div>
         <div class="bank-col">
           <div class="bank-label">Bank Account details</div>
@@ -502,7 +608,7 @@ as per PO 4400013503</textarea>
         </div>
       </div>
 
-      <!-- توقيع + ختم -->
+      <!-- توقيع وختم -->
       <div class="sign-row">
         <div class="sign-block">
           <div class="sign-name">
@@ -511,7 +617,7 @@ as per PO 4400013503</textarea>
           </div>
         </div>
         <div class="sign-stamp">
-          <!-- لو عندك ختم دائري احفظه باسم stamp.png -->
+          <!-- لو عندك ختم دائري احفظه باسم stamp.png ثم فعّل السطر التالي -->
           <!-- <img src="stamp.png" alt="Stamp"> -->
         </div>
       </div>
@@ -519,41 +625,86 @@ as per PO 4400013503</textarea>
   </div>
 
   <script>
+    function formatIQD(n){
+      n = Number(n) || 0;
+      return "IQD " + n.toLocaleString("en-US");
+    }
+
+    function parseNumber(val){
+      if(typeof val !== "string") val = String(val||"");
+      // إزالة IQD والفواصل وأي فراغات
+      return Number(val.replace(/[^\d.-]/g,"")) || 0;
+    }
+
+    function updateRowNumbers(){
+      document.querySelectorAll(".item-row .no-cell").forEach((td,idx)=>{
+        td.textContent = idx + 1;
+      });
+    }
+
     function recalcRow(tr){
-      const qty = Number(tr.querySelector(".cell-qty").value)||0;
-      const up  = Number(tr.querySelector(".cell-unitprice").value)||0;
+      const qty = parseNumber(tr.querySelector(".cell-qty").value);
+      const up  = parseNumber(tr.querySelector(".cell-unitprice").value);
       const total = qty * up;
-      tr.querySelector(".cell-total").value = total;
+      tr.querySelector(".cell-total").value = formatIQD(total);
       return total;
     }
 
     function recalcAll(){
-      const rows = document.querySelectorAll("#items-body tr");
+      const rows = document.querySelectorAll("#items-body .item-row");
       let subtotal = 0;
       rows.forEach(tr => subtotal += recalcRow(tr));
 
-      const discount = Number(document.getElementById("discount").value)||0;
-      const taxPercent = Number(document.getElementById("tax-percent").value)||0;
-      const shipping = Number(document.getElementById("shipping").value)||0;
+      const discount = parseNumber(document.getElementById("discount").value);
+      const taxPercent = parseNumber(document.getElementById("tax-percent").value);
+      const shipping = parseNumber(document.getElementById("shipping").value);
 
       const subtotalLess = subtotal - discount;
-      const taxValue = subtotalLess * (taxPercent/100);
+      const taxValue = subtotalLess * (taxPercent / 100);
       const balance = subtotalLess + taxValue + shipping;
 
-      document.getElementById("subtotal").value = subtotal;
-      document.getElementById("subtotal-less").value = subtotalLess;
-      document.getElementById("balance").value = balance;
+      document.getElementById("subtotal").value = formatIQD(subtotal);
+      document.getElementById("subtotal-less").value = formatIQD(subtotalLess);
+      document.getElementById("balance").value = formatIQD(balance);
     }
 
-    // ربط الأحداث
-    document.querySelectorAll(".cell-qty, .cell-unitprice").forEach(el=>{
-      el.addEventListener("input", recalcAll);
-    });
+    function attachRowEvents(tr){
+      tr.querySelectorAll(".cell-qty, .cell-unitprice").forEach(el=>{
+        el.addEventListener("input", recalcAll);
+      });
+    }
+
+    // ربط الأحداث للسطر الموجودة
+    document.querySelectorAll("#items-body .item-row").forEach(attachRowEvents);
+
+    // حقول المجاميع
     document.getElementById("discount").addEventListener("input", recalcAll);
     document.getElementById("tax-percent").addEventListener("input", recalcAll);
     document.getElementById("shipping").addEventListener("input", recalcAll);
 
-    // حساب أولي
+    // إضافة سطر جديد
+    document.getElementById("add-row-btn").addEventListener("click", ()=>{
+      const body = document.getElementById("items-body");
+      const tr = document.createElement("tr");
+      tr.className = "item-row";
+      tr.innerHTML = `
+        <td class="text-center no-cell"></td>
+        <td><textarea class="cell-textarea cell-desc"></textarea></td>
+        <td><input class="cell-input cell-tower"></td>
+        <td><input class="cell-input cell-date"></td>
+        <td class="text-center"><input class="cell-input cell-unit"></td>
+        <td class="text-center"><input class="cell-input cell-qty" type="number" value="1" min="0"></td>
+        <td class="text-right"><input class="cell-input cell-unitprice" type="number" value="0" min="0"></td>
+        <td class="text-right"><input class="cell-input cell-total" type="text" value="IQD 0" readonly></td>
+      `;
+      body.appendChild(tr);
+      attachRowEvents(tr);
+      updateRowNumbers();
+      recalcAll();
+    });
+
+    // تحديث الأرقام وحساب أولي
+    updateRowNumbers();
     recalcAll();
   </script>
 </body>
