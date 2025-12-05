@@ -493,114 +493,9 @@
     let currentPoFilter = "all";
     const $ = id => document.getElementById(id);
 
-    const DESC1 = "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.";
-    const DESC2 = "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.";
-    const DESC3 = "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.";
-
     function todayStr(){ return new Date().toISOString().slice(0,10); }
     function formatIQD(n){ n = Number(n)||0; return "IQD " + n.toLocaleString("en-US"); }
     function parseNumber(v){ if(typeof v!=="string") v=String(v||""); return Number(v.replace(/[^\d.-]/g,"")) || 0; }
-
-    function getSeedInvoices(){
-      const base = [];
-      base.push(
-        {id:"seed-1",number:"CP-INV00001",issueDate:"2024-03-01",dueDate:"2024-03-31",contract:"PO00023",billTo:"",customerName:"",scope:DESC1,note:"",
-          items:[{desc:DESC1,location:"",date:"01-Mar-24 - 31-Mar-24",unit:"Lot",qty:1,price:5500000}],
-          subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"},
-        {id:"seed-2",number:"CP-INV00001",issueDate:"2024-04-01",dueDate:"2024-04-30",contract:"PO00023",billTo:"",customerName:"",scope:DESC1,note:"",
-          items:[{desc:DESC1,location:"",date:"01-Apr-24 - 30-Apr-24",unit:"Lot",qty:1,price:5500000}],
-          subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"},
-        {id:"seed-3",number:"CP-INV00003",issueDate:"2024-05-01",dueDate:"2024-05-31",contract:"PO00023",billTo:"",customerName:"",scope:DESC1,note:"",
-          items:[{desc:DESC1,location:"",date:"01-May-24 - 31-May-24",unit:"Lot",qty:1,price:5500000}],
-          subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"},
-        {id:"seed-4",number:"CP-INV00004",issueDate:"2024-06-01",dueDate:"2024-06-30",contract:"PO00023",billTo:"",customerName:"",scope:DESC1,note:"",
-          items:[{desc:DESC1,location:"",date:"01-Jun-24 - 30-Jun-24",unit:"Lot",qty:1,price:5500000}],
-          subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"},
-        {id:"seed-5",number:"CP-INV00005",issueDate:"2024-07-01",dueDate:"2024-07-31",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Jul-24 - 31-Jul-24",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"},
-        {id:"seed-6",number:"CP-INV00006",issueDate:"2024-08-01",dueDate:"2024-08-31",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Aug-24 - 31-Aug-24",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"},
-        {id:"seed-7",number:"CP-INV00009",issueDate:"2024-09-01",dueDate:"2024-09-30",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Sep-24 - 30-Sep-24",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"},
-        {id:"seed-8",number:"CP-INV00010",issueDate:"2024-10-01",dueDate:"2024-10-30",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Oct-24 - 30-Oct-24",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"},
-        {id:"seed-9",number:"CP-INV00012",issueDate:"2024-11-01",dueDate:"2024-11-30",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Nov-24 - 30-Nov-24",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"},
-        {id:"seed-10",number:"CP-INV00012",issueDate:"2024-12-01",dueDate:"2024-12-31",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Dec-24 - 31-Dec-24",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"},
-        {id:"seed-11",number:"CP-INV00013",issueDate:"2025-01-01",dueDate:"2025-01-31",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Jan-25 - 31-Jan-25",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"},
-        {id:"seed-12",number:"CP-INV00015",issueDate:"2025-02-01",dueDate:"2025-02-28",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Feb-25 - 28-Feb-25",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"},
-        {id:"seed-13",number:"CP-INV00015",issueDate:"2025-03-01",dueDate:"2025-03-31",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Mar-25 - 31-Mar-25",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"},
-        {id:"seed-14",number:"CP-INV00016",issueDate:"2025-04-01",dueDate:"2025-04-30",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Apr-25 - 30-Apr-25",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"},
-        {id:"seed-15",number:"CP-INV00016",issueDate:"2025-05-01",dueDate:"2025-05-31",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-May-25 - 31-May-25",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"},
-        {id:"seed-16",number:"CP-INV00018",issueDate:"2025-06-01",dueDate:"2025-06-30",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Jun-25 - 30-Jun-25",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"},
-        {id:"seed-17",number:"CP-INV00018",issueDate:"2025-07-01",dueDate:"2025-07-31",contract:"PO00023",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Jul-25 - 31-Jul-25",unit:"Lot",qty:2,price:3375000}],
-          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"},
-
-        {id:"seed-18",number:"NA-2025-INV00024",issueDate:"2025-08-01",dueDate:"2025-08-31",contract:"4400013837",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Aug-25 - 31-Aug-25",unit:"Lot",qty:2,price:4325000}],
-          subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"paid"},
-        {id:"seed-19",number:"NA-2025-INV00026",issueDate:"2025-09-01",dueDate:"2025-09-30",contract:"4400013837",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Sep-25 - 30-Sep-25",unit:"Lot",qty:2,price:4325000}],
-          subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"paid"},
-        {id:"seed-20",number:"NA-2025-INV00031",issueDate:"2025-10-01",dueDate:"2025-10-31",contract:"4400013837",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Oct-25 - 31-Oct-25",unit:"Lot",qty:2,price:4325000}],
-          subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"paid"},
-        {id:"seed-21",number:"NA-2025-INV00036",issueDate:"2025-11-01",dueDate:"2025-11-30",contract:"4400013837",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Nov-25 - 30-Nov-25",unit:"Lot",qty:2,price:4325000}],
-          subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"unpaid"},
-        {id:"seed-22",number:"NA-2025-D-INV00039",issueDate:"2025-12-01",dueDate:"2025-12-31",contract:"4400013837",billTo:"",customerName:"",scope:DESC2,note:"",
-          items:[{desc:DESC2,location:"",date:"01-Dec-25 - 31-Dec-25",unit:"Lot",qty:2,price:4325000}],
-          subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"unpaid"}
-      );
-
-      base.push(
-        {id:"seed-23",number:"CP-INV-D-00001",issueDate:"2025-02-01",dueDate:"2025-02-28",contract:"4400013503",billTo:"",customerName:"",scope:DESC3,note:"",
-          items:[{desc:DESC3,location:"",date:"01-Feb-25 - 28-Feb-25",unit:"Lot",qty:1,price:12000000}],
-          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"paid"},
-        {id:"seed-24",number:"CP-INV-D-00002",issueDate:"2025-03-01",dueDate:"2025-03-31",contract:"4400013503",billTo:"",customerName:"",scope:DESC3,note:"",
-          items:[{desc:DESC3,location:"",date:"01-Mar-25 - 31-Mar-25",unit:"Lot",qty:1,price:12000000}],
-          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"paid"},
-        {id:"seed-25",number:"CP-INV-D-00003",issueDate:"2025-04-01",dueDate:"2025-04-30",contract:"4400013503",billTo:"",customerName:"",scope:DESC3,note:"",
-          items:[{desc:DESC3,location:"",date:"01-Apr-25 - 30-Apr-25",unit:"Lot",qty:1,price:12000000}],
-          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"paid"},
-        {id:"seed-26",number:"CP-INV-D-00004",issueDate:"2025-08-01",dueDate:"2025-08-31",contract:"4400013503",billTo:"",customerName:"",scope:DESC3,note:"",
-          items:[{desc:DESC3,location:"",date:"01-Aug-25 - 31-Aug-25",unit:"Lot",qty:1,price:12000000}],
-          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"},
-        {id:"seed-27",number:"CP-INV-D-00005",issueDate:"2025-09-01",dueDate:"2025-09-30",contract:"4400013503",billTo:"",customerName:"",scope:DESC3,note:"",
-          items:[{desc:DESC3,location:"",date:"01-Sep-25 - 30-Sep-25",unit:"Lot",qty:1,price:12000000}],
-          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"},
-        {id:"seed-28",number:"CP-INV-D-00006",issueDate:"2025-10-01",dueDate:"2025-10-31",contract:"4400013503",billTo:"",customerName:"",scope:DESC3,note:"",
-          items:[{desc:DESC3,location:"",date:"01-Oct-25 - 31-Oct-25",unit:"Lot",qty:1,price:12000000}],
-          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"},
-        {id:"seed-29",number:"CP-INV-D-00007",issueDate:"2025-11-01",dueDate:"2025-11-30",contract:"4400013503",billTo:"",customerName:"",scope:DESC3,note:"",
-          items:[{desc:DESC3,location:"",date:"01-Nov-25 - 30-Nov-25",unit:"Lot",qty:1,price:12000000}],
-          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"},
-        {id:"seed-30",number:"CP-INV-D-00008",issueDate:"2025-12-01",dueDate:"2025-12-31",contract:"4400013503",billTo:"",customerName:"",scope:DESC3,note:"",
-          items:[{desc:DESC3,location:"",date:"01-Dec-25 - 31-Dec-25",unit:"Lot",qty:1,price:12000000}],
-          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"}
-      );
-      return base;
-    }
 
     function createItemRow(data={}){
       const tr = document.createElement("tr");
@@ -803,9 +698,7 @@
       return true;
     }
 
-    function editInvoice(id){
-      openEditor(id);
-    }
+    function editInvoice(id){ openEditor(id); }
 
     function deleteInvoiceById(id, ask){
       if(ask && !confirm("هل أنت متأكد من حذف هذه الفاتورة؟ لا يمكن التراجع.")) return;
@@ -845,7 +738,7 @@
 
       const sorted = filtered.slice().sort((a,b)=>(b.issueDate||"").localeCompare(a.issueDate||""));
       if(!sorted.length){
-        tbody.innerHTML = `<tr><td colspan="10" style="font-size:11px;color:#6b7280;">لا توجد فواتير مطابقة.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="10" style="font-size:11px;color:#6b7280;">لا توجد فواتير بعد، اضغط على زر "فاتورة جديدة" أو استرد JSON.</td></tr>`;
         return;
       }
 
@@ -958,7 +851,7 @@
       const id = generateId();
       const inv = {
         id,
-        number:"NA-"+today.replace(/-/g,"")+"-INV",
+        number:"INV-"+today.replace(/-/g,""),
         issueDate:today,
         dueDate:today,
         contract: currentPoFilter !== "all" ? currentPoFilter : "",
@@ -993,7 +886,7 @@
       recalcTotals();
       readForm(inv);
       saveInvoices();
-      alert("تم حفظ الفاتورة ✅");
+      alert("تم حفظ الفاتورة ✅ (محفوظة محليًا في المتصفح)");
     }
 
     function deleteCurrentInvoice(){
@@ -1010,7 +903,7 @@
       const copy = JSON.parse(JSON.stringify(original));
       const today = todayStr();
       copy.id = id;
-      copy.number = original.number ? original.number + "-COPY" : "NA-"+today.replace(/-/g,"")+"-INV";
+      copy.number = original.number ? original.number + "-COPY" : "INV-"+today.replace(/-/g,"");
       copy.issueDate = today;
       copy.dueDate = today;
       copy.status = "draft";
@@ -1136,13 +1029,8 @@
 
     (function init(){
       setupEvents();
-      loadInvoices();
-      if(!invoices.length){
-        invoices = getSeedInvoices();
-        saveInvoices();
-      }else{
-        renderPoFilterOptions();
-      }
+      loadInvoices();      // يبدأ إما فارغ أو من LocalStorage إذا سبق الحفظ
+      renderPoFilterOptions();
       showDashboard();
       renderDashboard();
       renderReport();
