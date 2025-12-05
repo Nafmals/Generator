@@ -2,15 +2,15 @@
 <html lang="ar" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <title>Nafithat Al-Amal - Invoice System (Local)</title>
+  <title>Nafithat Al-Amal - Advanced Invoice & Contract System (Local)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
 
     body{
       margin:0;
-      background:#f3f4f6;
-      padding:12px;
+      background:linear-gradient(135deg,#0f172a 0,#111827 35%,#020617 100%);
+      padding:14px;
       color:#111827;
     }
 
@@ -26,8 +26,13 @@
       display:inline-flex;
       align-items:center;
       gap:4px;
+      transition:background .15s,transform .12s,box-shadow .12s;
     }
-    .btn:hover{background:#f9fafb;}
+    .btn:hover{
+      background:#f9fafb;
+      transform:translateY(-1px);
+      box-shadow:0 4px 10px rgba(15,23,42,.15);
+    }
     .btn-primary{
       background:#111827;
       color:#fff;
@@ -46,16 +51,18 @@
 
     /* شريط علوي رئيسي */
     .topbar-main{
-      max-width:1100px;
-      margin:0 auto 10px auto;
-      padding:6px 10px;
-      border-radius:999px;
-      background:#ffffff;
+      max-width:1180px;
+      margin:0 auto 14px auto;
+      padding:8px 12px;
+      border-radius:16px;
+      background:rgba(248,250,252,0.98);
       border:1px solid #e5e7eb;
       display:flex;
       justify-content:space-between;
       align-items:center;
       gap:10px;
+      box-shadow:0 8px 24px rgba(15,23,42,.25);
+      backdrop-filter:blur(12px);
     }
     .brand{
       display:flex;
@@ -64,12 +71,18 @@
       font-size:11px;
     }
     .brand img{
-      height:26px;
+      height:30px;
+      border-radius:999px;
+    }
+    .brand-info{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
     }
     .brand-name{
       font-weight:bold;
       color:#f97316;
-      font-size:14px;
+      font-size:15px;
     }
     .brand-sub{
       font-size:10px;
@@ -83,8 +96,16 @@
 
     /* تخطيط رئيسي */
     #app{
-      max-width:1100px;
+      max-width:1180px;
       margin:0 auto;
+    }
+
+    section{
+      background:#f3f4f6;
+      border-radius:18px;
+      padding:10px 12px 12px;
+      border:1px solid #e5e7eb;
+      box-shadow:0 10px 30px rgba(15,23,42,.25);
     }
 
     /* ======= لوحة الفواتير (Dashboard) ======= */
@@ -103,6 +124,14 @@
     .dashboard-title{
       font-size:16px;
       font-weight:bold;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+    .dashboard-title span{
+      font-size:11px;
+      font-weight:normal;
+      color:#6b7280;
     }
 
     .search-box{
@@ -150,6 +179,20 @@
       border-color:#111827;
     }
 
+    .filters-right{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .po-filter{
+      font-size:10px;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+    }
+
     .summary-cards{
       display:grid;
       grid-template-columns:repeat(5,minmax(0,1fr));
@@ -158,14 +201,34 @@
     }
     .card{
       background:#fff;
-      border-radius:10px;
+      border-radius:12px;
       border:1px solid #e5e7eb;
       padding:8px 10px;
       font-size:11px;
+      position:relative;
+      overflow:hidden;
+    }
+    .card::after{
+      content:"";
+      position:absolute;
+      inset:auto -40px -40px auto;
+      width:80px;
+      height:80px;
+      border-radius:999px;
+      background:radial-gradient(circle,#e5e7eb 0,transparent 60%);
+      opacity:.8;
     }
     .card-label{
       color:#6b7280;
       margin-bottom:4px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:4px;
+    }
+    .card-label span{
+      font-size:9px;
+      color:#9ca3af;
     }
     .card-value{
       font-size:14px;
@@ -178,10 +241,10 @@
 
     .table-wrap{
       background:#fff;
-      border-radius:10px;
+      border-radius:12px;
       border:1px solid #e5e7eb;
       overflow:auto;
-      max-height:480px;
+      max-height:460px;
     }
     table{
       width:100%;
@@ -201,7 +264,7 @@
       text-align:left;
     }
     tr:hover td{
-      background:#f3f4ff;
+      background:#eef2ff;
     }
 
     .badge{
@@ -233,8 +296,10 @@
       border-color:#e5e7eb;
     }
 
-    /* ======= محرر الفاتورة ======= */
+    /* ======= شاشة العقود ======= */
+    #contracts{margin-top:8px;display:none;}
 
+    /* ======= محرر الفاتورة ======= */
     #editor{
       margin-top:8px;
       display:none;
@@ -261,7 +326,7 @@
       width:800px;
       min-height:1120px;
       background:#ffffff;
-      border-radius:4px;
+      border-radius:6px;
       border:1px solid #d1d5db;
       padding:24px 28px;
       position:relative;
@@ -521,7 +586,7 @@
     }
     .modal{
       background:#fff;
-      border-radius:10px;
+      border-radius:12px;
       border:1px solid #e5e7eb;
       padding:10px 12px 12px;
       width:720px;
@@ -530,6 +595,7 @@
       display:flex;
       flex-direction:column;
       font-size:11px;
+      box-shadow:0 20px 45px rgba(15,23,42,.35);
     }
     .modal-header{
       display:flex;
@@ -604,14 +670,14 @@
   <div class="topbar-main">
     <div class="brand">
       <img src="logo-main.png" alt="Logo">
-      <div>
+      <div class="brand-info">
         <div class="brand-name">Nafithat Al-Amal Co.</div>
-        <div class="brand-sub">Invoice Management System (Local)</div>
+        <div class="brand-sub">Advanced Invoice & Contract Management (Local)</div>
       </div>
     </div>
     <div class="top-actions">
       <button class="btn btn-primary" id="btn-dashboard">📊 لوحة الفواتير</button>
-      <button class="btn" id="btn-contracts">📑 العقود</button>
+      <button class="btn" id="btn-contracts">📑 العقود (PO)</button>
       <button class="btn" id="btn-report">📄 تقرير الفواتير</button>
       <button class="btn" id="btn-new">+ فاتورة جديدة</button>
       <button class="btn" id="btn-export">⬇ تقرير Excel (CSV)</button>
@@ -622,10 +688,13 @@
     <!-- ========= لوحة الفواتير ========= -->
     <section id="dashboard">
       <div class="dashboard-header">
-        <div class="dashboard-title">الفواتير</div>
+        <div class="dashboard-title">
+          الفواتير
+          <span>إدارة حسب العقد والحالة</span>
+        </div>
         <div class="search-box">
           <span>🔍</span>
-          <input id="search-input" placeholder="بحث في الفواتير (عميل، رقم، عقد)...">
+          <input id="search-input" placeholder="بحث في الفواتير (عميل، رقم، عقد، وصف)...">
         </div>
       </div>
 
@@ -637,34 +706,54 @@
           <button class="status-pill" data-filter="overdue">متأخرة</button>
           <button class="status-pill" data-filter="draft">مسودة</button>
         </div>
-        <div style="font-size:10px;color:#6b7280;">
-          اضغط على أي سطر لفتح الفاتورة
+        <div class="filters-right">
+          <select id="po-filter" class="po-filter">
+            <option value="all">كل العقود</option>
+          </select>
+          <div style="font-size:10px;color:#6b7280;">
+            اضغط على أي سطر لفتح الفاتورة
+          </div>
         </div>
       </div>
 
       <div class="summary-cards">
         <div class="card">
-          <div class="card-label">إجمالي الفواتير</div>
+          <div class="card-label">
+            إجمالي الفواتير
+            <span>لكل العقود / الفلتر الحالي</span>
+          </div>
           <div class="card-value" id="card-total-amount">IQD 0</div>
           <div class="card-sub" id="card-total-count">0 فاتورة</div>
         </div>
         <div class="card">
-          <div class="card-label">الفواتير المتأخرة</div>
+          <div class="card-label">
+            الفواتير المتأخرة
+            <span>غير مدفوعة بعد تاريخ الاستحقاق</span>
+          </div>
           <div class="card-value" id="card-overdue-amount">IQD 0</div>
           <div class="card-sub" id="card-overdue-count">0 فاتورة</div>
         </div>
         <div class="card">
-          <div class="card-label">تستحق خلال 30 يوم</div>
+          <div class="card-label">
+            تستحق خلال 30 يوم
+            <span>تنبيه مبكر</span>
+          </div>
           <div class="card-value" id="card-soon-amount">IQD 0</div>
           <div class="card-sub" id="card-soon-count">0 فاتورة</div>
         </div>
         <div class="card">
-          <div class="card-label">المدفوع</div>
+          <div class="card-label">
+            المدفوع
+            <span>تم تسويته</span>
+          </div>
           <div class="card-value" id="card-paid-amount">IQD 0</div>
           <div class="card-sub" id="card-paid-count">0 فاتورة</div>
         </div>
         <div class="card">
-          <div class="card-label">غير المدفوع</div>
+          <div class="card-label">
+            غير المدفوع
+            <span>بما في ذلك المتأخرة</span>
+          </div>
           <div class="card-value" id="card-unpaid-amount">IQD 0</div>
           <div class="card-sub" id="card-unpaid-count">0 فاتورة</div>
         </div>
@@ -677,10 +766,11 @@
               <th>التاريخ</th>
               <th>تاريخ الاستحقاق</th>
               <th>رقم الفاتورة</th>
+              <th>العقد (PO)</th>
               <th>العميل</th>
+              <th>الوصف المختصر</th>
               <th>الحالة</th>
               <th>المبلغ (Balance)</th>
-              <th>العقد</th>
             </tr>
           </thead>
           <tbody id="invoice-table-body">
@@ -690,9 +780,12 @@
     </section>
 
     <!-- ========= شاشة العقود ========= -->
-    <section id="contracts" style="display:none;margin-top:8px;">
+    <section id="contracts">
       <div class="dashboard-header">
-        <div class="dashboard-title">العقود / أوامر الشراء (PO)</div>
+        <div class="dashboard-title">
+          العقود / أوامر الشراء (PO)
+          <span>ملخّص الفواتير حسب العقد</span>
+        </div>
         <div style="font-size:10px;color:#6b7280;">
           اضغط على أي عقد لعرض فواتيره في لوحة الفواتير
         </div>
@@ -880,7 +973,6 @@
             <tr>
               <th>Invoice No</th>
               <th>Date</th>
-              <th>Customer</th>
               <th>Contract</th>
               <th>Status</th>
               <th>Balance (IQD)</th>
@@ -896,260 +988,20 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "naf_invoice_system_local_v1";
+    const STORAGE_KEY = "naf_invoice_system_advanced_v2";
     let invoices = [];
     let currentId = null;
     let currentFilter = "all";
+    let currentPoFilter = "all";
     const $ = id => document.getElementById(id);
 
     const DESC1 = "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.";
     const DESC2 = "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.";
+    const DESC3 = "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.";
 
     function todayStr(){ return new Date().toISOString().slice(0,10); }
     function formatIQD(n){ n = Number(n) || 0; return "IQD " + n.toLocaleString("en-US"); }
-    function parseNumber(v){ if(typeof v !== "string") v = String(v || ""); return Number(v.replace(/[^\d.-]/g,"")) || 0; }
-
-    function loadInvoices(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return;
-        const arr = JSON.parse(raw);
-        if(Array.isArray(arr)) invoices = arr;
-      }catch(e){ console.error("Error loading invoices:", e); }
-    }
-
-    function saveInvoices(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
-      renderDashboard();
-      renderReport();
-    }
-
-    function getSeedInvoices(){
-      return [
-        {
-          id: "seed-1",
-          number: "CP-INV00001",
-          issueDate: "2024-03-01",
-          dueDate: "2024-03-31",
-          contract: "PO00023",
-          billTo: "",
-          customerName: "",
-          scope: DESC1,
-          items: [{ desc: DESC1, location: "", date: "01-Mar-24 - 31-Mar-24", unit: "Lot", qty: 1, price: 5500000 }],
-          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
-        },
-        {
-          id: "seed-2",
-          number: "CP-INV00001",
-          issueDate: "2024-04-01",
-          dueDate: "2024-04-30",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC1,
-          items: [{ desc: DESC1, location: "", date: "01-Apr-24 - 30-Apr-24", unit: "Lot", qty: 1, price: 5500000 }],
-          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
-        },
-        {
-          id: "seed-3",
-          number: "CP-INV00003",
-          issueDate: "2024-05-01",
-          dueDate: "2024-05-31",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC1,
-          items: [{ desc: DESC1, location: "", date: "01-May-24 - 31-May-24", unit: "Lot", qty: 1, price: 5500000 }],
-          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
-        },
-        {
-          id: "seed-4",
-          number: "CP-INV00004",
-          issueDate: "2024-06-01",
-          dueDate: "2024-06-30",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC1,
-          items: [{ desc: DESC1, location: "", date: "01-Jun-24 - 30-Jun-24", unit: "Lot", qty: 1, price: 5500000 }],
-          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
-        },
-        {
-          id: "seed-5",
-          number: "CP-INV00005",
-          issueDate: "2024-07-01",
-          dueDate: "2024-07-31",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Jul-24 - 31-Jul-24", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
-        },
-        {
-          id: "seed-6",
-          number: "CP-INV00006",
-          issueDate: "2024-08-01",
-          dueDate: "2024-08-31",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Aug-24 - 31-Aug-24", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
-        },
-        {
-          id: "seed-7",
-          number: "CP-INV00009",
-          issueDate: "2024-09-01",
-          dueDate: "2024-09-30",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Sep-24 - 30-Sep-24", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
-        },
-        {
-          id: "seed-8",
-          number: "CP-INV00010",
-          issueDate: "2024-10-01",
-          dueDate: "2024-10-30",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Oct-24 - 30-Oct-24", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
-        },
-        {
-          id: "seed-9",
-          number: "CP-INV00012",
-          issueDate: "2024-11-01",
-          dueDate: "2024-11-30",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Nov-24 - 30-Nov-24", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
-        },
-        {
-          id: "seed-10",
-          number: "CP-INV00012",
-          issueDate: "2024-12-01",
-          dueDate: "2024-12-31",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Dec-24 - 31-Dec-24", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
-        },
-        {
-          id: "seed-11",
-          number: "CP-INV00013",
-          issueDate: "2025-01-01",
-          dueDate: "2025-01-31",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Jan-25 - 31-Jan-25", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
-        },
-        {
-          id: "seed-12",
-          number: "CP-INV00015",
-          issueDate: "2025-02-01",
-          dueDate: "2025-02-28",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Feb-25 - 28-Feb-25", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
-        },
-        {
-          id: "seed-13",
-          number: "CP-INV00015",
-          issueDate: "2025-03-01",
-          dueDate: "2025-03-31",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Mar-25 - 31-Mar-25", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
-        },
-        {
-          id: "seed-14",
-          number: "CP-INV00016",
-          issueDate: "2025-04-01",
-          dueDate: "2025-04-30",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Apr-25 - 30-Apr-25", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
-        },
-        {
-          id: "seed-15",
-          number: "CP-INV00016",
-          issueDate: "2025-05-01",
-          dueDate: "2025-05-31",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-May-25 - 31-May-25", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
-        },
-        {
-          id: "seed-16",
-          number: "CP-INV00018",
-          issueDate: "2025-06-01",
-          dueDate: "2025-06-30",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Jun-25 - 30-Jun-25", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
-        },
-        {
-          id: "seed-17",
-          number: "CP-INV00018",
-          issueDate: "2025-07-01",
-          dueDate: "2025-07-31",
-          contract: "PO00023",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Jul-25 - 31-Jul-25", unit: "Lot", qty: 2, price: 3375000 }],
-          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
-        },
-        {
-          id: "seed-18",
-          number: "NA-2025-INV00024",
-          issueDate: "2025-08-01",
-          dueDate: "2025-08-31",
-          contract: "4400013837",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Aug-25 - 31-Aug-25", unit: "Lot", qty: 2, price: 4325000 }],
-          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "paid"
-        },
-        {
-          id: "seed-19",
-          number: "NA-2025-INV00026",
-          issueDate: "2025-09-01",
-          dueDate: "2025-09-30",
-          contract: "4400013837",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Sep-25 - 30-Sep-25", unit: "Lot", qty: 2, price: 4325000 }],
-          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "paid"
-        },
-        {
-          id: "seed-20",
-          number: "NA-2025-INV00031",
-          issueDate: "2025-10-01",
-          dueDate: "2025-10-31",
-          contract: "4400013837",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Oct-25 - 31-Oct-25", unit: "Lot", qty: 2, price: 4325000 }],
-          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "paid"
-        },
-        {
-          id: "seed-21",
-          number: "NA-2025-INV00036",
-          issueDate: "2025-11-01",
-          dueDate: "2025-11-30",
-          contract: "4400013837",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Nov-25 - 30-Nov-25", unit: "Lot", qty: 2, price: 4325000 }],
-          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "unpaid"
-        },
-        {
-          id: "seed-22",
-          number: "NA-2025-D-INV00039",
-          issueDate: "2025-12-01",
-          dueDate: "2025-12-31",
-          contract: "4400013837",
-          billTo: "", customerName: "", scope: DESC2,
-          items: [{ desc: DESC2, location: "", date: "01-Dec-25 - 31-Dec-25", unit: "Lot", qty: 2, price: 4325000 }],
-          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "unpaid"
-        }
-      ];
-    }
+    function parseNumber(v){ if(typeof v!=="string") v=String(v||""); return Number(v.replace(/[^\d.-]/g,"")) || 0; }
 
     function createItemRow(data={}){
       const tr = document.createElement("tr");
@@ -1259,6 +1111,397 @@
       $("editor-subtitle").textContent = inv.number ? `(${inv.number})` : "";
     }
 
+    function loadInvoices(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return;
+        const arr = JSON.parse(raw);
+        if(Array.isArray(arr)) invoices = arr;
+      }catch(e){ console.error("Error loading invoices:", e); }
+    }
+
+    function saveInvoices(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
+      renderDashboard();
+      renderReport();
+      renderContracts();
+      renderPoFilterOptions();
+    }
+
+    function getSeedInvoices(){
+      const base = [];
+
+      // ---- بيانات PO00023 & 4400013837 (مثل جدولك الأول) ----
+      base.push(
+        {
+          id:"seed-1",
+          number:"CP-INV00001",
+          issueDate:"2024-03-01",
+          dueDate:"2024-03-31",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC1,
+          items:[{desc:DESC1,location:"",date:"01-Mar-24 - 31-Mar-24",unit:"Lot",qty:1,price:5500000}],
+          subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"
+        },
+        {
+          id:"seed-2",
+          number:"CP-INV00001",
+          issueDate:"2024-04-01",
+          dueDate:"2024-04-30",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC1,
+          items:[{desc:DESC1,location:"",date:"01-Apr-24 - 30-Apr-24",unit:"Lot",qty:1,price:5500000}],
+          subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"
+        },
+        {
+          id:"seed-3",
+          number:"CP-INV00003",
+          issueDate:"2024-05-01",
+          dueDate:"2024-05-31",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC1,
+          items:[{desc:DESC1,location:"",date:"01-May-24 - 31-May-24",unit:"Lot",qty:1,price:5500000}],
+          subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"
+        },
+        {
+          id:"seed-4",
+          number:"CP-INV00004",
+          issueDate:"2024-06-01",
+          dueDate:"2024-06-30",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC1,
+          items:[{desc:DESC1,location:"",date:"01-Jun-24 - 30-Jun-24",unit:"Lot",qty:1,price:5500000}],
+          subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"
+        },
+        {
+          id:"seed-5",
+          number:"CP-INV00005",
+          issueDate:"2024-07-01",
+          dueDate:"2024-07-31",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Jul-24 - 31-Jul-24",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
+        },
+        {
+          id:"seed-6",
+          number:"CP-INV00006",
+          issueDate:"2024-08-01",
+          dueDate:"2024-08-31",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Aug-24 - 31-Aug-24",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
+        },
+        {
+          id:"seed-7",
+          number:"CP-INV00009",
+          issueDate:"2024-09-01",
+          dueDate:"2024-09-30",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Sep-24 - 30-Sep-24",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
+        },
+        {
+          id:"seed-8",
+          number:"CP-INV00010",
+          issueDate:"2024-10-01",
+          dueDate:"2024-10-30",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Oct-24 - 30-Oct-24",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
+        },
+        {
+          id:"seed-9",
+          number:"CP-INV00012",
+          issueDate:"2024-11-01",
+          dueDate:"2024-11-30",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Nov-24 - 30-Nov-24",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
+        },
+        {
+          id:"seed-10",
+          number:"CP-INV00012",
+          issueDate:"2024-12-01",
+          dueDate:"2024-12-31",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Dec-24 - 31-Dec-24",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
+        },
+        {
+          id:"seed-11",
+          number:"CP-INV00013",
+          issueDate:"2025-01-01",
+          dueDate:"2025-01-31",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Jan-25 - 31-Jan-25",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
+        },
+        {
+          id:"seed-12",
+          number:"CP-INV00015",
+          issueDate:"2025-02-01",
+          dueDate:"2025-02-28",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Feb-25 - 28-Feb-25",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
+        },
+        {
+          id:"seed-13",
+          number:"CP-INV00015",
+          issueDate:"2025-03-01",
+          dueDate:"2025-03-31",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Mar-25 - 31-Mar-25",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
+        },
+        {
+          id:"seed-14",
+          number:"CP-INV00016",
+          issueDate:"2025-04-01",
+          dueDate:"2025-04-30",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Apr-25 - 30-Apr-25",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"
+        },
+        {
+          id:"seed-15",
+          number:"CP-INV00016",
+          issueDate:"2025-05-01",
+          dueDate:"2025-05-31",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-May-25 - 31-May-25",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"
+        },
+        {
+          id:"seed-16",
+          number:"CP-INV00018",
+          issueDate:"2025-06-01",
+          dueDate:"2025-06-30",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Jun-25 - 30-Jun-25",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"
+        },
+        {
+          id:"seed-17",
+          number:"CP-INV00018",
+          issueDate:"2025-07-01",
+          dueDate:"2025-07-31",
+          contract:"PO00023",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Jul-25 - 31-Jul-25",unit:"Lot",qty:2,price:3375000}],
+          subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"
+        },
+        {
+          id:"seed-18",
+          number:"NA-2025-INV00024",
+          issueDate:"2025-08-01",
+          dueDate:"2025-08-31",
+          contract:"4400013837",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Aug-25 - 31-Aug-25",unit:"Lot",qty:2,price:4325000}],
+          subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"paid"
+        },
+        {
+          id:"seed-19",
+          number:"NA-2025-INV00026",
+          issueDate:"2025-09-01",
+          dueDate:"2025-09-30",
+          contract:"4400013837",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Sep-25 - 30-Sep-25",unit:"Lot",qty:2,price:4325000}],
+          subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"paid"
+        },
+        {
+          id:"seed-20",
+          number:"NA-2025-INV00031",
+          issueDate:"2025-10-01",
+          dueDate:"2025-10-31",
+          contract:"4400013837",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Oct-25 - 31-Oct-25",unit:"Lot",qty:2,price:4325000}],
+          subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"paid"
+        },
+        {
+          id:"seed-21",
+          number:"NA-2025-INV00036",
+          issueDate:"2025-11-01",
+          dueDate:"2025-11-30",
+          contract:"4400013837",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Nov-25 - 30-Nov-25",unit:"Lot",qty:2,price:4325000}],
+          subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"unpaid"
+        },
+        {
+          id:"seed-22",
+          number:"NA-2025-D-INV00039",
+          issueDate:"2025-12-01",
+          dueDate:"2025-12-31",
+          contract:"4400013837",
+          billTo:"",
+          customerName:"",
+          scope:DESC2,
+          items:[{desc:DESC2,location:"",date:"01-Dec-25 - 31-Dec-25",unit:"Lot",qty:2,price:4325000}],
+          subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"unpaid"
+        }
+      );
+
+      // ---- بيانات 4400013503 (جدول المولدات 2x150KVA) ----
+      base.push(
+        {
+          id:"seed-23",
+          number:"CP-INV-D-00001",
+          issueDate:"2025-02-01",
+          dueDate:"2025-02-28",
+          contract:"4400013503",
+          billTo:"",
+          customerName:"",
+          scope:DESC3,
+          items:[{desc:DESC3,location:"",date:"01-Feb-25 - 28-Feb-25",unit:"Lot",qty:1,price:12000000}],
+          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"paid"
+        },
+        {
+          id:"seed-24",
+          number:"CP-INV-D-00002",
+          issueDate:"2025-03-01",
+          dueDate:"2025-03-31",
+          contract:"4400013503",
+          billTo:"",
+          customerName:"",
+          scope:DESC3,
+          items:[{desc:DESC3,location:"",date:"01-Mar-25 - 31-Mar-25",unit:"Lot",qty:1,price:12000000}],
+          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"paid"
+        },
+        {
+          id:"seed-25",
+          number:"CP-INV-D-00003",
+          issueDate:"2025-04-01",
+          dueDate:"2025-04-30",
+          contract:"4400013503",
+          billTo:"",
+          customerName:"",
+          scope:DESC3,
+          items:[{desc:DESC3,location:"",date:"01-Apr-25 - 30-Apr-25",unit:"Lot",qty:1,price:12000000}],
+          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"paid"
+        },
+        {
+          id:"seed-26",
+          number:"CP-INV-D-00004",
+          issueDate:"2025-08-01",
+          dueDate:"2025-08-31",
+          contract:"4400013503",
+          billTo:"",
+          customerName:"",
+          scope:DESC3,
+          items:[{desc:DESC3,location:"",date:"01-Aug-25 - 31-Aug-25",unit:"Lot",qty:1,price:12000000}],
+          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"
+        },
+        {
+          id:"seed-27",
+          number:"CP-INV-D-00005",
+          issueDate:"2025-09-01",
+          dueDate:"2025-09-30",
+          contract:"4400013503",
+          billTo:"",
+          customerName:"",
+          scope:DESC3,
+          items:[{desc:DESC3,location:"",date:"01-Sep-25 - 30-Sep-25",unit:"Lot",qty:1,price:12000000}],
+          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"
+        },
+        {
+          id:"seed-28",
+          number:"CP-INV-D-00006",
+          issueDate:"2025-10-01",
+          dueDate:"2025-10-31",
+          contract:"4400013503",
+          billTo:"",
+          customerName:"",
+          scope:DESC3,
+          items:[{desc:DESC3,location:"",date:"01-Oct-25 - 31-Oct-25",unit:"Lot",qty:1,price:12000000}],
+          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"
+        },
+        {
+          id:"seed-29",
+          number:"CP-INV-D-00007",
+          issueDate:"2025-11-01",
+          dueDate:"2025-11-30",
+          contract:"4400013503",
+          billTo:"",
+          customerName:"",
+          scope:DESC3,
+          items:[{desc:DESC3,location:"",date:"01-Nov-25 - 30-Nov-25",unit:"Lot",qty:1,price:12000000}],
+          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"
+        },
+        {
+          id:"seed-30",
+          number:"CP-INV-D-00008",
+          issueDate:"2025-12-01",
+          dueDate:"2025-12-31",
+          contract:"4400013503",
+          billTo:"",
+          customerName:"",
+          scope:DESC3,
+          items:[{desc:DESC3,location:"",date:"01-Dec-25 - 31-Dec-25",unit:"Lot",qty:1,price:12000000}],
+          subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"
+        }
+      );
+
+      return base;
+    }
+
     function showDashboard(){
       $("dashboard").style.display = "";
       $("editor").style.display = "none";
@@ -1312,6 +1555,21 @@
       return `<span class="badge ${cls}">${txt}</span>`;
     }
 
+    function renderPoFilterOptions(){
+      const select = $("po-filter");
+      if(!select) return;
+      const current = select.value || "all";
+      const contracts = Array.from(new Set(invoices
+        .map(inv=>inv.contract)
+        .filter(c=>c && c.trim().length)))
+        .sort();
+      select.innerHTML = `<option value="all">كل العقود</option>` +
+        contracts.map(c=>`<option value="${c}">${c}</option>`).join("");
+      if(contracts.includes(current)) select.value = current;
+      else select.value = "all";
+      currentPoFilter = select.value;
+    }
+
     function renderDashboard(){
       const tbody = $("invoice-table-body");
       tbody.innerHTML = "";
@@ -1350,15 +1608,17 @@
       $("card-overdue-amount").textContent = formatIQD(overdueAmt);
       $("card-overdue-count").textContent  = countOverdue + " فاتورة";
       $("card-soon-amount").textContent    = formatIQD(soonAmt);
-      $("card-soon-count").textContent     = countSoon;
+      $("card-soon-count").textContent     = countSoon + " فاتورة";
 
       const filtered = invoices.slice().filter(inv=>{
+        if(currentPoFilter!=="all" && (inv.contract||"") !== currentPoFilter) return false;
         if(searchText){
           const hay = [
             inv.number,
             inv.customerName,
             inv.contract,
-            inv.billTo
+            inv.billTo,
+            inv.scope
           ].join(" ").toLowerCase();
           if(!hay.includes(searchText)) return false;
         }
@@ -1372,20 +1632,22 @@
       });
 
       if(!filtered.length){
-        tbody.innerHTML = `<tr><td colspan="7" style="font-size:11px;color:#6b7280;">لا توجد فواتير مطابقة.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="font-size:11px;color:#6b7280;">لا توجد فواتير مطابقة.</td></tr>`;
         return;
       }
 
       filtered.forEach(inv=>{
+        const shortDesc = (inv.scope || inv.items?.[0]?.desc || "").slice(0,48) + ( (inv.scope || inv.items?.[0]?.desc || "").length>48 ? "..." : "");
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${inv.issueDate || ""}</td>
           <td>${inv.dueDate || ""}</td>
           <td>${inv.number || ""}</td>
+          <td>${inv.contract || ""}</td>
           <td>${inv.customerName || ""}</td>
+          <td>${shortDesc}</td>
           <td>${getStatusBadge(inv.status,inv)}</td>
           <td style="text-align:right;">${formatIQD(inv.balance || 0)}</td>
-          <td>${inv.contract || ""}</td>
         `;
         tr.addEventListener("click", ()=>openEditor(inv.id));
         tbody.appendChild(tr);
@@ -1396,7 +1658,7 @@
       const tbody = $("report-body");
       tbody.innerHTML = "";
       if(!invoices.length){
-        tbody.innerHTML = `<tr><td colspan="6" style="font-size:11px;color:#6b7280;">لا توجد فواتير بعد.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="5" style="font-size:11px;color:#6b7280;">لا توجد فواتير بعد.</td></tr>`;
         return;
       }
       invoices.slice().sort((a,b)=>(b.issueDate||"").localeCompare(a.issueDate||""))
@@ -1408,7 +1670,6 @@
           tr.innerHTML = `
             <td>${inv.number || ""}</td>
             <td>${inv.issueDate || ""}</td>
-            <td>${inv.customerName || ""}</td>
             <td>${inv.contract || ""}</td>
             <td>${statusTxt}</td>
             <td style="text-align:right;">${inv.balance != null ? inv.balance.toLocaleString("en-US") : ""}</td>
@@ -1424,7 +1685,6 @@
     function renderContracts(){
       const tbody = $("contracts-table-body");
       tbody.innerHTML = "";
-
       if(!invoices.length){
         tbody.innerHTML = `<tr><td colspan="8" style="font-size:11px;color:#6b7280;">لا توجد عقود بعد.</td></tr>`;
         return;
@@ -1469,11 +1729,8 @@
           <td style="color:${hasUnpaid ? '#b91c1c' : '#166534'};">${statusText}</td>
         `;
         tr.addEventListener("click", ()=>{
-          $("search-input").value = contractNo;
-          currentFilter = "all";
-          document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
-          const allBtn = document.querySelector('.status-pill[data-filter="all"]');
-          if(allBtn) allBtn.classList.add("active");
+          currentPoFilter = contractNo;
+          $("po-filter").value = contractNo;
           showDashboard();
           renderDashboard();
         });
@@ -1650,6 +1907,11 @@
         updateRowNumbers();
         recalcTotals();
       });
+
+      $("po-filter").addEventListener("change", ()=>{
+        currentPoFilter = $("po-filter").value;
+        renderDashboard();
+      });
     }
 
     (function init(){
@@ -1659,13 +1921,11 @@
         invoices = getSeedInvoices();
         saveInvoices();
       }
-      if(!invoices.length){
-        createNewInvoice();
-      }else{
-        showDashboard();
-        renderDashboard();
-        renderReport();
-      }
+      renderPoFilterOptions();
+      showDashboard();
+      renderDashboard();
+      renderReport();
+      renderContracts();
     })();
   </script>
 </body>
