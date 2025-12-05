@@ -2,7 +2,7 @@
 <html lang="ar" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <title>Nafithat Al-Amal - Invoice & Contract System (Local)</title>
+  <title>Nafithat Al-Amal - Invoice System (Local)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
@@ -155,20 +155,18 @@
 </head>
 <body>
 
-  <!-- الشريط العلوي -->
   <div class="topbar-main">
     <div class="brand">
       <img src="logo-main.png" alt="Logo">
       <div class="brand-info">
         <div class="brand-name">Nafithat Al-Amal Co.</div>
-        <div class="brand-sub">Advanced Invoice & Contract Management (Local)</div>
+        <div class="brand-sub">Advanced Invoice Management (Local)</div>
       </div>
     </div>
     <div class="top-actions">
       <button class="btn btn-primary" id="btn-dashboard">📊 لوحة الفواتير</button>
-      <!-- تم إلغاء شاشة العقود -->
       <button class="btn" id="btn-report">📄 تقرير الفواتير</button>
-      <!-- مهم: استدعاء الدالة مباشرة -->
+      <!-- هذه تعتمد على onclick مباشر -->
       <button class="btn" id="btn-new" onclick="createNewInvoice()">+ فاتورة جديدة</button>
       <button class="btn" id="btn-export">⬇ تقرير Excel (CSV)</button>
       <button class="btn" id="btn-save-json">💾 حفظ JSON</button>
@@ -179,12 +177,11 @@
   </div>
 
   <div id="app">
-    <!-- ========= لوحة الفواتير ========= -->
     <section id="dashboard">
       <div class="dashboard-header">
         <div class="dashboard-title">
           الفواتير
-          <span>إدارة حسب العقد والحالة</span>
+          <span>إدارة حسب الحالة</span>
         </div>
         <div class="search-box">
           <span>🔍</span>
@@ -237,7 +234,7 @@
         <div class="card" id="card-unpaid" data-type="unpaid">
           <div class="card-label">
             غير المدفوع
-            <span>يشمل كل الفواتير غير المدفوعة</span>
+            <span>يشمل جميع الفواتير غير المدفوعة</span>
           </div>
           <div class="card-value" id="card-unpaid-amount">IQD 0</div>
           <div class="card-sub" id="card-unpaid-count">0 فاتورة</div>
@@ -265,7 +262,6 @@
       </div>
     </section>
 
-    <!-- ========= محرر الفاتورة ========= -->
     <section id="editor">
       <div class="editor-topbar">
         <div class="editor-title">
@@ -421,7 +417,6 @@
     </section>
   </div>
 
-  <!-- نافذة تقرير الفواتير -->
   <div class="modal-backdrop" id="modal-backdrop">
     <div class="modal">
       <div class="modal-header">
@@ -450,12 +445,11 @@
 
   <script>
     const STORAGE_KEY = "naf_invoice_system_advanced_main";
-
     let invoices = [];
     let currentId = null;
     let currentFilter = "all";
     let currentPoFilter = "all";
-    let specialFilter = "none"; // none | soon
+    let specialFilter = "none";
     const $ = id => document.getElementById(id);
 
     function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -640,20 +634,15 @@
     function matchesFilters(inv, searchText){
       if(currentPoFilter!=="all" && (inv.contract||"") !== currentPoFilter) return false;
       if(searchText){
-        const hay = [
-          inv.number,inv.customerName,inv.contract,
-          inv.billTo,inv.scope,inv.note
-        ].join(" ").toLowerCase();
+        const hay = [inv.number,inv.customerName,inv.contract,inv.billTo,inv.scope,inv.note].join(" ").toLowerCase();
         if(!hay.includes(searchText)) return false;
       }
-
       if(specialFilter === "soon"){
         return isDueSoon(inv);
       }
-
       if(currentFilter==="paid")   return inv.status==="paid";
       if(currentFilter==="draft")  return inv.status==="draft";
-      if(currentFilter==="unpaid") return inv.status==="unpaid"; // يشمل المتأخرة
+      if(currentFilter==="unpaid") return inv.status==="unpaid";
       return true;
     }
 
@@ -669,8 +658,9 @@
 
     function renderDashboard(){
       const tbody = $("invoice-table-body");
+      if(!tbody) return;
       tbody.innerHTML = "";
-      const searchText = $("search-input").value.trim().toLowerCase();
+      const searchText = ($("search-input")?.value || "").trim().toLowerCase();
       const filtered = invoices.filter(inv => matchesFilters(inv, searchText));
 
       let total=0,paid=0,unpaid=0,soonAmt=0;
@@ -686,14 +676,16 @@
         if(isDueSoon(inv)){soonAmt+=inv.balance||0;countSoon++;}
       });
 
-      $("card-total-amount").textContent   = formatIQD(total);
-      $("card-total-count").textContent    = countTotal + " فاتورة";
-      $("card-paid-amount").textContent    = formatIQD(paid);
-      $("card-paid-count").textContent     = countPaid + " فاتورة";
-      $("card-unpaid-amount").textContent  = formatIQD(unpaid);
-      $("card-unpaid-count").textContent   = countUnpaid + " فاتورة";
-      $("card-soon-amount").textContent    = formatIQD(soonAmt);
-      $("card-soon-count").textContent     = countSoon + " فاتورة";
+      if($("card-total-amount")){
+        $("card-total-amount").textContent   = formatIQD(total);
+        $("card-total-count").textContent    = countTotal + " فاتورة";
+        $("card-paid-amount").textContent    = formatIQD(paid);
+        $("card-paid-count").textContent     = countPaid + " فاتورة";
+        $("card-unpaid-amount").textContent  = formatIQD(unpaid);
+        $("card-unpaid-count").textContent   = countUnpaid + " فاتورة";
+        $("card-soon-amount").textContent    = formatIQD(soonAmt);
+        $("card-soon-count").textContent     = countSoon + " فاتورة";
+      }
 
       const sorted = filtered.slice().sort((a,b)=>(b.issueDate||"").localeCompare(a.issueDate||""));
       if(!sorted.length){
@@ -727,6 +719,7 @@
 
     function renderReport(){
       const tbody = $("report-body");
+      if(!tbody) return;
       tbody.innerHTML = "";
       if(!invoices.length){
         tbody.innerHTML = `<tr><td colspan="5" style="font-size:11px;color:#6b7280;">لا توجد فواتير بعد.</td></tr>`;
@@ -745,7 +738,7 @@
             <td>${statusTxt}</td>
             <td style="text-align:right;">${inv.balance != null ? inv.balance.toLocaleString("en-US") : ""}</td>`;
           tr.addEventListener("click", ()=>{
-            $("modal-backdrop").style.display = "none";
+            if($("modal-backdrop")) $("modal-backdrop").style.display = "none";
             openEditor(inv.id);
           });
           tbody.appendChild(tr);
@@ -797,7 +790,7 @@
       recalcTotals();
       readForm(inv);
       saveInvoices();
-      alert("تم حفظ الفاتورة ✅ (محفوظة محليًا في المتصفح)");
+      alert("تم حفظ الفاتورة ✅");
     }
 
     function deleteCurrentInvoice(){
@@ -873,7 +866,7 @@
       reader.onload = e=>{
         try{
           const data = JSON.parse(e.target.result);
-          if(!Array.isArray(data)){ alert("ملف JSON غير صحيح (يجب أن يحتوي على مصفوفة فواتير)."); return; }
+          if(!Array.isArray(data)){ alert("ملف JSON غير صحيح."); return; }
           if(!confirm("سيتم استبدال جميع الفواتير الحالية بالبيانات من الملف، هل أنت متأكد؟")) return;
           data.forEach(inv=>{ if(!inv.id) inv.id = generateId(); });
           invoices = data;
@@ -935,29 +928,28 @@
     }
 
     function setupEvents(){
-      $("btn-dashboard").addEventListener("click", ()=>{
-        showDashboard();
-        highlightCard("total");
-      });
-      $("btn-report").addEventListener("click", ()=>{ $("modal-backdrop").style.display="flex"; renderReport(); });
-      $("btn-back").addEventListener("click", showDashboard);
-      $("btn-print").addEventListener("click", ()=>window.print());
-      $("btn-save").addEventListener("click", saveCurrentInvoice);
-      $("btn-delete").addEventListener("click", deleteCurrentInvoice);
-      $("btn-duplicate").addEventListener("click", duplicateCurrentInvoice);
-      $("btn-export").addEventListener("click", exportCsv);
-      $("btn-save-json").addEventListener("click", exportJson);
-      $("btn-load-json").addEventListener("click", ()=>$("json-file-input").click());
-      $("btn-reset").addEventListener("click", resetSystem);
+      const bDash = $("btn-dashboard"); if(bDash) bDash.addEventListener("click", ()=>{showDashboard();highlightCard("total");});
+      const bRep  = $("btn-report");    if(bRep)  bRep.addEventListener("click", ()=>{const mb=$("modal-backdrop");if(mb)mb.style.display="flex";renderReport();});
+      const bBack = $("btn-back");      if(bBack) bBack.addEventListener("click", showDashboard);
+      const bPr   = $("btn-print");     if(bPr)   bPr.addEventListener("click", ()=>window.print());
+      const bSave = $("btn-save");      if(bSave) bSave.addEventListener("click", saveCurrentInvoice);
+      const bDel  = $("btn-delete");    if(bDel)  bDel.addEventListener("click", deleteCurrentInvoice);
+      const bDup  = $("btn-duplicate"); if(bDup)  bDup.addEventListener("click", duplicateCurrentInvoice);
+      const bExp  = $("btn-export");    if(bExp)  bExp.addEventListener("click", exportCsv);
+      const bSJ   = $("btn-save-json"); if(bSJ)   bSJ.addEventListener("click", exportJson);
+      const bLJ   = $("btn-load-json"); if(bLJ)   bLJ.addEventListener("click", ()=>$("json-file-input")?.click());
+      const bRes  = $("btn-reset");     if(bRes)  bRes.addEventListener("click", resetSystem);
 
-      $("json-file-input").addEventListener("change", e=>{
+      const fileInput = $("json-file-input");
+      if(fileInput) fileInput.addEventListener("change", e=>{
         const file = e.target.files[0];
         if(file) importJsonFromFile(file);
         e.target.value = "";
       });
 
-      $("close-modal-btn").addEventListener("click", ()=>{ $("modal-backdrop").style.display="none"; });
-      document.addEventListener("keydown", e=>{ if(e.key==="Escape") $("modal-backdrop").style.display="none"; });
+      const cModal = $("close-modal-btn");
+      if(cModal) cModal.addEventListener("click", ()=>{const mb=$("modal-backdrop");if(mb)mb.style.display="none";});
+      document.addEventListener("keydown", e=>{ if(e.key==="Escape"){const mb=$("modal-backdrop");if(mb)mb.style.display="none";} });
 
       document.querySelectorAll(".status-pill").forEach(btn=>{
         btn.addEventListener("click", ()=>{
@@ -970,35 +962,40 @@
         });
       });
 
-      $("search-input").addEventListener("input", renderDashboard);
-      $("status-select").addEventListener("change", ()=>{
+      const sInput = $("search-input"); if(sInput) sInput.addEventListener("input", renderDashboard);
+      const sSel   = $("status-select"); if(sSel) sSel.addEventListener("change", ()=>{
         if(!currentId) return;
         const inv = invoices.find(i=>i.id===currentId);
         if(!inv) return;
-        inv.status = $("status-select").value;
+        inv.status = sSel.value;
         saveInvoices();
       });
 
-      ["f-discount","f-tax","f-shipping"].forEach(id=>$(id).addEventListener("input", recalcTotals));
-      $("add-row-btn").addEventListener("click", ()=>{
+      ["f-discount","f-tax","f-shipping"].forEach(id=>{
+        const el = $(id); if(el) el.addEventListener("input", recalcTotals);
+      });
+
+      const addRowBtn = $("add-row-btn");
+      if(addRowBtn) addRowBtn.addEventListener("click", ()=>{
         $("items-body").appendChild(createItemRow({qty:1,price:0}));
         updateRowNumbers();
         recalcTotals();
       });
-      $("po-filter").addEventListener("change", ()=>{ currentPoFilter = $("po-filter").value; renderDashboard(); });
 
-      // كروت المجاميع كفلاتر
+      const poFilter = $("po-filter");
+      if(poFilter) poFilter.addEventListener("change", ()=>{ currentPoFilter = poFilter.value; renderDashboard(); });
+
       [["card-total","total"],["card-soon","soon"],["card-paid","paid"],["card-unpaid","unpaid"]]
         .forEach(([id,type])=>{
           const el = $(id);
           if(el) el.addEventListener("click", ()=>setFilterFromCard(type));
         });
-
-      // جعل بعض الدوال متاحة من الـ HTML
-      window.createNewInvoice = createNewInvoice;
-      window.editInvoice = editInvoice;
-      window.deleteInvoiceById = deleteInvoiceById;
     }
+
+    // جعل الدوال متاحة للـ onclick حتى لو فشل أي شيء آخر
+    window.createNewInvoice = createNewInvoice;
+    window.editInvoice      = editInvoice;
+    window.deleteInvoiceById= deleteInvoiceById;
 
     (function init(){
       setupEvents();
