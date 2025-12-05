@@ -1,139 +1,62 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Nafithat Al-Amal - Invoice System</title>
+  <title>Nafithat Al-Amal - Invoice</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    *{
-      box-sizing:border-box;
-      font-family:Arial, Helvetica, sans-serif;
-    }
+    *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
     body{
       margin:0;
       background:#f3f4f6;
       padding:16px;
     }
 
-    .app{
-      max-width:1200px;
-      margin:0 auto;
-      display:flex;
-      gap:12px;
-    }
-
-    /* الشريط الجانبي: قائمة الفواتير */
-    .sidebar{
-      width:260px;
+    /* شريط علوي بسيط */
+    .topbar{
+      max-width:900px;
+      margin:0 auto 10px auto;
+      padding:6px 10px;
+      border-radius:999px;
       background:#ffffff;
       border:1px solid #e5e7eb;
-      border-radius:10px;
-      padding:10px 10px 12px;
-      display:flex;
-      flex-direction:column;
-      max-height:calc(100vh - 40px);
-    }
-    .sidebar-header{
       display:flex;
       justify-content:space-between;
       align-items:center;
-      margin-bottom:6px;
-      font-size:12px;
-    }
-    .sidebar h2{
-      font-size:14px;
-      margin:0;
-    }
-    .sidebar button{
-      font-size:11px;
-      padding:4px 8px;
-      border-radius:6px;
-      border:1px solid #e5e7eb;
-      background:#fff;
-      cursor:pointer;
-    }
-    .sidebar button:hover{
-      background:#f9fafb;
-    }
-    .invoice-list{
-      margin-top:6px;
-      flex:1;
-      overflow:auto;
-      border-top:1px solid #e5e7eb;
-      padding-top:6px;
-    }
-    .invoice-item{
-      padding:6px 8px;
-      border-radius:8px;
-      border:1px solid transparent;
-      cursor:pointer;
-      margin-bottom:4px;
-      font-size:11px;
-    }
-    .invoice-item.active{
-      border-color:#4b5563;
-      background:#e5e7eb;
-    }
-    .invoice-item strong{
-      display:block;
-      font-size:11px;
-    }
-    .invoice-item span{
-      display:block;
-      color:#6b7280;
-      font-size:10px;
-    }
-
-    .sidebar-footer{
-      font-size:10px;
-      color:#6b7280;
-      border-top:1px solid #e5e7eb;
-      padding-top:4px;
-      margin-top:4px;
-    }
-
-    /* المنطقة الرئيسية */
-    .main{
-      flex:1;
-      display:flex;
-      flex-direction:column;
       gap:10px;
     }
-
-    .toolbar{
+    .brand{
       display:flex;
-      justify-content:space-between;
       align-items:center;
+      gap:8px;
       font-size:12px;
     }
-    .toolbar-left{
-      display:flex;
-      align-items:center;
-      gap:8px;
+    .brand img{
+      height:28px;
     }
-    .logo-wrap{
-      display:flex;
-      align-items:center;
-      gap:8px;
-    }
-    .logo-wrap img{
-      height:32px;
-    }
-    .logo-text{
+    .brand-title{
       font-weight:bold;
-      font-size:14px;
       color:#f97316;
+      font-size:14px;
     }
-    .toolbar-right button{
-      padding:6px 10px;
-      font-size:11px;
+    .brand-sub{
+      font-size:10px;
+      color:#6b7280;
+    }
+    .actions{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .btn{
       border-radius:999px;
       border:1px solid #e5e7eb;
+      padding:6px 12px;
+      font-size:11px;
       background:#fff;
       cursor:pointer;
-      margin-left:4px;
     }
-    .toolbar-right button:hover{
+    .btn:hover{
       background:#f9fafb;
     }
     .btn-primary{
@@ -144,33 +67,40 @@
     .btn-primary:hover{
       background:#020617;
     }
+    .btn-danger{
+      color:#b91c1c;
+      border-color:#fecaca;
+      background:#fef2f2;
+    }
 
-    /* ورقة الفاتورة */
-    .invoice-paper{
+    /* ورقة الفاتورة (A4 تقريباً) */
+    .page-wrap{
+      display:flex;
+      justify-content:center;
+    }
+    .invoice-page{
+      width:800px;              /* تقريباً A4 */
+      min-height:1123px;
       background:#fff;
       border-radius:10px;
       border:1px solid #e5e7eb;
-      padding:24px 26px;
+      padding:35px 40px;
       position:relative;
       overflow:hidden;
     }
-    /* watermark من نفس الشعار */
-    .invoice-paper::before{
-      content:"";
+
+    /* Watermark بصورة حقيقية */
+    .watermark{
       position:absolute;
-      right:40px;
+      right:80px;
       bottom:80px;
       width:260px;
-      height:120px;
-      background-image:url("logo.jpg"); /* تأكد من الاسم */
-      background-repeat:no-repeat;
-      background-position:center center;
-      background-size:contain;
-      opacity:0.045;
+      opacity:0.06;
       filter:grayscale(1);
-      pointer-events:none;
       z-index:0;
+      pointer-events:none;
     }
+
     .invoice-inner{
       position:relative;
       z-index:1;
@@ -178,6 +108,7 @@
       color:#111;
     }
 
+    /* رأس الفاتورة */
     .inv-header{
       display:flex;
       justify-content:space-between;
@@ -206,7 +137,7 @@
       margin-bottom:4px;
     }
     .inv-logo-top img{
-      height:46px;
+      height:48px;
       display:block;
       margin:0 auto;
     }
@@ -227,7 +158,7 @@
       margin-bottom:2px;
       gap:6px;
     }
-    .meta-row span.label{
+    .meta-row .label{
       font-weight:bold;
     }
     .meta-row input{
@@ -246,6 +177,7 @@
       color:#4b5563;
     }
 
+    /* Bill To */
     .bill-row{
       display:flex;
       gap:16px;
@@ -269,7 +201,7 @@
       white-space:pre-wrap;
     }
 
-    /* جدول البنود */
+    /* جدول الخدمات */
     table{
       border-collapse:collapse;
       width:100%;
@@ -292,8 +224,8 @@
     .desc-label-row th{
       border-top:none;
     }
-    .text-right{ text-align:right; }
     .text-center{ text-align:center; }
+    .text-right{ text-align:right; }
 
     .cell-input, .cell-textarea{
       width:100%;
@@ -313,17 +245,16 @@
     }
 
     .add-row-bar{
-      text-align:left;
       margin-top:4px;
       font-size:10px;
     }
     .add-row-btn{
-      padding:4px 8px;
-      border:1px solid #e5e7eb;
-      background:#f9fafb;
-      font-size:10px;
-      cursor:pointer;
+      padding:3px 8px;
       border-radius:4px;
+      border:1px solid #d1d5db;
+      background:#f9fafb;
+      cursor:pointer;
+      font-size:10px;
     }
     .add-row-btn:hover{
       background:#e5e7eb;
@@ -364,12 +295,8 @@
       padding:0;
       background:transparent;
     }
-    .totals input:focus{
-      outline:none;
-    }
-    .balance{
-      font-weight:bold;
-    }
+    .totals input:focus{outline:none;}
+    .balance{font-weight:bold;}
 
     .bottom-row{
       display:flex;
@@ -378,13 +305,8 @@
       font-size:9px;
       gap:20px;
     }
-    .scope-col{
-      width:55%;
-    }
-    .scope-label{
-      font-weight:bold;
-      margin-bottom:3px;
-    }
+    .scope-col{width:55%;}
+    .scope-label{font-weight:bold;margin-bottom:3px;}
     .scope-textarea{
       width:100%;
       min-height:70px;
@@ -394,13 +316,8 @@
       resize:vertical;
       white-space:pre-wrap;
     }
-    .bank-col{
-      width:40%;
-    }
-    .bank-label{
-      font-weight:bold;
-      margin-bottom:3px;
-    }
+    .bank-col{width:40%;}
+    .bank-label{font-weight:bold;margin-bottom:3px;}
     .bank-table{
       width:100%;
       border-collapse:collapse;
@@ -420,11 +337,7 @@
       display:flex;
       justify-content:flex-start;
       align-items:flex-end;
-      gap:18px;
       font-size:9px;
-    }
-    .sign-block{
-      min-width:140px;
     }
     .sign-name{
       margin-top:18px;
@@ -437,26 +350,40 @@
       font-weight:bold;
     }
 
-    /* بطاقة تقرير الفواتير */
-    .report-card{
+    /* نافذة الفواتير (تقرير) */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.25);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+    }
+    .modal{
       background:#fff;
+      border-radius:12px;
       border:1px solid #e5e7eb;
-      border-radius:10px;
-      padding:10px 12px 12px;
+      padding:12px 14px 14px;
+      width:720px;
+      max-width:95vw;
+      max-height:80vh;
+      display:flex;
+      flex-direction:column;
       font-size:11px;
     }
-    .report-header{
+    .modal-header{
       display:flex;
       justify-content:space-between;
       align-items:center;
       margin-bottom:6px;
     }
-    .report-header h3{
+    .modal-header h3{
       margin:0;
       font-size:13px;
     }
-    .report-table-wrap{
-      max-height:220px;
+    .modal-body{
+      flex:1;
       overflow:auto;
       border:1px solid #e5e7eb;
       border-radius:8px;
@@ -464,14 +391,14 @@
     .report-table{
       width:100%;
       border-collapse:collapse;
-      font-size:11px;
     }
     .report-table th,
     .report-table td{
       padding:4px 6px;
+      font-size:11px;
       border-bottom:1px solid #e5e7eb;
-      text-align:left;
       white-space:nowrap;
+      text-align:left;
     }
     .report-table th{
       background:#f9fafb;
@@ -479,298 +406,248 @@
       top:0;
       z-index:1;
     }
-
-    @media (max-width:1000px){
-      .app{
-        flex-direction:column;
-      }
-      .sidebar{
-        max-height:none;
-        width:100%;
-        flex-direction:row;
-        gap:8px;
-      }
-      .invoice-list{
-        max-height:220px;
-      }
+    .modal-footer{
+      margin-top:6px;
+      text-align:right;
+      font-size:10px;
+      color:#6b7280;
     }
 
-    /* للطباعة: نطبع الفاتورة فقط، بدون النظام */
+    /* للطباعة: تظهر الفاتورة فقط */
     @media print{
-      body{
-        padding:0;
-        background:#fff;
-      }
-      .app{
-        margin:0;
-      }
-      .sidebar,
-      .toolbar,
-      .report-card{
-        display:none!important;
-      }
-      .invoice-paper{
+      body{background:#fff;padding:0;}
+      .topbar,.modal-backdrop{display:none!important;}
+      .page-wrap{margin:0;}
+      .invoice-page{
         border:none;
         border-radius:0;
-        padding:15mm 15mm;
+        width:100%;
+        min-height:auto;
+        padding:15mm;
       }
-      .invoice-paper::before{
-        opacity:0.04;
-      }
+      .watermark{opacity:0.04;}
     }
   </style>
 </head>
 <body>
-  <div class="app">
-    <!-- الشريط الجانبي -->
-    <aside class="sidebar">
-      <div class="sidebar-header">
-        <h2>الفواتير</h2>
-        <button id="new-invoice-btn">+ فاتورة جديدة</button>
+  <!-- شريط علوي -->
+  <div class="topbar">
+    <div class="brand">
+      <img src="logo.jpg" alt="Logo">
+      <div>
+        <div class="brand-title">Nafithat Al-Amal Co.</div>
+        <div class="brand-sub">Professional Invoice System</div>
       </div>
-      <div id="invoice-list" class="invoice-list"></div>
-      <div class="sidebar-footer">
-        يتم حفظ الفواتير على هذا الجهاز (LocalStorage).
-      </div>
-    </aside>
+    </div>
+    <div class="actions">
+      <button class="btn" id="new-btn">+ فاتورة جديدة</button>
+      <button class="btn btn-primary" id="save-btn">💾 حفظ</button>
+      <button class="btn" id="print-btn">🖨 طباعة / PDF</button>
+      <button class="btn" id="list-btn">📄 قائمة الفواتير</button>
+      <button class="btn" id="export-btn">⬇ تقرير CSV</button>
+      <button class="btn btn-danger" id="delete-btn">🗑 حذف</button>
+    </div>
+  </div>
 
-    <!-- المنطقة الرئيسية -->
-    <div class="main">
-      <div class="toolbar">
-        <div class="toolbar-left">
-          <div class="logo-wrap">
-            <img src="logo.jpg" alt="Logo">
-            <div>
-              <div class="logo-text">Nafithat Al-Amal Co.</div>
-              <div style="font-size:10px;color:#6b7280;">Invoice Management System</div>
-            </div>
+  <!-- ورقة الفاتورة -->
+  <div class="page-wrap">
+    <div class="invoice-page">
+      <!-- watermark -->
+      <img src="logo.jpg" alt="" class="watermark">
+      <div class="invoice-inner">
+        <div class="inv-header">
+          <div class="inv-company">
+            <div class="inv-company-name">Nafithat Al-Amal Co.</div>
+            <p>Address: Baghdad - Al-Wahda District - Street 52</p>
+            <p>&nbsp;</p>
+            <p>Email: sales@nafmals.com</p>
+            <p>www.nafmals.com</p>
+            <p>Phone Number: 07723571779</p>
           </div>
-        </div>
-        <div class="toolbar-right">
-          <button id="save-invoice-btn" class="btn-primary">💾 حفظ الفاتورة</button>
-          <button id="print-invoice-btn">🖨 طباعة / PDF</button>
-          <button id="delete-invoice-btn" style="color:#b91c1c;">🗑 حذف الفاتورة</button>
-        </div>
-      </div>
 
-      <!-- ورقة الفاتورة -->
-      <section class="invoice-paper">
-        <div class="invoice-inner">
-          <div class="inv-header">
-            <div class="inv-company">
-              <div class="inv-company-name">Nafithat Al-Amal Co.</div>
-              <p>Address: Baghdad - Al-Wahda District - Street 52</p>
-              <p>&nbsp;</p>
-              <p>Email: sales@nafmals.com</p>
-              <p>www.nafmals.com</p>
-              <p>Phone Number: 07723571779</p>
+          <div class="inv-right">
+            <div class="inv-logo-top">
+              <img src="logo.jpg" alt="Logo">
+              <span>Invoice</span>
             </div>
-
-            <div class="inv-right">
-              <div class="inv-logo-top">
-                <img src="logo.jpg" alt="Logo">
-                <span>Invoice</span>
+            <div class="meta">
+              <div class="meta-row">
+                <span class="label">Invoice No:</span>
+                <input id="f-number" value="">
               </div>
-              <div class="meta">
-                <div class="meta-row">
-                  <span class="label">Invoice No:</span>
-                  <input id="f-number" value="">
-                </div>
-                <div class="meta-row">
-                  <span class="label">Invoice Date:</span>
-                  <input id="f-date" value="">
-                </div>
-                <div class="meta-row">
-                  <span class="label">Contract Number:</span>
-                  <input id="f-contract" value="">
-                </div>
+              <div class="meta-row">
+                <span class="label">Invoice Date:</span>
+                <input id="f-date" value="">
               </div>
-            </div>
-          </div>
-
-          <div class="inv-title-center">Invoice</div>
-
-          <div class="bill-row">
-            <div class="bill-box">
-              <div class="bill-label">Bill To:</div>
-              <textarea id="f-billto" class="bill-textarea"></textarea>
-            </div>
-            <div class="bill-box">
-              <!-- تركناها فاضية مثل النموذج الأصلي -->
-            </div>
-          </div>
-
-          <!-- جدول البنود -->
-          <table style="margin-top:10px;">
-            <thead>
-              <tr class="desc-header-row">
-                <th colspan="8">Description of Services</th>
-              </tr>
-              <tr class="desc-label-row">
-                <th style="width:30px;">No.</th>
-                <th>DESCRIPTION</th>
-                <th style="width:80px;">Tower No.</th>
-                <th style="width:80px;">DATE</th>
-                <th style="width:55px;">UNIT</th>
-                <th style="width:50px;">QTY</th>
-                <th style="width:95px;">UNIT PRICE</th>
-                <th style="width:105px;">TOTAL PRICE</th>
-              </tr>
-            </thead>
-            <tbody id="items-body">
-              <!-- الصفوف سيتم توليدها من الجافاسكربت -->
-            </tbody>
-          </table>
-
-          <div class="add-row-bar">
-            <button type="button" class="add-row-btn" id="add-row-btn">+ إضافة بند</button>
-          </div>
-
-          <div class="thankyou">Thank you for your business!</div>
-
-          <!-- المجاميع -->
-          <table class="totals">
-            <tr>
-              <td>SUBTOTAL</td>
-              <td><input id="f-subtotal" readonly></td>
-            </tr>
-            <tr>
-              <td>DISCOUNT</td>
-              <td><input id="f-discount" type="number" value="0"></td>
-            </tr>
-            <tr>
-              <td>SUBTOTAL LESS DISCOUNT</td>
-              <td><input id="f-sub-less" readonly></td>
-            </tr>
-            <tr>
-              <td>TAX (%)</td>
-              <td><input id="f-tax" type="number" value="0"></td>
-            </tr>
-            <tr>
-              <td>SHIPPING/HANDLING</td>
-              <td><input id="f-shipping" type="number" value="0"></td>
-            </tr>
-            <tr>
-              <td class="balance">Balance Due</td>
-              <td><input id="f-balance" class="balance" readonly></td>
-            </tr>
-          </table>
-
-          <div class="bottom-row">
-            <div class="scope-col">
-              <div class="scope-label">Scope of Work:</div>
-              <textarea id="f-scope" class="scope-textarea"></textarea>
-            </div>
-            <div class="bank-col">
-              <div class="bank-label">Bank Account details</div>
-              <table class="bank-table">
-                <tr>
-                  <td>Account Name:</td>
-                  <td>Nafithat Al-Amal</td>
-                </tr>
-                <tr>
-                  <td>IBAN Code:</td>
-                  <td>IQ07NISB002000000314765</td>
-                </tr>
-                <tr>
-                  <td>Account Number:</td>
-                  <td>314765</td>
-                </tr>
-                <tr>
-                  <td>Bank:</td>
-                  <td>National Islamic Bank</td>
-                </tr>
-                <tr>
-                  <td>Currency:</td>
-                  <td>Iraqi Dinar</td>
-                </tr>
-                <tr>
-                  <td>Branch:</td>
-                  <td>Al-Kadhimiya Branch</td>
-                </tr>
-              </table>
-            </div>
-          </div>
-
-          <div class="sign-row">
-            <div class="sign-block">
-              <div class="sign-name">
-                <span>Ayad Kazem</span><br>
-                <span>Signature</span>
+              <div class="meta-row">
+                <span class="label">Contract Number:</span>
+                <input id="f-contract" value="">
               </div>
             </div>
           </div>
         </div>
-      </section>
 
-      <!-- تقرير كل الفواتير -->
-      <section class="report-card">
-        <div class="report-header">
-          <h3>تقرير الفواتير</h3>
-          <button id="export-report-btn">⬇ تصدير CSV</button>
+        <div class="inv-title-center">Invoice</div>
+
+        <div class="bill-row">
+          <div class="bill-box">
+            <div class="bill-label">Bill To:</div>
+            <textarea id="f-billto" class="bill-textarea"></textarea>
+          </div>
+          <div class="bill-box"></div>
         </div>
-        <div class="report-table-wrap">
-          <table class="report-table">
-            <thead>
-              <tr>
-                <th>Invoice No</th>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Contract</th>
-                <th>Balance (IQD)</th>
-              </tr>
-            </thead>
-            <tbody id="report-body"></tbody>
-          </table>
+
+        <!-- جدول البنود -->
+        <table style="margin-top:10px;">
+          <thead>
+            <tr class="desc-header-row">
+              <th colspan="8">Description of Services</th>
+            </tr>
+            <tr class="desc-label-row">
+              <th style="width:30px;">No.</th>
+              <th>DESCRIPTION</th>
+              <th style="width:80px;">Tower No.</th>
+              <th style="width:80px;">DATE</th>
+              <th style="width:55px;">UNIT</th>
+              <th style="width:50px;">QTY</th>
+              <th style="width:95px;">UNIT PRICE</th>
+              <th style="width:105px;">TOTAL PRICE</th>
+            </tr>
+          </thead>
+          <tbody id="items-body"></tbody>
+        </table>
+
+        <div class="add-row-bar">
+          <button type="button" class="add-row-btn" id="add-row-btn">+ إضافة بند</button>
         </div>
-      </section>
+
+        <div class="thankyou">Thank you for your business!</div>
+
+        <!-- المجاميع -->
+        <table class="totals">
+          <tr>
+            <td>SUBTOTAL</td>
+            <td><input id="f-subtotal" readonly></td>
+          </tr>
+          <tr>
+            <td>DISCOUNT</td>
+            <td><input id="f-discount" type="number" value="0"></td>
+          </tr>
+          <tr>
+            <td>SUBTOTAL LESS DISCOUNT</td>
+            <td><input id="f-sub-less" readonly></td>
+          </tr>
+          <tr>
+            <td>TAX (%)</td>
+            <td><input id="f-tax" type="number" value="0"></td>
+          </tr>
+          <tr>
+            <td>SHIPPING/HANDLING</td>
+            <td><input id="f-shipping" type="number" value="0"></td>
+          </tr>
+          <tr>
+            <td class="balance">Balance Due</td>
+            <td><input id="f-balance" class="balance" readonly></td>
+          </tr>
+        </table>
+
+        <div class="bottom-row">
+          <div class="scope-col">
+            <div class="scope-label">Scope of Work:</div>
+            <textarea id="f-scope" class="scope-textarea"></textarea>
+          </div>
+          <div class="bank-col">
+            <div class="bank-label">Bank Account details</div>
+            <table class="bank-table">
+              <tr><td>Account Name:</td><td>Nafithat Al-Amal</td></tr>
+              <tr><td>IBAN Code:</td><td>IQ07NISB002000000314765</td></tr>
+              <tr><td>Account Number:</td><td>314765</td></tr>
+              <tr><td>Bank:</td><td>National Islamic Bank</td></tr>
+              <tr><td>Currency:</td><td>Iraqi Dinar</td></tr>
+              <tr><td>Branch:</td><td>Al-Kadhimiya Branch</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="sign-row">
+          <div class="sign-name">
+            <span>Ayad Kazem</span><br>
+            <span>Signature</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة تقرير الفواتير -->
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>قائمة الفواتير</h3>
+        <button class="btn" id="close-modal-btn">إغلاق</button>
+      </div>
+      <div class="modal-body">
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Invoice No</th>
+              <th>Date</th>
+              <th>Customer</th>
+              <th>Contract</th>
+              <th>Balance (IQD)</th>
+            </tr>
+          </thead>
+          <tbody id="report-body"></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        اضغط على أي فاتورة من القائمة لفتحها.
+      </div>
     </div>
   </div>
 
   <script>
-    // ====== نموذج البيانات ======
-    const LOCAL_KEY = "naf_invoices_v1";
+    const LOCAL_KEY = "naf_invoice_system_v1";
     let invoices = [];
     let currentId = null;
 
-    // ====== أدوات ======
+    const $ = id => document.getElementById(id);
+
     function formatIQD(n){
       n = Number(n) || 0;
       return "IQD " + n.toLocaleString("en-US");
     }
-    function parseNumber(val){
-      if(typeof val !== "string") val = String(val || "");
-      return Number(val.replace(/[^\d.-]/g, "")) || 0;
+    function parseNumber(v){
+      if(typeof v !== "string") v = String(v || "");
+      return Number(v.replace(/[^\d.-]/g,"")) || 0;
     }
-    function $(id){ return document.getElementById(id); }
 
-    // ====== إنشاء سطر في جدول البنود ======
-    function createItemRow(item){
+    function createItemRow(data={}){
       const tr = document.createElement("tr");
       tr.className = "item-row";
       tr.innerHTML = `
         <td class="text-center no-cell"></td>
-        <td><textarea class="cell-textarea cell-desc">${item.desc || ""}</textarea></td>
-        <td><input class="cell-input cell-tower" value="${item.tower || ""}"></td>
-        <td><input class="cell-input cell-date" value="${item.date || ""}"></td>
-        <td class="text-center"><input class="cell-input cell-unit" value="${item.unit || ""}"></td>
-        <td class="text-center"><input class="cell-input cell-qty" type="number" min="0" value="${item.qty != null ? item.qty : 1}"></td>
-        <td class="text-right"><input class="cell-input cell-unitprice" type="number" min="0" value="${item.price != null ? item.price : 0}"></td>
-        <td class="text-right"><input class="cell-input cell-total" type="text" value="IQD 0" readonly></td>
+        <td><textarea class="cell-textarea cell-desc">${data.desc || ""}</textarea></td>
+        <td><input class="cell-input cell-tower" value="${data.tower || ""}"></td>
+        <td><input class="cell-input cell-date" value="${data.date || ""}"></td>
+        <td class="text-center"><input class="cell-input cell-unit" value="${data.unit || ""}"></td>
+        <td class="text-center"><input class="cell-input cell-qty" type="number" min="0" value="${data.qty != null ? data.qty : 1}"></td>
+        <td class="text-right"><input class="cell-input cell-price" type="number" min="0" value="${data.price != null ? data.price : 0}"></td>
+        <td class="text-right"><input class="cell-input cell-total" type="text" readonly></td>
       `;
       attachRowEvents(tr);
       return tr;
     }
 
     function updateRowNumbers(){
-      document.querySelectorAll(".item-row .no-cell").forEach((td, idx)=>{
-        td.textContent = idx + 1;
+      document.querySelectorAll(".item-row .no-cell").forEach((td,i)=>{
+        td.textContent = i+1;
       });
     }
 
     function recalcRow(tr){
-      const qty = parseNumber(tr.querySelector(".cell-qty").value);
-      const price = parseNumber(tr.querySelector(".cell-unitprice").value);
+      const qty   = parseNumber(tr.querySelector(".cell-qty").value);
+      const price = parseNumber(tr.querySelector(".cell-price").value);
       const total = qty * price;
       tr.querySelector(".cell-total").value = formatIQD(total);
       return total;
@@ -785,23 +662,22 @@
       const taxPerc  = parseNumber($("f-tax").value);
       const shipping = parseNumber($("f-shipping").value);
 
-      const subtotalLess = subtotal - discount;
-      const taxVal = subtotalLess * (taxPerc/100);
-      const balance = subtotalLess + taxVal + shipping;
+      const subLess = subtotal - discount;
+      const taxVal  = subLess * (taxPerc/100);
+      const balance = subLess + taxVal + shipping;
 
       $("f-subtotal").value = formatIQD(subtotal);
-      $("f-sub-less").value = formatIQD(subtotalLess);
-      $("f-balance").value = formatIQD(balance);
+      $("f-sub-less").value = formatIQD(subLess);
+      $("f-balance").value  = formatIQD(balance);
     }
 
     function attachRowEvents(tr){
-      tr.querySelectorAll(".cell-qty, .cell-unitprice").forEach(inp=>{
+      tr.querySelectorAll(".cell-qty,.cell-price").forEach(inp=>{
         inp.addEventListener("input", recalcTotals);
       });
     }
 
-    // ====== قراءة النموذج إلى كائن فاتورة ======
-    function readFormToInvoice(inv){
+    function readForm(inv){
       inv.number   = $("f-number").value.trim();
       inv.date     = $("f-date").value.trim();
       inv.contract = $("f-contract").value.trim();
@@ -810,12 +686,12 @@
 
       const rows = document.querySelectorAll("#items-body .item-row");
       inv.items = Array.from(rows).map(tr=>({
-        desc:   tr.querySelector(".cell-desc").value.trim(),
-        tower:  tr.querySelector(".cell-tower").value.trim(),
-        date:   tr.querySelector(".cell-date").value.trim(),
-        unit:   tr.querySelector(".cell-unit").value.trim(),
-        qty:    parseNumber(tr.querySelector(".cell-qty").value),
-        price:  parseNumber(tr.querySelector(".cell-unitprice").value)
+        desc:  tr.querySelector(".cell-desc").value.trim(),
+        tower: tr.querySelector(".cell-tower").value.trim(),
+        date:  tr.querySelector(".cell-date").value.trim(),
+        unit:  tr.querySelector(".cell-unit").value.trim(),
+        qty:   parseNumber(tr.querySelector(".cell-qty").value),
+        price: parseNumber(tr.querySelector(".cell-price").value)
       }));
 
       inv.subtotal = parseNumber($("f-subtotal").value);
@@ -825,8 +701,7 @@
       inv.balance  = parseNumber($("f-balance").value);
     }
 
-    // ====== تعبئة النموذج من كائن فاتورة ======
-    function fillFormFromInvoice(inv){
+    function fillForm(inv){
       $("f-number").value   = inv.number   || "";
       $("f-date").value     = inv.date     || "";
       $("f-contract").value = inv.contract || "";
@@ -834,9 +709,8 @@
       $("f-scope").value    = inv.scope    || "";
 
       $("items-body").innerHTML = "";
-      (inv.items && inv.items.length ? inv.items : [{}, {}, {}, {}]).forEach(item=>{
-        $("items-body").appendChild(createItemRow(item));
-      });
+      const items = inv.items && inv.items.length ? inv.items : [{},{},{},{}];
+      items.forEach(it => $("items-body").appendChild(createItemRow(it)));
       updateRowNumbers();
 
       $("f-discount").value = inv.discount != null ? inv.discount : 0;
@@ -846,27 +720,36 @@
       recalcTotals();
     }
 
-    // ====== قائمة الفواتير ======
-    function renderInvoiceList(){
-      const list = $("invoice-list");
-      list.innerHTML = "";
-      if(!invoices.length){
-        list.innerHTML = "<div style='font-size:11px;color:#6b7280;'>لا توجد فواتير بعد.</div>";
-        return;
-      }
-      invoices
-        .slice()
-        .sort((a,b)=> (b.date||"").localeCompare(a.date||""))
-        .forEach(inv=>{
-          const div = document.createElement("div");
-          div.className = "invoice-item" + (inv.id === currentId ? " active" : "");
-          div.dataset.id = inv.id;
-          div.innerHTML = `
-            <strong>${inv.number || "(بدون رقم)"}</strong>
-            <span>${inv.date || ""} — ${inv.billTo ? inv.billTo.split("\n")[0] : ""}</span>
-          `;
-          list.appendChild(div);
-        });
+    function saveAll(){
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(invoices));
+      renderReport();
+    }
+
+    function loadAll(){
+      try{
+        const raw = localStorage.getItem(LOCAL_KEY);
+        if(!raw) return;
+        const data = JSON.parse(raw);
+        if(Array.isArray(data)) invoices = data;
+      }catch(e){console.error(e);}
+    }
+
+    function newInvoice(){
+      const id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
+      const today = new Date().toISOString().slice(0,10);
+      const inv = {
+        id,
+        number: "NA-" + today.replace(/-/g,"") + "-INV",
+        date: today,
+        contract:"",
+        billTo:"",
+        scope:"",
+        items:[]
+      };
+      invoices.push(inv);
+      currentId = id;
+      fillForm(inv);
+      saveAll();
     }
 
     function renderReport(){
@@ -881,6 +764,7 @@
         .sort((a,b)=> (b.date||"").localeCompare(a.date||""))
         .forEach(inv=>{
           const tr = document.createElement("tr");
+          tr.dataset.id = inv.id;
           tr.innerHTML = `
             <td>${inv.number || ""}</td>
             <td>${inv.date || ""}</td>
@@ -888,121 +772,67 @@
             <td>${inv.contract || ""}</td>
             <td style="text-align:right;">${inv.balance != null ? inv.balance.toLocaleString("en-US") : ""}</td>
           `;
+          tr.addEventListener("click", ()=>{
+            currentId = inv.id;
+            fillForm(inv);
+            $("modal-backdrop").style.display = "none";
+          });
           tbody.appendChild(tr);
         });
     }
 
-    // ====== حفظ / تحميل ======
-    function saveAll(){
-      localStorage.setItem(LOCAL_KEY, JSON.stringify(invoices));
-      renderInvoiceList();
-      renderReport();
-    }
-    function loadAll(){
-      try{
-        const raw = localStorage.getItem(LOCAL_KEY);
-        if(!raw) return;
-        const data = JSON.parse(raw);
-        if(Array.isArray(data)){
-          invoices = data;
-        }
-      }catch(e){
-        console.error("Error loading invoices", e);
-      }
-    }
-
-    // ====== إنشاء فاتورة جديدة ======
-    function createNewInvoice(){
-      const id = (typeof crypto !== "undefined" && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
-      const today = new Date().toISOString().slice(0,10);
-      const inv = {
-        id,
-        number: "NA-" + today.replace(/-/g,"") + "-INV",
-        date: today,
-        contract:"",
-        billTo:"",
-        scope:"",
-        items:[]
-      };
-      invoices.push(inv);
-      currentId = id;
-      fillFormFromInvoice(inv);
-      saveAll();
-    }
-
-    // ====== أحداث الواجهة ======
-    $("new-invoice-btn").addEventListener("click", ()=>{
-      createNewInvoice();
-      renderInvoiceList();
-    });
-
-    $("invoice-list").addEventListener("click", (e)=>{
-      const item = e.target.closest(".invoice-item");
-      if(!item) return;
-      const id = item.dataset.id;
-      const inv = invoices.find(i=>i.id===id);
-      if(!inv) return;
-      currentId = id;
-      fillFormFromInvoice(inv);
-      renderInvoiceList();
-    });
-
-    $("save-invoice-btn").addEventListener("click", ()=>{
-      if(!currentId){
-        createNewInvoice();
-      }
-      const inv = invoices.find(i=>i.id===currentId);
-      if(!inv) return;
-      recalcTotals();
-      readFormToInvoice(inv);
-      saveAll();
-      alert("تم حفظ الفاتورة ✅");
-    });
-
-    $("delete-invoice-btn").addEventListener("click", ()=>{
-      if(!currentId){
-        alert("لا توجد فاتورة محددة.");
-        return;
-      }
-      if(!confirm("هل تريد حذف هذه الفاتورة بالكامل؟")) return;
-      invoices = invoices.filter(i=>i.id!==currentId);
-      currentId = invoices[0]?.id || null;
-      if(currentId){
-        fillFormFromInvoice(invoices[0]);
-      }else{
-        $("items-body").innerHTML = "";
-        $("f-number").value = "";
-        $("f-date").value   = "";
-        $("f-contract").value = "";
-        $("f-billto").value = "";
-        $("f-scope").value  = "";
-        recalcTotals();
-      }
-      saveAll();
-    });
-
-    $("print-invoice-btn").addEventListener("click", ()=>{
-      window.print(); // المستخدم يختار "Save as PDF"
-    });
-
+    // --- أزرار الواجهة ---
     $("add-row-btn").addEventListener("click", ()=>{
-      const tbody = $("items-body");
-      tbody.appendChild(createItemRow({qty:1,price:0}));
+      $("items-body").appendChild(createItemRow({qty:1,price:0}));
       updateRowNumbers();
       recalcTotals();
     });
 
-    // تغييرات على حقول الخصم والضريبة والشحن
     ["f-discount","f-tax","f-shipping"].forEach(id=>{
       $(id).addEventListener("input", recalcTotals);
     });
 
-    // تصدير تقرير CSV
-    $("export-report-btn").addEventListener("click", ()=>{
-      if(!invoices.length){
-        alert("لا توجد فواتير لتصديرها.");
-        return;
+    $("save-btn").addEventListener("click", ()=>{
+      if(!currentId) newInvoice();
+      const inv = invoices.find(i=>i.id===currentId);
+      if(!inv) return;
+      recalcTotals();
+      readForm(inv);
+      saveAll();
+      alert("تم حفظ الفاتورة ✅");
+    });
+
+    $("new-btn").addEventListener("click", ()=>{
+      newInvoice();
+      alert("تم إنشاء فاتورة جديدة.");
+    });
+
+    $("delete-btn").addEventListener("click", ()=>{
+      if(!currentId){alert("لا توجد فاتورة محددة.");return;}
+      if(!confirm("هل تريد حذف هذه الفاتورة؟"))return;
+      invoices = invoices.filter(i=>i.id!==currentId);
+      currentId = invoices[0]?.id || null;
+      if(currentId){
+        fillForm(invoices[0]);
+      }else{
+        $("items-body").innerHTML="";
+        fillForm({items:[]});
       }
+      saveAll();
+    });
+
+    $("print-btn").addEventListener("click", ()=> window.print());
+
+    $("list-btn").addEventListener("click", ()=>{
+      $("modal-backdrop").style.display = "flex";
+      renderReport();
+    });
+    $("close-modal-btn").addEventListener("click", ()=>{
+      $("modal-backdrop").style.display = "none";
+    });
+
+    $("export-btn").addEventListener("click", ()=>{
+      if(!invoices.length){alert("لا توجد فواتير لتصديرها.");return;}
       const header = ["Invoice No","Date","Customer","Contract","Balance (IQD)"];
       const lines = [header.join(",")];
       invoices.forEach(inv=>{
@@ -1024,17 +854,16 @@
       URL.revokeObjectURL(url);
     });
 
-    // ====== تهيئة أولية ======
+    // === تهيئة أولية ===
     (function init(){
       loadAll();
       if(!invoices.length){
-        createNewInvoice();
+        newInvoice();
       }else{
         currentId = invoices[0].id;
-        fillFormFromInvoice(invoices[0]);
+        fillForm(invoices[0]);
+        renderReport();
       }
-      renderInvoiceList();
-      renderReport();
     })();
   </script>
 </body>
