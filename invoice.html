@@ -2,7 +2,7 @@
 <html lang="ar" dir="ltr">
 <head>
   <meta charset="UTF-8">
-  <title>Nafithat Al-Amal - Invoice System</title>
+  <title>Nafithat Al-Amal - Invoice System (Local)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
@@ -603,10 +603,11 @@
   <!-- الشريط العلوي -->
   <div class="topbar-main">
     <div class="brand">
+      <!-- يمكنك استبدال src بشعارك الفعلي -->
       <img src="logo-main.png" alt="Logo">
       <div>
         <div class="brand-name">Nafithat Al-Amal Co.</div>
-        <div class="brand-sub">Invoice Management System</div>
+        <div class="brand-sub">Invoice Management System (Local)</div>
       </div>
     </div>
     <div class="top-actions">
@@ -701,6 +702,8 @@
             <option value="paid">مدفوعة</option>
           </select>
           <button class="btn" id="btn-back">⬅ رجوع للوحة</button>
+          <button class="btn" id="btn-duplicate">📄 نسخة من الفاتورة</button>
+          <button class="btn btn-danger" id="btn-delete">🗑 حذف الفاتورة</button>
           <button class="btn btn-primary" id="btn-save">💾 حفظ الفاتورة</button>
           <button class="btn" id="btn-print">🖨 طباعة / PDF</button>
         </div>
@@ -793,7 +796,7 @@
                 <td><input id="f-sub-less" readonly></td>
               </tr>
               <tr>
-                <td>TAX (0%)</td>
+                <td>TAX (%)</td>
                 <td><input id="f-tax" type="number" value="0"></td>
               </tr>
               <tr>
@@ -865,7 +868,10 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "naf_invoice_system_v3";
+    // ======================
+    // إعداد عام + تخزين محلي
+    // ======================
+    const STORAGE_KEY = "naf_invoice_system_local_v1";
     let invoices = [];
     let currentId = null;
     let currentFilter = "all";
@@ -884,7 +890,27 @@
       return Number(v.replace(/[^\d.-]/g,"")) || 0;
     }
 
-    // ==== إنشاء صف بند ====
+    // 🎯 التخزين المحلي: ممكن تغييره لاحقاً لـ API فقط من هنا
+    function loadInvoices(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return;
+        const arr = JSON.parse(raw);
+        if(Array.isArray(arr)) invoices = arr;
+      }catch(e){
+        console.error("Error loading invoices:", e);
+      }
+    }
+
+    function saveInvoices(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
+      renderDashboard();
+      renderReport();
+    }
+
+    // ======================
+    // إنشاء / إدارة بنود الفاتورة
+    // ======================
     function createItemRow(data={}){
       const tr = document.createElement("tr");
       tr.className = "item-row";
@@ -943,7 +969,9 @@
       });
     }
 
-    // ==== قراءة / تعبئة الفورم ====
+    // ======================
+    // قراءة / تعبئة النموذج
+    // ======================
     function readForm(inv){
       inv.number      = $("f-number").value.trim();
       inv.issueDate   = $("f-date").value.trim();
@@ -996,51 +1024,9 @@
       $("editor-subtitle").textContent = inv.number ? `(${inv.number})` : "";
     }
 
-    // ==== تخزين / تحميل ====
-    function loadInvoices(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return;
-        const arr = JSON.parse(raw);
-        if(Array.isArray(arr)) invoices = arr;
-      }catch(e){console.error(e);}
-    }
-
-    function saveInvoices(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
-      renderDashboard();
-      renderReport();
-    }
-
-    // ==== إنشاء فاتورة جديدة ====
-    function createNewInvoice(){
-      const id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Date.now());
-      const today = todayStr();
-      const inv = {
-        id,
-        number:"NA-"+today.replace(/-/g,"")+"-INV",
-        issueDate:today,
-        dueDate:today,
-        contract:"",
-        billTo:"",
-        customerName:"",
-        scope:"",
-        items:[],
-        subtotal:0,
-        discount:0,
-        taxPerc:0,
-        shipping:0,
-        balance:0,
-        status:"draft",
-        createdAt:new Date().toISOString(),
-        updatedAt:new Date().toISOString()
-      };
-      invoices.push(inv);
-      saveInvoices();
-      openEditor(inv.id);
-    }
-
-    // ==== واجهة اللوحة ====
+    // ======================
+    // واجهة اللوحة (Dashboard)
+    // ======================
     function showDashboard(){
       $("dashboard").style.display = "";
       $("editor").style.display = "none";
@@ -1058,17 +1044,6 @@
       showEditor();
     }
 
-    function getStatusBadge(status,inv){
-      let cls="badge-draft",txt="مسودة";
-      if(status==="paid"){cls="badge-paid";txt="مدفوعة";}
-      else if(status==="unpaid"){
-        const overdue = isOverdue(inv);
-        cls = overdue?"badge-overdue":"badge-unpaid";
-        txt = overdue?"متأخرة":"غير مدفوعة";
-      }
-      return `<span class="badge ${cls}">${txt}</span>`;
-    }
-
     function isOverdue(inv){
       if(inv.status==="paid") return false;
       if(!inv.dueDate) return false;
@@ -1084,6 +1059,17 @@
       const today = new Date(todayStr());
       const diff = (d - today)/(1000*60*60*24);
       return diff>=0 && diff<=30;
+    }
+
+    function getStatusBadge(status,inv){
+      let cls="badge-draft",txt="مسودة";
+      if(status==="paid"){cls="badge-paid";txt="مدفوعة";}
+      else if(status==="unpaid"){
+        const overdue = isOverdue(inv);
+        cls = overdue?"badge-overdue":"badge-unpaid";
+        txt = overdue?"متأخرة":"غير مدفوعة";
+      }
+      return `<span class="badge ${cls}">${txt}</span>`;
     }
 
     function renderDashboard(){
@@ -1166,7 +1152,9 @@
       });
     }
 
-    // ==== تقرير الفواتير (النافذة) ====
+    // ======================
+    // تقرير الفواتير (النافذة)
+    // ======================
     function renderReport(){
       const tbody = $("report-body");
       tbody.innerHTML = "";
@@ -1176,10 +1164,10 @@
       }
       invoices.slice().sort((a,b)=>(b.issueDate||"").localeCompare(a.issueDate||""))
         .forEach(inv=>{
-          const tr = document.createElement("tr");
           const statusTxt = inv.status==="paid" ? "مدفوعة" :
                             inv.status==="unpaid" ? (isOverdue(inv)?"متأخرة":"غير مدفوعة") :
                             "مسودة";
+          const tr = document.createElement("tr");
           tr.innerHTML = `
             <td>${inv.number || ""}</td>
             <td>${inv.issueDate || ""}</td>
@@ -1196,15 +1184,49 @@
         });
     }
 
-    // ==== أزرار عامة ====
-    $("btn-dashboard").addEventListener("click", showDashboard);
-    $("btn-new").addEventListener("click", createNewInvoice);
-    $("btn-back").addEventListener("click", showDashboard);
-    $("btn-print").addEventListener("click", ()=>window.print());
+    // ======================
+    // إنشاء / حذف / نسخ الفواتير (محليًا)
+    // ======================
+    function generateId(){
+      if(window.crypto && crypto.randomUUID){
+        return crypto.randomUUID();
+      }
+      return String(Date.now()) + "-" + String(Math.random()).slice(2);
+    }
 
-    $("btn-save").addEventListener("click", ()=>{
+    function createNewInvoice(){
+      const today = todayStr();
+      const id = generateId();
+      const inv = {
+        id,
+        number:"NA-"+today.replace(/-/g,"")+"-INV",
+        issueDate:today,
+        dueDate:today,
+        contract:"",
+        billTo:"",
+        customerName:"",
+        scope:"",
+        items:[],
+        subtotal:0,
+        discount:0,
+        taxPerc:0,
+        shipping:0,
+        balance:0,
+        status:"draft",
+        createdAt:new Date().toISOString(),
+        updatedAt:new Date().toISOString()
+      };
+      invoices.push(inv);
+      currentId = id;
+      fillForm(inv);
+      saveInvoices();
+      showEditor();
+    }
+
+    function saveCurrentInvoice(){
       if(!currentId){
-        alert("لا توجد فاتورة محددة.");
+        // في حالة تم فتح المحرر بدون id (نادرًا)
+        createNewInvoice();
         return;
       }
       const inv = invoices.find(i=>i.id===currentId);
@@ -1213,9 +1235,51 @@
       readForm(inv);
       saveInvoices();
       alert("تم حفظ الفاتورة ✅");
-    });
+    }
 
-    $("btn-export").addEventListener("click", ()=>{
+    function deleteCurrentInvoice(){
+      if(!currentId){
+        alert("لا توجد فاتورة محددة لحذفها.");
+        return;
+      }
+      const ok = confirm("هل أنت متأكد من حذف هذه الفاتورة؟ لا يمكن التراجع.");
+      if(!ok) return;
+      invoices = invoices.filter(inv => inv.id !== currentId);
+      currentId = null;
+      saveInvoices();
+      showDashboard();
+      alert("تم حذف الفاتورة ✅");
+    }
+
+    function duplicateCurrentInvoice(){
+      if(!currentId){
+        alert("لا توجد فاتورة مفتوحة لنسخها.");
+        return;
+      }
+      const original = invoices.find(i=>i.id===currentId);
+      if(!original) return;
+      const id = generateId();
+      const copy = JSON.parse(JSON.stringify(original));
+      const today = todayStr();
+      copy.id = id;
+      copy.number = original.number ? original.number + "-COPY" : "NA-"+today.replace(/-/g,"")+"-INV";
+      copy.issueDate = today;
+      copy.dueDate = today;
+      copy.status = "draft";
+      copy.createdAt = new Date().toISOString();
+      copy.updatedAt = new Date().toISOString();
+      invoices.push(copy);
+      currentId = id;
+      fillForm(copy);
+      saveInvoices();
+      showEditor();
+      alert("تم إنشاء نسخة من الفاتورة ✅");
+    }
+
+    // ======================
+    // تصدير CSV
+    // ======================
+    function exportCsv(){
       if(!invoices.length){
         alert("لا توجد فواتير لتصديرها.");
         return;
@@ -1244,71 +1308,83 @@
       a.download = "invoices-report.csv";
       a.click();
       URL.revokeObjectURL(url);
-    });
+    }
 
-    // تقرير نافذة
-    $("btn-dashboard").addEventListener("click", ()=>{
-      showDashboard();
-    });
-    $("close-modal-btn").addEventListener("click", ()=>{
-      $("modal-backdrop").style.display = "none";
-    });
-    // زر فتح نافذة التقرير من داخل لوحة الفواتير (بالضغط على إجمالي الفواتير مثلاً مستقبلاً) يمكن إضافة زر مستقل
-    document.addEventListener("keydown", (e)=>{
-      if(e.key==="Escape"){
+    // ======================
+    // ربط الأحداث
+    // ======================
+    function setupEvents(){
+      $("btn-dashboard").addEventListener("click", showDashboard);
+      $("btn-new").addEventListener("click", createNewInvoice);
+      $("btn-back").addEventListener("click", showDashboard);
+      $("btn-print").addEventListener("click", ()=>window.print());
+      $("btn-save").addEventListener("click", saveCurrentInvoice);
+      $("btn-delete").addEventListener("click", deleteCurrentInvoice);
+      $("btn-duplicate").addEventListener("click", duplicateCurrentInvoice);
+      $("btn-export").addEventListener("click", exportCsv);
+
+      $("close-modal-btn").addEventListener("click", ()=>{
         $("modal-backdrop").style.display = "none";
-      }
-    });
+      });
+      document.addEventListener("keydown", (e)=>{
+        if(e.key==="Escape"){
+          $("modal-backdrop").style.display = "none";
+        }
+      });
 
-    // فتح نافذة التقرير عندما تضغط على كلمة "قائمة الفواتير" في أعلى المتصفح؟
-    // يمكنك استدعاء:
-    document.getElementById("btn-dashboard").insertAdjacentHTML("afterend",
-      '<button class="btn" id="btn-report">📄 تقرير الفواتير</button>');
-    document.getElementById("btn-report").addEventListener("click", ()=>{
-      $("modal-backdrop").style.display = "flex";
-      renderReport();
-    });
+      // زر تقرير الفواتير
+      document.getElementById("btn-dashboard").insertAdjacentHTML("afterend",
+        '<button class="btn" id="btn-report">📄 تقرير الفواتير</button>');
+      document.getElementById("btn-report").addEventListener("click", ()=>{
+        $("modal-backdrop").style.display = "flex";
+        renderReport();
+      });
 
-    // فلاتر الحالة
-    document.querySelectorAll(".status-pill").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
-        btn.classList.add("active");
-        currentFilter = btn.dataset.filter;
+      // فلاتر الحالة
+      document.querySelectorAll(".status-pill").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
+          btn.classList.add("active");
+          currentFilter = btn.dataset.filter;
+          renderDashboard();
+        });
+      });
+
+      // البحث
+      $("search-input").addEventListener("input", ()=>{
         renderDashboard();
       });
-    });
 
-    // البحث
-    $("search-input").addEventListener("input", ()=>{
-      renderDashboard();
-    });
+      // تغيّر الحالة من الـ select
+      $("status-select").addEventListener("change", ()=>{
+        if(!currentId) return;
+        const inv = invoices.find(i=>i.id===currentId);
+        if(!inv) return;
+        inv.status = $("status-select").value;
+        saveInvoices();
+      });
 
-    // تغيّر الحالة من الـ select
-    $("status-select").addEventListener("change", ()=>{
-      if(!currentId) return;
-      const inv = invoices.find(i=>i.id===currentId);
-      if(!inv) return;
-      inv.status = $("status-select").value;
-      saveInvoices();
-    });
+      // حقول المجاميع
+      ["f-discount","f-tax","f-shipping"].forEach(id=>{
+        $(id).addEventListener("input", recalcTotals);
+      });
 
-    // حقول المجاميع
-    ["f-discount","f-tax","f-shipping"].forEach(id=>{
-      $(id).addEventListener("input", recalcTotals);
-    });
+      // زر إضافة بند
+      $("add-row-btn").addEventListener("click", ()=>{
+        $("items-body").appendChild(createItemRow({qty:1,price:0}));
+        updateRowNumbers();
+        recalcTotals();
+      });
+    }
 
-    // زر إضافة بند
-    $("add-row-btn").addEventListener("click", ()=>{
-      $("items-body").appendChild(createItemRow({qty:1,price:0}));
-      updateRowNumbers();
-      recalcTotals();
-    });
-
-    // ==== تهيئة أولية ====
+    // ======================
+    // تهيئة أولية
+    // ======================
     (function init(){
+      setupEvents();
       loadInvoices();
       if(!invoices.length){
+        // أول مرة: أنشئ فاتورة مسودة مباشرة لسهولة الاستخدام
         createNewInvoice();
       }else{
         showDashboard();
