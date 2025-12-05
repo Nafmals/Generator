@@ -167,10 +167,12 @@
       <button class="btn btn-primary" id="btn-dashboard">📊 لوحة الفواتير</button>
       <button class="btn" id="btn-contracts">📑 العقود (PO)</button>
       <button class="btn" id="btn-report">📄 تقرير الفواتير</button>
-      <button class="btn" id="btn-new">+ فاتورة جديدة</button>
+      <!-- مهم: استدعاء الدالة مباشرة -->
+      <button class="btn" id="btn-new" onclick="createNewInvoice()">+ فاتورة جديدة</button>
       <button class="btn" id="btn-export">⬇ تقرير Excel (CSV)</button>
       <button class="btn" id="btn-save-json">💾 حفظ JSON</button>
       <button class="btn" id="btn-load-json">📂 استرداد JSON</button>
+      <button class="btn btn-danger" id="btn-reset">🧹 إعادة ضبط</button>
       <input type="file" id="json-file-input" accept="application/json" style="display:none">
     </div>
   </div>
@@ -978,11 +980,20 @@
       reader.readAsText(file,"utf-8");
     }
 
+    function resetSystem(){
+      if(!confirm("سيتم حذف كل الفواتير المخزّنة محليًا، هل أنت متأكد؟")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      invoices = [];
+      currentId = null;
+      saveInvoices();
+      showDashboard();
+      alert("تمت إعادة ضبط النظام ✅");
+    }
+
     function setupEvents(){
       $("btn-dashboard").addEventListener("click", showDashboard);
       $("btn-contracts").addEventListener("click", showContracts);
       $("btn-report").addEventListener("click", ()=>{ $("modal-backdrop").style.display="flex"; renderReport(); });
-      $("btn-new").addEventListener("click", createNewInvoice);
       $("btn-back").addEventListener("click", showDashboard);
       $("btn-print").addEventListener("click", ()=>window.print());
       $("btn-save").addEventListener("click", saveCurrentInvoice);
@@ -991,6 +1002,8 @@
       $("btn-export").addEventListener("click", exportCsv);
       $("btn-save-json").addEventListener("click", exportJson);
       $("btn-load-json").addEventListener("click", ()=>$("json-file-input").click());
+      $("btn-reset").addEventListener("click", resetSystem);
+
       $("json-file-input").addEventListener("change", e=>{
         const file = e.target.files[0];
         if(file) importJsonFromFile(file);
@@ -1025,11 +1038,16 @@
         recalcTotals();
       });
       $("po-filter").addEventListener("change", ()=>{ currentPoFilter = $("po-filter").value; renderDashboard(); });
+
+      // جعل بعض الدوال متاحة من الـ HTML
+      window.createNewInvoice = createNewInvoice;
+      window.editInvoice = editInvoice;
+      window.deleteInvoiceById = deleteInvoiceById;
     }
 
     (function init(){
       setupEvents();
-      loadInvoices();      // يبدأ إما فارغ أو من LocalStorage إذا سبق الحفظ
+      loadInvoices();      // يبدأ فارغ أو ببيانات مخزنة سابقاً
       renderPoFilterOptions();
       showDashboard();
       renderDashboard();
