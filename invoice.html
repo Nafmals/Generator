@@ -41,8 +41,10 @@
     .po-filter{font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;}
 
     .summary-cards{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-bottom:10px;}
-    .card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:8px 10px;font-size:11px;position:relative;overflow:hidden;}
+    .card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:8px 10px;font-size:11px;position:relative;overflow:hidden;cursor:pointer;transition:box-shadow .12s,border-color .12s,transform .12s;}
     .card::after{content:"";position:absolute;inset:auto -40px -40px auto;width:80px;height:80px;border-radius:999px;background:radial-gradient(circle,#e5e7eb 0,transparent 60%);opacity:.8;}
+    .card:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.2);}
+    .card.card-active{border-color:#111827;box-shadow:0 0 0 1px #111827,0 8px 18px rgba(15,23,42,.18);}
     .card-label{color:#6b7280;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:4px;}
     .card-label span{font-size:9px;color:#9ca3af;}
     .card-value{font-size:14px;font-weight:bold;}
@@ -210,7 +212,7 @@
       </div>
 
       <div class="summary-cards">
-        <div class="card">
+        <div class="card" id="card-total" data-type="total">
           <div class="card-label">
             إجمالي الفواتير
             <span>حسب الفلاتر الحالية</span>
@@ -218,7 +220,7 @@
           <div class="card-value" id="card-total-amount">IQD 0</div>
           <div class="card-sub" id="card-total-count">0 فاتورة</div>
         </div>
-        <div class="card">
+        <div class="card" id="card-overdue" data-type="overdue">
           <div class="card-label">
             الفواتير المتأخرة
             <span>غير مدفوعة بعد تاريخ الاستحقاق</span>
@@ -226,7 +228,7 @@
           <div class="card-value" id="card-overdue-amount">IQD 0</div>
           <div class="card-sub" id="card-overdue-count">0 فاتورة</div>
         </div>
-        <div class="card">
+        <div class="card" id="card-soon" data-type="soon">
           <div class="card-label">
             تستحق خلال 30 يوم
             <span>تنبيه مبكر</span>
@@ -234,7 +236,7 @@
           <div class="card-value" id="card-soon-amount">IQD 0</div>
           <div class="card-sub" id="card-soon-count">0 فاتورة</div>
         </div>
-        <div class="card">
+        <div class="card" id="card-paid" data-type="paid">
           <div class="card-label">
             المدفوع
             <span>تم تسويته</span>
@@ -242,7 +244,7 @@
           <div class="card-value" id="card-paid-amount">IQD 0</div>
           <div class="card-sub" id="card-paid-count">0 فاتورة</div>
         </div>
-        <div class="card">
+        <div class="card" id="card-unpaid" data-type="unpaid">
           <div class="card-label">
             غير المدفوع
             <span>بما في ذلك المتأخرة</span>
@@ -493,6 +495,7 @@
     let currentId = null;
     let currentFilter = "all";
     let currentPoFilter = "all";
+    let specialFilter = "none"; // none | soon  (خاصة بكرت "تستحق خلال 30 يوم")
     const $ = id => document.getElementById(id);
 
     function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -693,6 +696,12 @@
         ].join(" ").toLowerCase();
         if(!hay.includes(searchText)) return false;
       }
+
+      // specialFilter خاص بكرت "تستحق خلال 30 يوم"
+      if(specialFilter === "soon"){
+        return isDueSoon(inv);
+      }
+
       if(currentFilter==="paid")   return inv.status==="paid";
       if(currentFilter==="draft")  return inv.status==="draft";
       if(currentFilter==="unpaid") return inv.status==="unpaid" && !isOverdue(inv);
@@ -723,6 +732,9 @@
         total += inv.balance || 0; countTotal++;
         if(inv.status==="paid"){paid+=inv.balance||0;countPaid++;}
         else{unpaid+=inv.balance||0;countUnpaid++;}
+      });
+
+      invoices.forEach(inv=>{
         if(isOverdue(inv)){overdueAmt+=inv.balance||0;countOverdue++;}
         if(isDueSoon(inv)){soonAmt+=inv.balance||0;countSoon++;}
       });
@@ -837,6 +849,11 @@
           currentPoFilter = contractNo;
           $("po-filter").value = contractNo;
           showDashboard();
+          // نعيد الفلاتر إلى الكل عند اختيار عقد
+          currentFilter = "all";
+          specialFilter = "none";
+          updateActiveStatusPills();
+          highlightCard("total");
           renderDashboard();
         });
         tbody.appendChild(tr);
@@ -990,8 +1007,48 @@
       alert("تمت إعادة ضبط النظام ✅");
     }
 
+    function highlightCard(type){
+      document.querySelectorAll(".card[data-type]").forEach(c=>{
+        c.classList.toggle("card-active", c.dataset.type === type);
+      });
+    }
+
+    function updateActiveStatusPills(){
+      document.querySelectorAll(".status-pill").forEach(b=>{
+        b.classList.remove("active");
+        if(currentFilter === b.dataset.filter){
+          b.classList.add("active");
+        }
+        if(currentFilter==="all" && b.dataset.filter==="all"){
+          b.classList.add("active");
+        }
+      });
+    }
+
+    function setFilterFromCard(type){
+      specialFilter = "none";
+      if(type === "total"){
+        currentFilter = "all";
+      }else if(type === "overdue"){
+        currentFilter = "overdue";
+      }else if(type === "soon"){
+        currentFilter = "all";
+        specialFilter = "soon";
+      }else if(type === "paid"){
+        currentFilter = "paid";
+      }else if(type === "unpaid"){
+        currentFilter = "unpaid";
+      }
+      highlightCard(type);
+      updateActiveStatusPills();
+      renderDashboard();
+    }
+
     function setupEvents(){
-      $("btn-dashboard").addEventListener("click", showDashboard);
+      $("btn-dashboard").addEventListener("click", ()=>{
+        showDashboard();
+        highlightCard("total");
+      });
       $("btn-contracts").addEventListener("click", showContracts);
       $("btn-report").addEventListener("click", ()=>{ $("modal-backdrop").style.display="flex"; renderReport(); });
       $("btn-back").addEventListener("click", showDashboard);
@@ -1018,6 +1075,8 @@
           document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
           btn.classList.add("active");
           currentFilter = btn.dataset.filter;
+          specialFilter = "none";
+          highlightCard("total");
           renderDashboard();
         });
       });
@@ -1039,6 +1098,13 @@
       });
       $("po-filter").addEventListener("change", ()=>{ currentPoFilter = $("po-filter").value; renderDashboard(); });
 
+      // كروت المجاميع كفلاتر
+      [["card-total","total"],["card-overdue","overdue"],["card-soon","soon"],["card-paid","paid"],["card-unpaid","unpaid"]]
+        .forEach(([id,type])=>{
+          const el = $(id);
+          if(el) el.addEventListener("click", ()=>setFilterFromCard(type));
+        });
+
       // جعل بعض الدوال متاحة من الـ HTML
       window.createNewInvoice = createNewInvoice;
       window.editInvoice = editInvoice;
@@ -1050,6 +1116,7 @@
       loadInvoices();      // يبدأ فارغ أو ببيانات مخزنة سابقاً
       renderPoFilterOptions();
       showDashboard();
+      highlightCard("total");
       renderDashboard();
       renderReport();
       renderContracts();
