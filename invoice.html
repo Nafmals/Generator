@@ -553,8 +553,22 @@
       font-weight:bold;
     }
 
+    .note-block{
+      margin-top:12px;
+      font-size:9px;
+    }
+    .note-block textarea{
+      width:100%;
+      min-height:60px;
+      border:1px solid #d1d5db;
+      border-radius:4px;
+      padding:4px;
+      font-size:9px;
+      resize:vertical;
+    }
+
     .sign-row{
-      margin-top:40px;
+      margin-top:32px;
       display:flex;
       justify-content:flex-start;
       font-size:9px;
@@ -720,7 +734,7 @@
         <div class="card">
           <div class="card-label">
             إجمالي الفواتير
-            <span>لكل العقود / الفلتر الحالي</span>
+            <span>حسب الفلاتر الحالية</span>
           </div>
           <div class="card-value" id="card-total-amount">IQD 0</div>
           <div class="card-sub" id="card-total-count">0 فاتورة</div>
@@ -769,6 +783,7 @@
               <th>العقد (PO)</th>
               <th>العميل</th>
               <th>الوصف المختصر</th>
+              <th>تفاصيل</th>
               <th>الحالة</th>
               <th>المبلغ (Balance)</th>
             </tr>
@@ -949,6 +964,11 @@
             </div>
           </div>
 
+          <div class="note-block">
+            <div style="font-weight:bold;margin-bottom:3px;">Invoice Notes (Internal):</div>
+            <textarea id="f-note" placeholder="ملاحظات داخلية، تفاصيل إضافية، مرجع دفع، رقم شيك ..."></textarea>
+          </div>
+
           <div class="sign-row">
             <div class="sign-name">
               <span>Ayad Kazem</span><br>
@@ -1067,6 +1087,7 @@
       inv.billTo      = $("f-billto").value.trim();
       inv.scope       = $("f-scope").value.trim();
       inv.status      = $("status-select").value;
+      inv.note        = $("f-note").value.trim();
 
       const firstLine = inv.billTo.split("\n")[0] || "";
       inv.customerName = firstLine;
@@ -1096,6 +1117,7 @@
       $("f-contract").value = inv.contract    || "";
       $("f-billto").value   = inv.billTo      || "";
       $("f-scope").value    = inv.scope       || "";
+      $("f-note").value     = inv.note        || "";
       $("status-select").value = inv.status || "draft";
 
       $("items-body").innerHTML = "";
@@ -1122,16 +1144,16 @@
 
     function saveInvoices(){
       localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
+      renderPoFilterOptions();
       renderDashboard();
       renderReport();
       renderContracts();
-      renderPoFilterOptions();
     }
 
     function getSeedInvoices(){
       const base = [];
 
-      // ---- بيانات PO00023 & 4400013837 (مثل جدولك الأول) ----
+      // ---- PO00023 + 4400013837 ----
       base.push(
         {
           id:"seed-1",
@@ -1142,6 +1164,7 @@
           billTo:"",
           customerName:"",
           scope:DESC1,
+          note:"",
           items:[{desc:DESC1,location:"",date:"01-Mar-24 - 31-Mar-24",unit:"Lot",qty:1,price:5500000}],
           subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"
         },
@@ -1154,6 +1177,7 @@
           billTo:"",
           customerName:"",
           scope:DESC1,
+          note:"",
           items:[{desc:DESC1,location:"",date:"01-Apr-24 - 30-Apr-24",unit:"Lot",qty:1,price:5500000}],
           subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"
         },
@@ -1166,6 +1190,7 @@
           billTo:"",
           customerName:"",
           scope:DESC1,
+          note:"",
           items:[{desc:DESC1,location:"",date:"01-May-24 - 31-May-24",unit:"Lot",qty:1,price:5500000}],
           subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"
         },
@@ -1178,6 +1203,7 @@
           billTo:"",
           customerName:"",
           scope:DESC1,
+          note:"",
           items:[{desc:DESC1,location:"",date:"01-Jun-24 - 30-Jun-24",unit:"Lot",qty:1,price:5500000}],
           subtotal:5500000,discount:0,taxPerc:0,shipping:0,balance:5500000,status:"paid"
         },
@@ -1190,6 +1216,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Jul-24 - 31-Jul-24",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
         },
@@ -1202,6 +1229,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Aug-24 - 31-Aug-24",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
         },
@@ -1214,6 +1242,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Sep-24 - 30-Sep-24",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
         },
@@ -1226,6 +1255,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Oct-24 - 30-Oct-24",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
         },
@@ -1238,6 +1268,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Nov-24 - 30-Nov-24",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
         },
@@ -1250,6 +1281,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Dec-24 - 31-Dec-24",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
         },
@@ -1262,6 +1294,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Jan-25 - 31-Jan-25",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
         },
@@ -1274,6 +1307,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Feb-25 - 28-Feb-25",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
         },
@@ -1286,6 +1320,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Mar-25 - 31-Mar-25",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"paid"
         },
@@ -1298,6 +1333,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Apr-25 - 30-Apr-25",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"
         },
@@ -1310,6 +1346,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-May-25 - 31-May-25",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"
         },
@@ -1322,6 +1359,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Jun-25 - 30-Jun-25",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"
         },
@@ -1334,6 +1372,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Jul-25 - 31-Jul-25",unit:"Lot",qty:2,price:3375000}],
           subtotal:6750000,discount:0,taxPerc:0,shipping:0,balance:6750000,status:"unpaid"
         },
@@ -1346,6 +1385,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Aug-25 - 31-Aug-25",unit:"Lot",qty:2,price:4325000}],
           subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"paid"
         },
@@ -1358,6 +1398,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Sep-25 - 30-Sep-25",unit:"Lot",qty:2,price:4325000}],
           subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"paid"
         },
@@ -1370,6 +1411,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Oct-25 - 31-Oct-25",unit:"Lot",qty:2,price:4325000}],
           subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"paid"
         },
@@ -1382,6 +1424,7 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Nov-25 - 30-Nov-25",unit:"Lot",qty:2,price:4325000}],
           subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"unpaid"
         },
@@ -1394,12 +1437,13 @@
           billTo:"",
           customerName:"",
           scope:DESC2,
+          note:"",
           items:[{desc:DESC2,location:"",date:"01-Dec-25 - 31-Dec-25",unit:"Lot",qty:2,price:4325000}],
           subtotal:8650000,discount:0,taxPerc:0,shipping:0,balance:8650000,status:"unpaid"
         }
       );
 
-      // ---- بيانات 4400013503 (جدول المولدات 2x150KVA) ----
+      // ---- 4400013503 ----
       base.push(
         {
           id:"seed-23",
@@ -1410,6 +1454,7 @@
           billTo:"",
           customerName:"",
           scope:DESC3,
+          note:"",
           items:[{desc:DESC3,location:"",date:"01-Feb-25 - 28-Feb-25",unit:"Lot",qty:1,price:12000000}],
           subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"paid"
         },
@@ -1422,6 +1467,7 @@
           billTo:"",
           customerName:"",
           scope:DESC3,
+          note:"",
           items:[{desc:DESC3,location:"",date:"01-Mar-25 - 31-Mar-25",unit:"Lot",qty:1,price:12000000}],
           subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"paid"
         },
@@ -1434,6 +1480,7 @@
           billTo:"",
           customerName:"",
           scope:DESC3,
+          note:"",
           items:[{desc:DESC3,location:"",date:"01-Apr-25 - 30-Apr-25",unit:"Lot",qty:1,price:12000000}],
           subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"paid"
         },
@@ -1446,6 +1493,7 @@
           billTo:"",
           customerName:"",
           scope:DESC3,
+          note:"",
           items:[{desc:DESC3,location:"",date:"01-Aug-25 - 31-Aug-25",unit:"Lot",qty:1,price:12000000}],
           subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"
         },
@@ -1458,6 +1506,7 @@
           billTo:"",
           customerName:"",
           scope:DESC3,
+          note:"",
           items:[{desc:DESC3,location:"",date:"01-Sep-25 - 30-Sep-25",unit:"Lot",qty:1,price:12000000}],
           subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"
         },
@@ -1470,6 +1519,7 @@
           billTo:"",
           customerName:"",
           scope:DESC3,
+          note:"",
           items:[{desc:DESC3,location:"",date:"01-Oct-25 - 31-Oct-25",unit:"Lot",qty:1,price:12000000}],
           subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"
         },
@@ -1482,6 +1532,7 @@
           billTo:"",
           customerName:"",
           scope:DESC3,
+          note:"",
           items:[{desc:DESC3,location:"",date:"01-Nov-25 - 30-Nov-25",unit:"Lot",qty:1,price:12000000}],
           subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"
         },
@@ -1494,6 +1545,7 @@
           billTo:"",
           customerName:"",
           scope:DESC3,
+          note:"",
           items:[{desc:DESC3,location:"",date:"01-Dec-25 - 31-Dec-25",unit:"Lot",qty:1,price:12000000}],
           subtotal:12000000,discount:0,taxPerc:0,shipping:0,balance:12000000,status:"unpaid"
         }
@@ -1570,16 +1622,40 @@
       currentPoFilter = select.value;
     }
 
+    function matchesFilters(inv, searchText){
+      if(currentPoFilter!=="all" && (inv.contract||"") !== currentPoFilter) return false;
+
+      if(searchText){
+        const hay = [
+          inv.number,
+          inv.customerName,
+          inv.contract,
+          inv.billTo,
+          inv.scope,
+          inv.note
+        ].join(" ").toLowerCase();
+        if(!hay.includes(searchText)) return false;
+      }
+
+      if(currentFilter==="paid")   return inv.status==="paid";
+      if(currentFilter==="draft")  return inv.status==="draft";
+      if(currentFilter==="unpaid") return inv.status==="unpaid" && !isOverdue(inv);
+      if(currentFilter==="overdue")return isOverdue(inv);
+      return true;
+    }
+
     function renderDashboard(){
       const tbody = $("invoice-table-body");
       tbody.innerHTML = "";
 
+      const searchText = $("search-input").value.trim().toLowerCase();
+
+      const filtered = invoices.filter(inv => matchesFilters(inv, searchText));
+
       let total = 0, paid=0, unpaid=0, overdueAmt=0, soonAmt=0;
       let countTotal=0, countPaid=0, countUnpaid=0, countOverdue=0, countSoon=0;
 
-      const searchText = $("search-input").value.trim().toLowerCase();
-
-      invoices.forEach(inv=>{
+      filtered.forEach(inv=>{
         total += inv.balance || 0;
         countTotal++;
         if(inv.status==="paid"){
@@ -1610,34 +1686,19 @@
       $("card-soon-amount").textContent    = formatIQD(soonAmt);
       $("card-soon-count").textContent     = countSoon + " فاتورة";
 
-      const filtered = invoices.slice().filter(inv=>{
-        if(currentPoFilter!=="all" && (inv.contract||"") !== currentPoFilter) return false;
-        if(searchText){
-          const hay = [
-            inv.number,
-            inv.customerName,
-            inv.contract,
-            inv.billTo,
-            inv.scope
-          ].join(" ").toLowerCase();
-          if(!hay.includes(searchText)) return false;
-        }
-        if(currentFilter==="paid") return inv.status==="paid";
-        if(currentFilter==="unpaid") return inv.status==="unpaid" && !isOverdue(inv);
-        if(currentFilter==="overdue") return isOverdue(inv);
-        if(currentFilter==="draft") return inv.status==="draft";
-        return true;
-      }).sort((a,b)=>{
+      const sorted = filtered.slice().sort((a,b)=>{
         return (b.issueDate||"").localeCompare(a.issueDate||"");
       });
 
-      if(!filtered.length){
-        tbody.innerHTML = `<tr><td colspan="8" style="font-size:11px;color:#6b7280;">لا توجد فواتير مطابقة.</td></tr>`;
+      if(!sorted.length){
+        tbody.innerHTML = `<tr><td colspan="9" style="font-size:11px;color:#6b7280;">لا توجد فواتير مطابقة.</td></tr>`;
         return;
       }
 
-      filtered.forEach(inv=>{
-        const shortDesc = (inv.scope || inv.items?.[0]?.desc || "").slice(0,48) + ( (inv.scope || inv.items?.[0]?.desc || "").length>48 ? "..." : "");
+      sorted.forEach(inv=>{
+        const descSource = inv.scope || (inv.items && inv.items[0] && inv.items[0].desc) || "";
+        const shortDesc = descSource.slice(0,48) + (descSource.length>48 ? "..." : "");
+        const noteSnippet = (inv.note || "").slice(0,32) + ((inv.note||"").length>32 ? "..." : "");
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${inv.issueDate || ""}</td>
@@ -1646,6 +1707,7 @@
           <td>${inv.contract || ""}</td>
           <td>${inv.customerName || ""}</td>
           <td>${shortDesc}</td>
+          <td>${noteSnippet || "-"}</td>
           <td>${getStatusBadge(inv.status,inv)}</td>
           <td style="text-align:right;">${formatIQD(inv.balance || 0)}</td>
         `;
@@ -1751,10 +1813,11 @@
         number:"NA-"+today.replace(/-/g,"")+"-INV",
         issueDate:today,
         dueDate:today,
-        contract:"",
+        contract: currentPoFilter !== "all" ? currentPoFilter : "",
         billTo:"",
         customerName:"",
         scope:"",
+        note:"",
         items:[],
         subtotal:0,
         discount:0,
@@ -1829,7 +1892,7 @@
         alert("لا توجد فواتير لتصديرها.");
         return;
       }
-      const header = ["Invoice No","Issue Date","Due Date","Customer","Contract","Status","Balance (IQD)"];
+      const header = ["Invoice No","Issue Date","Due Date","Customer","Contract","Status","Balance (IQD)","Note"];
       const lines = [header.join(",")];
       invoices.forEach(inv=>{
         const statusTxt = inv.status==="paid" ? "PAID" :
@@ -1842,7 +1905,8 @@
           `"${(inv.customerName||"").replace(/"/g,'""')}"`,
           `"${(inv.contract||"").replace(/"/g,'""')}"`,
           `"${statusTxt}"`,
-          inv.balance != null ? inv.balance : 0
+          inv.balance != null ? inv.balance : 0,
+          `"${(inv.note||"").replace(/"/g,'""')}"`
         ];
         lines.push(row.join(","));
       });
@@ -1920,8 +1984,9 @@
       if(!invoices.length){
         invoices = getSeedInvoices();
         saveInvoices();
+      }else{
+        renderPoFilterOptions();
       }
-      renderPoFilterOptions();
       showDashboard();
       renderDashboard();
       renderReport();
