@@ -1,530 +1,468 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Invoice - Nafithat Al-Amal Co.</title>
+  <title>Nafithat Al-Amal Co. - Invoice</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    :root{
-      --border:#e5e7eb;
-      --muted:#6b7280;
-      --accent:#f97316;
-      --primary:#111827;
-    }
+    /* إعداد عام */
     *{
       box-sizing:border-box;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      font-family:Arial, Helvetica, sans-serif;
     }
     body{
       margin:0;
-      background:#f3f4f6;
-      padding:20px;
+      background:#ffffff;
       display:flex;
       justify-content:center;
+      padding:20px;
     }
-    .invoice-wrap{
-      background:#fff;
-      max-width:1000px;
-      width:100%;
-      padding:24px 26px;
-      border-radius:14px;
-      box-shadow:0 10px 30px rgba(15,23,42,.15);
-      border:1px solid var(--border);
 
-      /* الشعار الشفاف في الخلفية */
+    /* صفحة A4 تقريباً */
+    .page{
+      width:800px;
+      min-height:1123px;   /* قريب من A4 للطباعة */
+      padding:40px 45px 40px 45px;
       position:relative;
-      overflow:hidden;
+      border:1px solid #ddd;
     }
-    .invoice-wrap::before{
+
+    /* الشعار الشفاف في الخلفية أسفل اليمين */
+    .page::before{
       content:"";
       position:absolute;
-      inset:0;
-      background:url("logo-faded.png") center center no-repeat;
-      background-size:460px auto; /* حجم الشعار الشفاف */
-      opacity:0.07;               /* شفافية الشعار */
+      right:40px;
+      bottom:80px;
+      width:260px;
+      height:120px;
+      background:url("logo-faded.png") no-repeat center center;
+      background-size:contain;
+      opacity:0.07;
       pointer-events:none;
       z-index:0;
     }
-    .invoice-wrap > *{
+
+    .content{
       position:relative;
       z-index:1;
+      font-size:11px;
+      color:#111;
     }
 
-    .top-bar{
+    /* رأس الصفحة */
+    .header{
       display:flex;
       justify-content:space-between;
       align-items:flex-start;
-      gap:16px;
-      margin-bottom:16px;
-    }
-    .company-block h1{
-      margin:0;
-      font-size:22px;
-      color:#111827;
-    }
-    .company-block p{
-      margin:2px 0;
-      font-size:12px;
-      color:var(--muted);
-    }
-    .invoice-meta{
-      text-align:right;
-      font-size:12px;
-    }
-    .invoice-meta h2{
-      margin:0 0 4px;
-      font-size:18px;
-    }
-    .meta-row{
-      display:flex;
-      gap:10px;
-      align-items:center;
-      justify-content:flex-end;
-      margin:2px 0;
-    }
-    .meta-row span:first-child{
-      font-weight:600;
-    }
-    .meta-row input{
-      border:1px solid var(--border);
-      border-radius:8px;
-      padding:4px 8px;
-      font-size:12px;
-      min-width:160px;
     }
 
-    .row{
-      display:flex;
-      gap:16px;
-      margin-top:10px;
+    .company-info{
+      max-width:280px;
+      line-height:1.35;
     }
-    .col{
-      flex:1;
+    .company-name{
+      font-size:14px;
+      font-weight:bold;
+      color:#f97316; /* برتقالي كما في النموذج */
+      margin-bottom:4px;
     }
-    .box{
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:10px 12px;
+    .company-info p{
+      margin:0;
+      font-size:10px;
+    }
+
+    .invoice-right{
+      text-align:right;
+    }
+    .invoice-logo{
+      text-align:center;
+      margin-bottom:4px;
+    }
+    .invoice-logo img{
+      height:48px;
+      display:block;
+      margin-left:auto;
+      margin-right:auto;
+    }
+    .invoice-logo span{
+      display:block;
       font-size:12px;
-      background:#f9fafb;
+      color:#f97316;
+      margin-top:2px;
     }
-    .box h3{
-      margin:0 0 6px;
-      font-size:13px;
-    }
-    .box small{
-      color:var(--muted);
-      font-size:11px;
-    }
-    textarea,input{
-      width:100%;
-      border:1px solid var(--border);
-      border-radius:8px;
-      padding:6px 8px;
-      font-size:12px;
+    .invoice-title-box{
+      font-size:10px;
       margin-top:4px;
     }
-    textarea{
-      min-height:60px;
-      resize:vertical;
+    .invoice-title-row{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:2px;
     }
-    input:focus,textarea:focus{
-      outline:none;
-      border-color:#94a3b8;
-      box-shadow:0 0 0 2px rgba(148,163,184,.3);
+    .invoice-title-row span:first-child{
+      font-weight:bold;
+      margin-right:6px;
     }
 
+    /* Bill To */
+    .bill-to{
+      margin-top:18px;
+      margin-bottom:8px;
+    }
+    .bill-to-label{
+      font-size:10px;
+      font-weight:bold;
+    }
+    .bill-to-text{
+      margin-top:2px;
+      white-space:pre-line;
+      font-size:10px;
+    }
+
+    /* جدول الوصف الرئيسي */
     table{
-      width:100%;
       border-collapse:collapse;
-      margin-top:16px;
-      font-size:12px;
-      background:#fff;
+      width:100%;
     }
-    thead{
-      background:#f9fafb;
-    }
-    th,td{
-      border:1px solid var(--border);
-      padding:6px 5px;
-      text-align:left;
-      vertical-align:middle;
+    th, td{
+      border:1px solid #000;
+      padding:3px 4px;
+      font-size:10px;
+      vertical-align:top;
     }
     th{
-      font-weight:600;
-    }
-    td input{
-      width:100%;
-      border:none;
-      border-radius:0;
-      padding:4px 6px;
-      margin:0;
-      font-size:12px;
-    }
-    td input:focus{
-      outline:none;
-      box-shadow:none;
-      border:none;
-    }
-
-    .add-row-btn{
-      margin-top:6px;
-      padding:6px 12px;
-      border-radius:999px;
-      border:1px solid var(--border);
-      background:#fff;
-      font-size:12px;
-      cursor:pointer;
-    }
-
-    .add-row-btn:hover{
-      background:#f9fafb;
-    }
-
-    .totals-row{
-      margin-top:14px;
-      display:flex;
-      justify-content:flex-end;
-    }
-    .totals-box{
-      width:280px;
-      border:1px solid var(--border);
-      border-radius:10px;
-      padding:8px 10px;
-      font-size:12px;
-      background:#f9fafb;
-    }
-    .totals-box .line{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin:2px 0;
-      gap:8px;
-    }
-    .totals-box .line label{
-      font-size:12px;
-    }
-    .totals-box .line input{
-      width:130px;
-      text-align:right;
-      border-radius:8px;
-      border:1px solid var(--border);
-      padding:4px 6px;
-    }
-    .totals-box .balance{
-      margin-top:4px;
-      padding-top:4px;
-      border-top:1px dashed var(--border);
-      font-weight:700;
-    }
-
-    .scope-bank-row{
-      display:flex;
-      gap:16px;
-      margin-top:16px;
-      font-size:12px;
-    }
-    .scope-bank-row .col{
-      flex:1;
-    }
-    .scope-bank-row h3{
-      margin:0 0 6px;
-      font-size:13px;
-    }
-    .scope-bank-row p{
-      margin:2px 0;
-    }
-    .muted{
-      color:var(--muted);
-      font-size:12px;
-    }
-
-    .footer-row{
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-end;
-      margin-top:20px;
-      font-size:12px;
-    }
-    .signature-box{
-      width:220px;
+      font-weight:bold;
       text-align:center;
+      background:#f5f5f5;
     }
-    .signature-line{
-      margin-top:40px;
-      border-top:1px solid var(--border);
-      padding-top:2px;
-      font-size:11px;
-      color:var(--muted);
+    .thead-small th{
+      font-size:9px;
     }
 
-    .actions{
+    .desc-header-row th{
+      border-bottom:none;
+      background:transparent;
+      text-align:center;
+      font-weight:bold;
+    }
+    .desc-label-row th{
+      border-top:none;
+      background:#f5f5f5;
+    }
+
+    /* شكر و المجموعات */
+    .thankyou{
+      font-size:9px;
+      text-align:left;
+      margin-top:4px;
+      margin-bottom:8px;
+    }
+
+    .totals{
+      margin-top:6px;
+      width:260px;
+      margin-left:auto;
+      font-size:9px;
+    }
+    .totals td{
+      padding:2px 4px;
+    }
+    .totals td:first-child{
+      text-align:right;
+      font-weight:bold;
+    }
+    .totals td:last-child{
+      text-align:right;
+      min-width:90px;
+    }
+    .totals .balance{
+      font-weight:bold;
+    }
+
+    /* أسفل الصفحة: Scope + Bank + توقيع */
+    .bottom-row{
       display:flex;
-      justify-content:flex-end;
-      gap:8px;
-      margin-top:16px;
+      justify-content:space-between;
+      margin-top:22px;
+      font-size:9px;
     }
-    .btn{
-      border-radius:999px;
-      padding:7px 14px;
-      border:1px solid var(--border);
-      background:#fff;
-      font-size:12px;
-      cursor:pointer;
+    .scope-col{
+      width:55%;
     }
-    .btn-primary{
-      background:var(--primary);
-      color:#fff;
-      border-color:var(--primary);
+    .scope-col .label{
+      font-weight:bold;
+      margin-bottom:3px;
     }
-    .btn-primary:hover{
-      background:#020617;
+    .scope-text{
+      line-height:1.4;
     }
-    .btn:hover{
-      background:#f9fafb;
+    .bank-col{
+      width:40%;
+    }
+    .bank-col .label{
+      font-weight:bold;
+      margin-bottom:3px;
+    }
+    .bank-table{
+      width:100%;
+      border-collapse:collapse;
+    }
+    .bank-table td{
+      border:none;
+      padding:1px 0;
+      font-size:9px;
+    }
+    .bank-table td:first-child{
+      font-weight:bold;
+      width:40%;
     }
 
-    @media (max-width:768px){
-      .top-bar{
-        flex-direction:column;
+    /* توقيع وختم */
+    .sign-row{
+      margin-top:35px;
+      display:flex;
+      justify-content:flex-start;
+      align-items:flex-end;
+      gap:18px;
+      font-size:9px;
+    }
+    .sign-block{
+      min-width:120px;
+      text-align:left;
+    }
+    .sign-name{
+      margin-top:18px;
+      border-top:1px solid #000;
+      width:140px;
+      padding-top:3px;
+      font-size:9px;
+    }
+    .sign-name span:first-child{
+      font-weight:bold;
+    }
+    .sign-stamp{
+      width:110px;
+      height:110px;
+      position:relative;
+    }
+    .sign-stamp img{
+      width:100%;
+      height:100%;
+      object-fit:contain;
+    }
+
+    /* زر بسيط للطباعة عند العرض في المتصفح */
+    @media screen{
+      .print-btn{
+        position:fixed;
+        right:20px;
+        top:20px;
+        padding:6px 10px;
+        font-size:11px;
+        border:1px solid #ccc;
+        background:#f5f5f5;
+        cursor:pointer;
+        z-index:9999;
       }
-      .scope-bank-row{
-        flex-direction:column;
+    }
+
+    @media print{
+      body{
+        padding:0;
+        margin:0;
       }
-      .totals-row{
-        justify-content:flex-start;
+      .page{
+        border:none;
+        margin:0;
+        width:100%;
+        min-height:auto;
+        padding:20mm 18mm 20mm 18mm; /* تقريباً حسب A4 */
+      }
+      .print-btn{
+        display:none;
       }
     }
   </style>
 </head>
 <body>
-  <div class="invoice-wrap">
-    <!-- رأس الفاتورة مع الشعار -->
-    <div class="top-bar">
-      <div class="company-block">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-          <img src="logo.png" alt="Nafithat Al-Amal Logo" style="height:48px;">
-          <div>
-            <h1 style="margin:0;font-size:22px;">Nafithat Al-Amal Co.</h1>
+  <button class="print-btn" onclick="window.print()">Print / PDF</button>
+
+  <div class="page">
+    <div class="content">
+      <!-- الرأس -->
+      <div class="header">
+        <!-- يسار: معلومات الشركة -->
+        <div class="company-info">
+          <div class="company-name">Nafithat Al-Amal Co.</div>
+          <p>Address: Baghdad - Al-Wahda</p>
+          <p>District - Street 52</p>
+          <p>&nbsp;</p>
+          <p>Email: sales@nafmals.com</p>
+          <p>www.nafmals.com</p>
+          <p>Phone Number: 07723571779</p>
+        </div>
+
+        <!-- يمين: الشعار + بيانات الفاتورة -->
+        <div class="invoice-right">
+          <div class="invoice-logo">
+            <img src="logo.png" alt="Logo">
+            <span>Invoice</span>
+          </div>
+          <div class="invoice-title-box">
+            <div class="invoice-title-row">
+              <span>Invoice No:</span>
+              <span id="inv-no">NA-2025-D-INV00039</span>
+            </div>
+            <div class="invoice-title-row">
+              <span>Invoice Date:</span>
+              <span id="inv-date">2-Dec-25</span>
+            </div>
+            <div class="invoice-title-row">
+              <span>Contract Number:</span>
+              <span id="inv-contract">4400013503</span>
+            </div>
           </div>
         </div>
-        <p>Address: Baghdad - Al-Wahda, District - Street 52</p>
-        <p>Email: sales@nafmals.com</p>
-        <p>www.nafmals.com</p>
-        <p>Phone Number: 07723571779</p>
       </div>
 
-      <div class="invoice-meta">
-        <h2>Invoice</h2>
-        <div class="meta-row">
-          <span>Invoice No:</span>
-          <span><input id="inv-no" value="NA-2025-D-INV00040"></span>
-        </div>
-        <div class="meta-row">
-          <span>Invoice Date:</span>
-          <span><input id="inv-date"></span>
-        </div>
-        <div class="meta-row">
-          <span>Contract Number:</span>
-          <span><input id="inv-contract" value="4400013503"></span>
+      <!-- Bill To -->
+      <div class="bill-to">
+        <div class="bill-to-label">Bill To:</div>
+        <div class="bill-to-text" id="bill-to">
+CRESCENT PETROLEUM DIYALA WEST LIMITED
+(IRAQ BRANCH)
+REGISTRATION CD 6309
+BUILDING 2, STREET 6, DISTRICT
+228, AL SALHIYA AL SALHIYA, BAGHDAD, IRAQ
+Mr. Mohammad Rida
+Phone number: 07859311969
         </div>
       </div>
-    </div>
 
-    <!-- Bill to + Description -->
-    <div class="row">
-      <div class="col">
-        <div class="box">
-          <h3>Bill To:</h3>
-          <textarea id="bill-to" placeholder="Customer name, address, phone..."></textarea>
-        </div>
-      </div>
-      <div class="col">
-        <div class="box">
-          <h3>Description of Services</h3>
-          <small>وصف مختصر يظهر في الفاتورة</small>
-          <textarea id="short-desc" placeholder="Provision of Generator Maintenance and Operation as per PO ..."></textarea>
-        </div>
-      </div>
-    </div>
+      <!-- جدول الوصف الرئيسي -->
+      <table>
+        <thead>
+          <tr class="desc-header-row">
+            <th colspan="8">Description of Services</th>
+          </tr>
+          <tr class="desc-label-row thead-small">
+            <th style="width:30px;">No.</th>
+            <th>DESCRIPTION</th>
+            <th style="width:90px;">Location</th>
+            <th style="width:80px;">DATE</th>
+            <th style="width:55px;">UNIT</th>
+            <th style="width:50px;">QTY</th>
+            <th style="width:100px;">UNIT PRICE</th>
+            <th style="width:110px;">TOTAL PRICE</th>
+          </tr>
+        </thead>
+        <tbody id="items-body">
+          <tr>
+            <td style="text-align:center;">1</td>
+            <td>
+              Provision of Generator<br>
+              Maintenance and Operation<br>
+              as per PO 4400013503
+            </td>
+            <td>Diyala KAI</td>
+            <td>December-25</td>
+            <td style="text-align:center;">Lot</td>
+            <td style="text-align:center;">1</td>
+            <td style="text-align:right;">IQD 7,200,000</td>
+            <td style="text-align:right;">IQD 7,200,000</td>
+          </tr>
+        </tbody>
+      </table>
 
-    <!-- جدول البنود -->
-    <table id="items-table">
-      <thead>
+      <!-- شكراً -->
+      <div class="thankyou">
+        Thank you for your business!
+      </div>
+
+      <!-- جدول المبالغ الكلي -->
+      <table class="totals">
         <tr>
-          <th style="width:40px;">No.</th>
-          <th>DESCRIPTION</th>
-          <th style="width:120px;">Location</th>
-          <th style="width:100px;">DATE</th>
-          <th style="width:70px;">UNIT</th>
-          <th style="width:60px;">QTY</th>
-          <th style="width:110px;">UNIT PRICE</th>
-          <th style="width:120px;">TOTAL PRICE</th>
-        </tr>
-      </thead>
-      <tbody id="items-body">
-        <tr>
-          <td><input class="cell-no" value="1"></td>
-          <td><input class="cell-desc" value="Provision of Generator Maintenance and Operation as per PO 4400013503"></td>
-          <td><input class="cell-loc" value="Diyala KAI"></td>
-          <td><input class="cell-date" value="December-25"></td>
-          <td><input class="cell-unit" value="Lot"></td>
-          <td><input class="cell-qty" type="number" value="1"></td>
-          <td><input class="cell-unitprice" type="number" value="7200000"></td>
-          <td><input class="cell-total" type="number" value="7200000" readonly></td>
+          <td>SUBTOTAL</td>
+          <td id="subtotal">IQD 7,200,000</td>
         </tr>
         <tr>
-          <td><input class="cell-no" value="2"></td>
-          <td><input class="cell-desc"></td>
-          <td><input class="cell-loc"></td>
-          <td><input class="cell-date"></td>
-          <td><input class="cell-unit" value="Lot"></td>
-          <td><input class="cell-qty" type="number" value="1"></td>
-          <td><input class="cell-unitprice" type="number" value="0"></td>
-          <td><input class="cell-total" type="number" value="0" readonly></td>
+          <td>DISCOUNT</td>
+          <td id="discount">IQD 0</td>
         </tr>
-      </tbody>
-    </table>
+        <tr>
+          <td>SUBTOTAL LESS DISCOUNT</td>
+          <td id="subtotal-less">IQD 7,200,000</td>
+        </tr>
+        <tr>
+          <td>TAX (0%)</td>
+          <td id="tax">IQD 0</td>
+        </tr>
+        <tr>
+          <td>SHIPPING/HANDLING</td>
+          <td id="shipping">IQD 0</td>
+        </tr>
+        <tr>
+          <td class="balance">Balance Due</td>
+          <td class="balance" id="balance">IQD 7,200,000</td>
+        </tr>
+      </table>
 
-    <button id="add-row" class="add-row-btn">+ إضافة سطر جديد</button>
-
-    <!-- الإجماليات -->
-    <div class="totals-row">
-      <div class="totals-box">
-        <div class="line">
-          <label>SUBTOTAL (IQD)</label>
-          <input id="subtotal" type="number" value="0" readonly>
+      <!-- Scope + Bank -->
+      <div class="bottom-row">
+        <div class="scope-col">
+          <div class="label">Scope of Work:</div>
+          <div class="scope-text" id="scope-text">
+Provision of operation and maintenance services for 10 generators (Perkins &amp; Isuzu), including routine inspections, preventive servicing, and daily operation as per PO 4400013503.
+          </div>
         </div>
-        <div class="line">
-          <label>DISCOUNT (IQD)</label>
-          <input id="discount" type="number" value="0">
-        </div>
-        <div class="line">
-          <label>SUBTOTAL LESS DISCOUNT (IQD)</label>
-          <input id="subtotal-less" type="number" value="0" readonly>
-        </div>
-        <div class="line">
-          <label>TAX (%)</label>
-          <input id="tax-percent" type="number" value="0">
-        </div>
-        <div class="line">
-          <label>SHIPPING/HANDLING (IQD)</label>
-          <input id="shipping" type="number" value="0">
-        </div>
-        <div class="line balance">
-          <label>Balance Due (IQD)</label>
-          <input id="balance" type="number" value="0" readonly>
+        <div class="bank-col">
+          <div class="label">Bank Account details</div>
+          <table class="bank-table">
+            <tr>
+              <td>Account Name:</td>
+              <td>Nafithat Al-Amal</td>
+            </tr>
+            <tr>
+              <td>IBAN Code:</td>
+              <td>IQ07NISB002000000314765</td>
+            </tr>
+            <tr>
+              <td>Account Number:</td>
+              <td>314765</td>
+            </tr>
+            <tr>
+              <td>Bank:</td>
+              <td>National Islamic Bank</td>
+            </tr>
+            <tr>
+              <td>Currency:</td>
+              <td>Iraqi Dinar</td>
+            </tr>
+            <tr>
+              <td>Branch:</td>
+              <td>Al-Kadhimiya Branch</td>
+            </tr>
+          </table>
         </div>
       </div>
-    </div>
 
-    <!-- Scope + Bank -->
-    <div class="scope-bank-row">
-      <div class="col">
-        <h3>Scope of Work</h3>
-        <textarea id="scope" placeholder="Provision of operation and maintenance services for 10 generators (Perkins &amp; Isuzu), including routine inspections, preventive servicing, and daily operation as per PO 4400013503."></textarea>
+      <!-- توقيع و ختم -->
+      <div class="sign-row">
+        <div class="sign-block">
+          <div class="sign-name">
+            <span>Ayad Kazem</span><br>
+            <span>Signature</span>
+          </div>
+        </div>
+        <div class="sign-stamp">
+          <!-- اختياري: صورة الختم الدائري -->
+          <img src="stamp.png" alt="Stamp (optional)">
+        </div>
       </div>
-      <div class="col">
-        <h3>Bank Account details</h3>
-        <p><strong>Account Name:</strong> Nafithat Al-Amal</p>
-        <p><strong>IBAN Code:</strong> IQ07NISB002000000314765</p>
-        <p><strong>Account Number:</strong> 314765</p>
-        <p><strong>Bank:</strong> National Islamic Bank</p>
-        <p><strong>Currency:</strong> Iraqi Dinar</p>
-        <p><strong>Branch:</strong> Al-Kadhimiya Branch</p>
-        <p><strong>Address:</strong> Baghdad - Al-Wahda District - Street 52</p>
-      </div>
-    </div>
-
-    <!-- تذييل -->
-    <div class="footer-row">
-      <div>
-        <p class="muted">Thank you for your business!</p>
-      </div>
-      <div class="signature-box">
-        <div class="signature-line">Signature</div>
-        <div style="margin-top:4px;">Ayad Kazem</div>
-      </div>
-    </div>
-
-    <!-- الأزرار -->
-    <div class="actions">
-      <button class="btn" onclick="window.print()">🖨 طباعة / PDF</button>
-      <button class="btn-primary" id="recalc-btn">إعادة حساب الإجمالي</button>
     </div>
   </div>
 
-  <script>
-    function formatNumber(n){
-      n = Number(n)||0;
-      return n;
-    }
+  <!-- لو حاب تعدّل بعض النصوص أو القيم ديناميكياً مستقبلاً ممكن تضيف JS هنا -->
 
-    function recalcRow(tr){
-      const qty = Number(tr.querySelector(".cell-qty").value) || 0;
-      const up  = Number(tr.querySelector(".cell-unitprice").value) || 0;
-      const total = qty * up;
-      tr.querySelector(".cell-total").value = total;
-      return total;
-    }
-
-    function recalcAll(){
-      const rows = document.querySelectorAll("#items-body tr");
-      let subtotal = 0;
-      rows.forEach(tr=>{
-        subtotal += recalcRow(tr);
-      });
-
-      const discount = Number(document.getElementById("discount").value)||0;
-      const taxPercent = Number(document.getElementById("tax-percent").value)||0;
-      const shipping = Number(document.getElementById("shipping").value)||0;
-
-      const subtotalLess = subtotal - discount;
-      const taxValue = subtotalLess * (taxPercent/100);
-      const balance = subtotalLess + taxValue + shipping;
-
-      document.getElementById("subtotal").value = formatNumber(subtotal);
-      document.getElementById("subtotal-less").value = formatNumber(subtotalLess);
-      document.getElementById("balance").value = formatNumber(balance);
-    }
-
-    document.getElementById("add-row").addEventListener("click", ()=>{
-      const body = document.getElementById("items-body");
-      const index = body.querySelectorAll("tr").length + 1;
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td><input class="cell-no" value="${index}"></td>
-        <td><input class="cell-desc"></td>
-        <td><input class="cell-loc"></td>
-        <td><input class="cell-date"></td>
-        <td><input class="cell-unit" value="Lot"></td>
-        <td><input class="cell-qty" type="number" value="1"></td>
-        <td><input class="cell-unitprice" type="number" value="0"></td>
-        <td><input class="cell-total" type="number" value="0" readonly></td>
-      `;
-      body.appendChild(tr);
-      attachRowEvents(tr);
-    });
-
-    function attachRowEvents(tr){
-      ["cell-qty","cell-unitprice"].forEach(cls=>{
-        const input = tr.querySelector("."+cls);
-        input.addEventListener("input", recalcAll);
-      });
-    }
-
-    document.querySelectorAll("#items-body tr").forEach(attachRowEvents);
-    document.getElementById("discount").addEventListener("input", recalcAll);
-    document.getElementById("tax-percent").addEventListener("input", recalcAll);
-    document.getElementById("shipping").addEventListener("input", recalcAll);
-    document.getElementById("recalc-btn").addEventListener("click", recalcAll);
-
-    (function(){
-      const d = new Date();
-      const iso = d.toISOString().slice(0,10);
-      document.getElementById("inv-date").value = iso;
-      recalcAll();
-    })();
-  </script>
 </body>
 </html>
