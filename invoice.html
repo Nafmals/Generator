@@ -1,61 +1,75 @@
 <script>
-const STORAGE_KEY = "naf_invoice_system_advanced_main";
-let invoices = [];
-let currentId = null;
-let currentFilter = "all";
-let currentPoFilter = "all";
-let specialFilter = "none";
-const $ = id => document.getElementById(id);
+var STORAGE_KEY = "naf_invoice_system_advanced_main";
+var invoices = [];
+var currentId = null;
+var currentFilter = "all";
+var currentPoFilter = "all";
+var specialFilter = "none";
 
-function todayStr(){ return new Date().toISOString().slice(0,10); }
-function formatIQD(n){ n = Number(n)||0; return "IQD " + n.toLocaleString("en-US"); }
-function parseNumber(v){ if(typeof v!=="string") v=String(v||""); return Number(v.replace(/[^\d.-]/g,"")) || 0; }
+function $(id){ return document.getElementById(id); }
 
-function createItemRow(data={}){
-  const tr = document.createElement("tr");
+function todayStr(){
+  return new Date().toISOString().slice(0,10);
+}
+function formatIQD(n){
+  n = Number(n)||0;
+  return "IQD " + n.toLocaleString("en-US");
+}
+function parseNumber(v){
+  if(typeof v!=="string") v=String(v||"");
+  return Number(v.replace(/[^\d.-]/g,"")) || 0;
+}
+
+function createItemRow(data){
+  if(!data) data = {};
+  var tr = document.createElement("tr");
   tr.className = "item-row";
-  tr.innerHTML = `
-    <td class="no-cell"></td>
-    <td><textarea class="cell-textarea cell-desc">${data.desc || ""}</textarea></td>
-    <td><input class="cell-input cell-loc" value="${data.location || ""}"></td>
-    <td><input class="cell-input cell-date" value="${data.date || ""}"></td>
-    <td><input class="cell-input cell-unit" value="${data.unit || ""}"></td>
-    <td><input class="cell-input cell-qty" type="number" min="0" value="${data.qty != null ? data.qty : 1}"></td>
-    <td>
-      <input class="cell-input cell-price" type="number" min="0" value="${data.price != null ? data.price : 0}">
-      <br>
-      <input class="cell-input cell-total" type="text" readonly>
-    </td>`;
-  tr.querySelectorAll(".cell-qty,.cell-price").forEach(inp=>{
-    inp.addEventListener("input", recalcTotals);
-  });
+  tr.innerHTML =
+    '<td class="no-cell"></td>' +
+    '<td><textarea class="cell-textarea cell-desc">' + (data.desc || "") + '</textarea></td>' +
+    '<td><input class="cell-input cell-loc" value="' + (data.location || "") + '"></td>' +
+    '<td><input class="cell-input cell-date" value="' + (data.date || "") + '"></td>' +
+    '<td><input class="cell-input cell-unit" value="' + (data.unit || "") + '"></td>' +
+    '<td><input class="cell-input cell-qty" type="number" min="0" value="' + (data.qty != null ? data.qty : 1) + '"></td>' +
+    '<td>' +
+      '<input class="cell-input cell-price" type="number" min="0" value="' + (data.price != null ? data.price : 0) + '">' +
+      '<br>' +
+      '<input class="cell-input cell-total" type="text" readonly>' +
+    '</td>';
+  var inputs = tr.querySelectorAll(".cell-qty,.cell-price");
+  for(var i=0;i<inputs.length;i++){
+    inputs[i].addEventListener("input", recalcTotals);
+  }
   return tr;
 }
 
 function updateRowNumbers(){
-  document.querySelectorAll(".item-row .no-cell").forEach((td,i)=>{
-    td.textContent = i+1;
-  });
+  var cells = document.querySelectorAll(".item-row .no-cell");
+  for(var i=0;i<cells.length;i++){
+    cells[i].textContent = i+1;
+  }
 }
 
 function recalcRow(tr){
-  const qty = parseNumber(tr.querySelector(".cell-qty").value);
-  const price = parseNumber(tr.querySelector(".cell-price").value);
-  const total = qty * price;
+  var qty   = parseNumber(tr.querySelector(".cell-qty").value);
+  var price = parseNumber(tr.querySelector(".cell-price").value);
+  var total = qty * price;
   tr.querySelector(".cell-total").value = formatIQD(total);
   return total;
 }
 
 function recalcTotals(){
-  const rows = document.querySelectorAll("#items-body .item-row");
-  let subtotal = 0;
-  rows.forEach(tr => subtotal += recalcRow(tr));
-  const discount = parseNumber($("f-discount").value);
-  const taxPerc  = parseNumber($("f-tax").value);
-  const shipping = parseNumber($("f-shipping").value);
-  const subLess = subtotal - discount;
-  const taxVal  = subLess * (taxPerc/100);
-  const balance = subLess + taxVal + shipping;
+  var rows = document.querySelectorAll("#items-body .item-row");
+  var subtotal = 0;
+  for(var i=0;i<rows.length;i++){
+    subtotal += recalcRow(rows[i]);
+  }
+  var discount = parseNumber($("f-discount").value);
+  var taxPerc  = parseNumber($("f-tax").value);
+  var shipping = parseNumber($("f-shipping").value);
+  var subLess  = subtotal - discount;
+  var taxVal   = subLess * (taxPerc/100);
+  var balance  = subLess + taxVal + shipping;
   $("f-subtotal").value = formatIQD(subtotal);
   $("f-sub-less").value = formatIQD(subLess);
   $("f-balance").value  = formatIQD(balance);
@@ -70,19 +84,23 @@ function readForm(inv){
   inv.scope       = $("f-scope").value.trim();
   inv.status      = $("status-select").value;
   inv.note        = $("f-note").value.trim();
-  const firstLine = inv.billTo.split("\n")[0] || "";
+  var firstLine   = inv.billTo.split("\n")[0] || "";
   inv.customerName = firstLine;
 
-  const rows = document.querySelectorAll("#items-body .item-row");
-  inv.items = Array.from(rows).map(tr=>({
-    desc:     tr.querySelector(".cell-desc").value.trim(),
-    location: tr.querySelector(".cell-loc").value.trim(),
-    date:     tr.querySelector(".cell-date").value.trim(),
-    unit:     tr.querySelector(".cell-unit").value.trim(),
-    qty:      parseNumber(tr.querySelector(".cell-qty").value),
-    price:    parseNumber(tr.querySelector(".cell-price").value)
-  }));
-
+  var rows = document.querySelectorAll("#items-body .item-row");
+  var items = [];
+  for(var i=0;i<rows.length;i++){
+    var tr = rows[i];
+    items.push({
+      desc:     tr.querySelector(".cell-desc").value.trim(),
+      location: tr.querySelector(".cell-loc").value.trim(),
+      date:     tr.querySelector(".cell-date").value.trim(),
+      unit:     tr.querySelector(".cell-unit").value.trim(),
+      qty:      parseNumber(tr.querySelector(".cell-qty").value),
+      price:    parseNumber(tr.querySelector(".cell-price").value)
+    });
+  }
+  inv.items    = items;
   inv.subtotal = parseNumber($("f-subtotal").value);
   inv.discount = parseNumber($("f-discount").value);
   inv.taxPerc  = parseNumber($("f-tax").value);
@@ -101,9 +119,12 @@ function fillForm(inv){
   $("f-note").value     = inv.note        || "";
   $("status-select").value = inv.status || "draft";
 
-  $("items-body").innerHTML = "";
-  const items = inv.items && inv.items.length ? inv.items : [{},{},{},{}];
-  items.forEach(it => $("items-body").appendChild(createItemRow(it)));
+  var body = $("items-body");
+  body.innerHTML = "";
+  var items = (inv.items && inv.items.length) ? inv.items : [{},{},{},{}];
+  for(var i=0;i<items.length;i++){
+    body.appendChild(createItemRow(items[i]));
+  }
   updateRowNumbers();
 
   $("f-discount").value = inv.discount != null ? inv.discount : 0;
@@ -111,15 +132,15 @@ function fillForm(inv){
   $("f-shipping").value = inv.shipping != null ? inv.shipping : 0;
 
   recalcTotals();
-  $("editor-subtitle").textContent = inv.number ? `(${inv.number})` : "";
+  $("editor-subtitle").textContent = inv.number ? "(" + inv.number + ")" : "";
 }
 
 function loadInvoices(){
   try{
-    const raw = localStorage.getItem(STORAGE_KEY);
+    var raw = localStorage.getItem(STORAGE_KEY);
     if(!raw) return;
-    const arr = JSON.parse(raw);
-    if(Array.isArray(arr)) invoices = arr;
+    var arr = JSON.parse(raw);
+    if(arr && arr.length) invoices = arr;
   }catch(e){
     console.error("Error loading invoices:", e);
   }
@@ -142,7 +163,10 @@ function showEditor(){
 }
 
 function openEditor(id){
-  const inv = invoices.find(i=>i.id===id);
+  var inv = null;
+  for(var i=0;i<invoices.length;i++){
+    if(invoices[i].id === id){ inv = invoices[i]; break; }
+  }
   if(!inv) return;
   currentId = id;
   fillForm(inv);
@@ -152,49 +176,65 @@ function openEditor(id){
 function isOverdue(inv){
   if(inv.status==="paid") return false;
   if(!inv.dueDate) return false;
-  const d = new Date(inv.dueDate);
-  const today = new Date(todayStr());
+  var d = new Date(inv.dueDate);
+  var today = new Date(todayStr());
   return d < today;
 }
 
 function isDueSoon(inv){
   if(inv.status==="paid") return false;
   if(!inv.dueDate) return false;
-  const d = new Date(inv.dueDate);
-  const today = new Date(todayStr());
-  const diff = (d - today)/(1000*60*60*24);
+  var d = new Date(inv.dueDate);
+  var today = new Date(todayStr());
+  var diff = (d - today)/(1000*60*60*24);
   return diff>=0 && diff<=30;
 }
 
 function getStatusBadge(status,inv){
-  let cls="badge-draft",txt="مسودة";
+  var cls="badge-draft",txt="مسودة";
   if(status==="paid"){cls="badge-paid";txt="مدفوعة";}
   else if(status==="unpaid"){
     cls = isOverdue(inv)?"badge-overdue":"badge-unpaid";
     txt = isOverdue(inv)?"متأخرة":"غير مدفوعة";
   }
-  return `<span class="badge ${cls}">${txt}</span>`;
+  return '<span class="badge ' + cls + '">' + txt + '</span>';
 }
 
 function renderPoFilterOptions(){
-  const select = $("po-filter");
+  var select = $("po-filter");
   if(!select) return;
-  const current = select.value || "all";
-  const contracts = Array.from(new Set(
-    invoices.map(inv=>inv.contract)
-            .filter(c=>c && c.trim().length)
-  )).sort();
-  select.innerHTML = `<option value="all">كل العقود</option>` +
-    contracts.map(c=>`<option value="${c}">${c}</option>`).join("");
-  if(contracts.includes(current)) select.value = current; else select.value = "all";
+  var current = select.value || "all";
+  var set = {};
+  var contractsArr = [];
+  for(var i=0;i<invoices.length;i++){
+    var c = invoices[i].contract;
+    if(c && c.trim().length && !set[c]){
+      set[c] = true;
+      contractsArr.push(c);
+    }
+  }
+  contractsArr.sort();
+  var html = '<option value="all">كل العقود</option>';
+  for(i=0;i<contractsArr.length;i++){
+    html += '<option value="' + contractsArr[i] + '">' + contractsArr[i] + '</option>';
+  }
+  select.innerHTML = html;
+  if(contractsArr.indexOf(current) !== -1) select.value = current; else select.value = "all";
   currentPoFilter = select.value;
 }
 
 function matchesFilters(inv, searchText){
   if(currentPoFilter!=="all" && (inv.contract||"") !== currentPoFilter) return false;
   if(searchText){
-    const hay = [inv.number,inv.customerName,inv.contract,inv.billTo,inv.scope,inv.note].join(" ").toLowerCase();
-    if(!hay.includes(searchText)) return false;
+    var hay = [
+      inv.number,
+      inv.customerName,
+      inv.contract,
+      inv.billTo,
+      inv.scope,
+      inv.note
+    ].join(" ").toLowerCase();
+    if(hay.indexOf(searchText) === -1) return false;
   }
   if(specialFilter === "soon"){
     return isDueSoon(inv);
@@ -209,31 +249,43 @@ function editInvoice(id){ openEditor(id); }
 
 function deleteInvoiceById(id, ask){
   if(ask && !confirm("هل أنت متأكد من حذف هذه الفاتورة؟ لا يمكن التراجع.")) return;
-  invoices = invoices.filter(inv => inv.id !== id);
+  var out = [];
+  for(var i=0;i<invoices.length;i++){
+    if(invoices[i].id !== id) out.push(invoices[i]);
+  }
+  invoices = out;
   if(currentId === id) currentId = null;
   saveInvoices();
   showDashboard();
 }
 
 function renderDashboard(){
-  const tbody = $("invoice-table-body");
+  var tbody = $("invoice-table-body");
   if(!tbody) return;
   tbody.innerHTML = "";
-  const searchText = ($("search-input")?.value || "").trim().toLowerCase();
-  const filtered = invoices.filter(inv => matchesFilters(inv, searchText));
 
-  let total=0,paid=0,unpaid=0,soonAmt=0;
-  let countTotal=0,countPaid=0,countUnpaid=0,countSoon=0;
+  var searchInput = $("search-input");
+  var searchText = "";
+  if(searchInput && searchInput.value) searchText = searchInput.value.trim().toLowerCase();
 
-  filtered.forEach(inv=>{
+  var filtered = [];
+  for(var i=0;i<invoices.length;i++){
+    if(matchesFilters(invoices[i], searchText)) filtered.push(invoices[i]);
+  }
+
+  var total=0,paid=0,unpaid=0,soonAmt=0;
+  var countTotal=0,countPaid=0,countUnpaid=0,countSoon=0;
+
+  for(i=0;i<filtered.length;i++){
+    var inv = filtered[i];
     total += inv.balance || 0; countTotal++;
     if(inv.status==="paid"){paid+=inv.balance||0;countPaid++;}
     else if(inv.status==="unpaid"){unpaid+=inv.balance||0;countUnpaid++;}
-  });
+  }
 
-  invoices.forEach(inv=>{
-    if(isDueSoon(inv)){soonAmt+=inv.balance||0;countSoon++;}
-  });
+  for(i=0;i<invoices.length;i++){
+    if(isDueSoon(invoices[i])){soonAmt+=invoices[i].balance||0;countSoon++;}
+  }
 
   if($("card-total-amount")){
     $("card-total-amount").textContent   = formatIQD(total);
@@ -246,74 +298,88 @@ function renderDashboard(){
     $("card-soon-count").textContent     = countSoon + " فاتورة";
   }
 
-  const sorted = filtered.slice().sort((a,b)=>(b.issueDate||"").localeCompare(a.issueDate||""));
-  if(!sorted.length){
-    tbody.innerHTML = `<tr><td colspan="10" style="font-size:11px;color:#6b7280;">لا توجد فواتير بعد، اضغط على زر "فاتورة جديدة" أو استرد JSON.</td></tr>`;
+  filtered.sort(function(a,b){
+    return (b.issueDate||"").localeCompare(a.issueDate||"");
+  });
+
+  if(!filtered.length){
+    tbody.innerHTML = '<tr><td colspan="10" style="font-size:11px;color:#6b7280;">لا توجد فواتير بعد، اضغط على زر "فاتورة جديدة" أو استرد JSON.</td></tr>';
     return;
   }
 
-  sorted.forEach(inv=>{
-    const descSource = inv.scope || (inv.items && inv.items[0] && inv.items[0].desc) || "";
-    const shortDesc  = descSource.slice(0,48) + (descSource.length>48?"...":"");
-    const noteSnippet = (inv.note||"").slice(0,32) + ((inv.note||"").length>32?"...":"");
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${inv.issueDate || ""}</td>
-      <td>${inv.dueDate || ""}</td>
-      <td>${inv.number || ""}</td>
-      <td>${inv.contract || ""}</td>
-      <td>${inv.customerName || ""}</td>
-      <td>${shortDesc}</td>
-      <td>${noteSnippet || "-"}</td>
-      <td>${getStatusBadge(inv.status,inv)}</td>
-      <td style="text-align:right;">${formatIQD(inv.balance || 0)}</td>
-      <td>
-        <button class="btn btn-sm" onclick="event.stopPropagation(); editInvoice('${inv.id}')">تعديل</button>
-        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteInvoiceById('${inv.id}', true)">حذف</button>
-      </td>`;
-    tr.addEventListener("click", ()=>openEditor(inv.id));
+  for(i=0;i<filtered.length;i++){
+    inv = filtered[i];
+    var descSource = inv.scope || (inv.items && inv.items[0] && inv.items[0].desc) || "";
+    var shortDesc  = descSource.slice(0,48) + (descSource.length>48?"...":"");
+    var noteSnippet = (inv.note||"").slice(0,32) + ((inv.note||"").length>32?"...":"");
+
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td>' + (inv.issueDate || "") + '</td>' +
+      '<td>' + (inv.dueDate || "") + '</td>' +
+      '<td>' + (inv.number || "") + '</td>' +
+      '<td>' + (inv.contract || "") + '</td>' +
+      '<td>' + (inv.customerName || "") + '</td>' +
+      '<td>' + shortDesc + '</td>' +
+      '<td>' + (noteSnippet || "-") + '</td>' +
+      '<td>' + getStatusBadge(inv.status,inv) + '</td>' +
+      '<td style="text-align:right;">' + formatIQD(inv.balance || 0) + '</td>' +
+      '<td>' +
+        '<button class="btn btn-sm" onclick="event.stopPropagation(); editInvoice(\'' + inv.id + '\')">تعديل</button>' +
+        '<button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteInvoiceById(\'' + inv.id + '\', true)">حذف</button>' +
+      '</td>';
+    (function(id){
+      tr.addEventListener("click", function(){ openEditor(id); });
+    })(inv.id);
     tbody.appendChild(tr);
-  });
+  }
 }
 
 function renderReport(){
-  const tbody = $("report-body");
+  var tbody = $("report-body");
   if(!tbody) return;
   tbody.innerHTML = "";
   if(!invoices.length){
-    tbody.innerHTML = `<tr><td colspan="5" style="font-size:11px;color:#6b7280;">لا توجد فواتير بعد.</td></tr>`;
+    tbody.innerHTML = '<tr><td colspan="5" style="font-size:11px;color:#6b7280;">لا توجد فواتير بعد.</td></tr>';
     return;
   }
-  invoices.slice().sort((a,b)=>(b.issueDate||"").localeCompare(a.issueDate||""))
-    .forEach(inv=>{
-      const statusTxt = inv.status==="paid" ? "مدفوعة" :
-                        inv.status==="unpaid" ? (isOverdue(inv)?"متأخرة":"غير مدفوعة") :
-                        "مسودة";
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${inv.number || ""}</td>
-        <td>${inv.issueDate || ""}</td>
-        <td>${inv.contract || ""}</td>
-        <td>${statusTxt}</td>
-        <td style="text-align:right;">${inv.balance != null ? inv.balance.toLocaleString("en-US") : ""}</td>`;
-      tr.addEventListener("click", ()=>{
-        if($("modal-backdrop")) $("modal-backdrop").style.display = "none";
-        openEditor(inv.id);
+  var sorted = invoices.slice();
+  sorted.sort(function(a,b){
+    return (b.issueDate||"").localeCompare(a.issueDate||"");
+  });
+  for(var i=0;i<sorted.length;i++){
+    var inv = sorted[i];
+    var statusTxt = inv.status==="paid" ? "مدفوعة" :
+                    inv.status==="unpaid" ? (isOverdue(inv)?"متأخرة":"غير مدفوعة") :
+                    "مسودة";
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td>' + (inv.number || "") + '</td>' +
+      '<td>' + (inv.issueDate || "") + '</td>' +
+      '<td>' + (inv.contract || "") + '</td>' +
+      '<td>' + statusTxt + '</td>' +
+      '<td style="text-align:right;">' + (inv.balance != null ? inv.balance.toLocaleString("en-US") : "") + '</td>';
+    (function(id){
+      tr.addEventListener("click", function(){
+        var mb = $("modal-backdrop");
+        if(mb) mb.style.display = "none";
+        openEditor(id);
       });
-      tbody.appendChild(tr);
-    });
+    })(inv.id);
+    tbody.appendChild(tr);
+  }
 }
 
 function generateId(){
-  if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+  if(window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
   return String(Date.now()) + "-" + String(Math.random()).slice(2);
 }
 
 function createNewInvoice(){
-  const today = todayStr();
-  const id = generateId();
-  const inv = {
-    id,
+  var today = todayStr();
+  var id = generateId();
+  var inv = {
+    id: id,
     number:"INV-"+today.replace(/-/g,""),
     issueDate:today,
     dueDate:today,
@@ -336,7 +402,7 @@ function createNewInvoice(){
   currentId = id;
   fillForm(inv);
   saveInvoices();
-  showEditor(); // ← هنا يتم فتح صفحة إدخال الفاتورة الجديدة
+  showEditor(); // هنا يتم فتح صفحة إدخال/تحديث الفاتورة الجديدة
 }
 
 function saveCurrentInvoice(){
@@ -344,7 +410,10 @@ function saveCurrentInvoice(){
     createNewInvoice();
     return;
   }
-  const inv = invoices.find(i=>i.id===currentId);
+  var inv = null;
+  for(var i=0;i<invoices.length;i++){
+    if(invoices[i].id===currentId){ inv = invoices[i]; break; }
+  }
   if(!inv) return;
   recalcTotals();
   readForm(inv);
@@ -360,11 +429,14 @@ function deleteCurrentInvoice(){
 
 function duplicateCurrentInvoice(){
   if(!currentId){ alert("لا توجد فاتورة مفتوحة لنسخها."); return; }
-  const original = invoices.find(i=>i.id===currentId);
+  var original = null;
+  for(var i=0;i<invoices.length;i++){
+    if(invoices[i].id===currentId){ original = invoices[i]; break; }
+  }
   if(!original) return;
-  const id = generateId();
-  const copy = JSON.parse(JSON.stringify(original));
-  const today = todayStr();
+  var id = generateId();
+  var copy = JSON.parse(JSON.stringify(original));
+  var today = todayStr();
   copy.id = id;
   copy.number = original.number ? original.number + "-COPY" : "INV-"+today.replace(/-/g,"");
   copy.issueDate = today;
@@ -381,28 +453,32 @@ function duplicateCurrentInvoice(){
 }
 
 function exportCsv(){
-  if(!invoices.length){ alert("لا توجد فواتير لتصديرها."); return; }
-  const header = ["Invoice No","Issue Date","Due Date","Customer","Contract","Status","Balance (IQD)","Note"];
-  const lines = [header.join(",")];
-  invoices.forEach(inv=>{
-    const statusTxt = inv.status==="paid" ? "PAID" :
-                      inv.status==="unpaid" ? (isOverdue(inv)?"OVERDUE":"UNPAID") :
-                      "DRAFT";
-    const row = [
-      `"${(inv.number||"").replace(/"/g,'""')}"`,
-      `"${(inv.issueDate||"").replace(/"/g,'""')}"`,
-      `"${(inv.dueDate||"").replace(/"/g,'""')}"`,
-      `"${(inv.customerName||"").replace(/"/g,'""')}"`,
-      `"${(inv.contract||"").replace(/"/g,'""')}"`,
-      `"${statusTxt}"`,
-      inv.balance != null ? inv.balance : 0,
-      `"${(inv.note||"").replace(/"/g,'""')}"`
+  if(!invoices.length){
+    alert("لا توجد فواتير لتصديرها.");
+    return;
+  }
+  var header = ["Invoice No","Issue Date","Due Date","Customer","Contract","Status","Balance (IQD)","Note"];
+  var lines = [header.join(",")];
+  for(var i=0;i<invoices.length;i++){
+    var inv = invoices[i];
+    var statusTxt = inv.status==="paid" ? "PAID" :
+                    inv.status==="unpaid" ? (isOverdue(inv)?"OVERDUE":"UNPAID") :
+                    "DRAFT";
+    var row = [
+      '"' + (inv.number||"").replace(/"/g,'""') + '"',
+      '"' + (inv.issueDate||"").replace(/"/g,'""') + '"',
+      '"' + (inv.dueDate||"").replace(/"/g,'""') + '"',
+      '"' + (inv.customerName||"").replace(/"/g,'""') + '"',
+      '"' + (inv.contract||"").replace(/"/g,'""') + '"',
+      '"' + statusTxt + '"',
+      (inv.balance != null ? inv.balance : 0),
+      '"' + (inv.note||"").replace(/"/g,'""') + '"'
     ];
     lines.push(row.join(","));
-  });
-  const blob = new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  }
+  var blob = new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv;charset=utf-8"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
   a.href = url;
   a.download = "invoices-report.csv";
   a.click();
@@ -410,10 +486,10 @@ function exportCsv(){
 }
 
 function exportJson(){
-  const data = JSON.stringify(invoices,null,2);
-  const blob = new Blob([data],{type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
+  var data = JSON.stringify(invoices,null,2);
+  var blob = new Blob([data],{type:"application/json"});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
   a.href = url;
   a.download = "invoices-backup.json";
   a.click();
@@ -421,13 +497,15 @@ function exportJson(){
 }
 
 function importJsonFromFile(file){
-  const reader = new FileReader();
-  reader.onload = e=>{
+  var reader = new FileReader();
+  reader.onload = function(e){
     try{
-      const data = JSON.parse(e.target.result);
-      if(!Array.isArray(data)){ alert("ملف JSON غير صحيح."); return; }
+      var data = JSON.parse(e.target.result);
+      if(!data || !data.length){ alert("ملف JSON غير صحيح."); return; }
       if(!confirm("سيتم استبدال جميع الفواتير الحالية بالبيانات من الملف، هل أنت متأكد؟")) return;
-      data.forEach(inv=>{ if(!inv.id) inv.id = generateId(); });
+      for(var i=0;i<data.length;i++){
+        if(!data[i].id) data[i].id = generateId();
+      }
       invoices = data;
       currentId = null;
       saveInvoices();
@@ -452,21 +530,23 @@ function resetSystem(){
 }
 
 function highlightCard(type){
-  document.querySelectorAll(".card[data-type]").forEach(c=>{
-    c.classList.toggle("card-active", c.dataset.type === type);
-  });
+  var cards = document.querySelectorAll(".card[data-type]");
+  for(var i=0;i<cards.length;i++){
+    cards[i].classList.toggle("card-active", cards[i].getAttribute("data-type") === type);
+  }
 }
 
 function updateActiveStatusPills(){
-  document.querySelectorAll(".status-pill").forEach(b=>{
-    b.classList.remove("active");
-    if(currentFilter === b.dataset.filter){
-      b.classList.add("active");
+  var pills = document.querySelectorAll(".status-pill");
+  for(var i=0;i<pills.length;i++){
+    pills[i].classList.remove("active");
+    if(currentFilter === pills[i].getAttribute("data-filter")){
+      pills[i].classList.add("active");
     }
-    if(currentFilter==="all" && b.dataset.filter==="all"){
-      b.classList.add("active");
+    if(currentFilter==="all" && pills[i].getAttribute("data-filter")==="all"){
+      pills[i].classList.add("active");
     }
-  });
+  }
 }
 
 function setFilterFromCard(type){
@@ -487,77 +567,136 @@ function setFilterFromCard(type){
 }
 
 function setupEvents(){
-  const bDash = $("btn-dashboard"); if(bDash) bDash.addEventListener("click", ()=>{showDashboard();highlightCard("total");});
-  const bRep  = $("btn-report");    if(bRep)  bRep.addEventListener("click", ()=>{const mb=$("modal-backdrop");if(mb)mb.style.display="flex";renderReport();});
-  const bBack = $("btn-back");      if(bBack) bBack.addEventListener("click", showDashboard);
-  const bPr   = $("btn-print");     if(bPr)   bPr.addEventListener("click", ()=>window.print());
-  const bSave = $("btn-save");      if(bSave) bSave.addEventListener("click", saveCurrentInvoice);
-  const bDel  = $("btn-delete");    if(bDel)  bDel.addEventListener("click", deleteCurrentInvoice);
-  const bDup  = $("btn-duplicate"); if(bDup)  bDup.addEventListener("click", duplicateCurrentInvoice);
-  const bExp  = $("btn-export");    if(bExp)  bExp.addEventListener("click", exportCsv);
-  const bSJ   = $("btn-save-json"); if(bSJ)   bSJ.addEventListener("click", exportJson);
-  const bLJ   = $("btn-load-json"); if(bLJ)   bLJ.addEventListener("click", ()=>$("json-file-input")?.click());
-  const bRes  = $("btn-reset");     if(bRes)  bRes.addEventListener("click", resetSystem);
+  var bDash = $("btn-dashboard");
+  if(bDash) bDash.addEventListener("click", function(){ showDashboard();highlightCard("total"); });
 
-  const fileInput = $("json-file-input");
-  if(fileInput) fileInput.addEventListener("change", e=>{
-    const file = e.target.files[0];
+  var bRep  = $("btn-report");
+  if(bRep)  bRep.addEventListener("click", function(){
+    var mb = $("modal-backdrop");
+    if(mb) mb.style.display = "flex";
+    renderReport();
+  });
+
+  var bBack = $("btn-back");
+  if(bBack) bBack.addEventListener("click", showDashboard);
+
+  var bPr   = $("btn-print");
+  if(bPr)   bPr.addEventListener("click", function(){ window.print(); });
+
+  var bSave = $("btn-save");
+  if(bSave) bSave.addEventListener("click", saveCurrentInvoice);
+
+  var bDel  = $("btn-delete");
+  if(bDel)  bDel.addEventListener("click", deleteCurrentInvoice);
+
+  var bDup  = $("btn-duplicate");
+  if(bDup)  bDup.addEventListener("click", duplicateCurrentInvoice);
+
+  var bExp  = $("btn-export");
+  if(bExp)  bExp.addEventListener("click", exportCsv);
+
+  var bSJ   = $("btn-save-json");
+  if(bSJ)   bSJ.addEventListener("click", exportJson);
+
+  var bLJ   = $("btn-load-json");
+  if(bLJ)   bLJ.addEventListener("click", function(){
+    var fi = $("json-file-input");
+    if(fi) fi.click();
+  });
+
+  var bRes  = $("btn-reset");
+  if(bRes)  bRes.addEventListener("click", resetSystem);
+
+  var fileInput = $("json-file-input");
+  if(fileInput) fileInput.addEventListener("change", function(e){
+    var file = e.target.files[0];
     if(file) importJsonFromFile(file);
     e.target.value = "";
   });
 
-  const cModal = $("close-modal-btn");
-  if(cModal) cModal.addEventListener("click", ()=>{const mb=$("modal-backdrop");if(mb)mb.style.display="none";});
-  document.addEventListener("keydown", e=>{ if(e.key==="Escape"){const mb=$("modal-backdrop");if(mb)mb.style.display="none";} });
-
-  document.querySelectorAll(".status-pill").forEach(btn=>{
-    btn.addEventListener("click", ()=>{
-      document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
-      btn.classList.add("active");
-      currentFilter = btn.dataset.filter;
-      specialFilter = "none";
-      highlightCard("total");
-      renderDashboard();
-    });
+  var cModal = $("close-modal-btn");
+  if(cModal) cModal.addEventListener("click", function(){
+    var mb = $("modal-backdrop");
+    if(mb) mb.style.display="none";
   });
 
-  const sInput = $("search-input"); if(sInput) sInput.addEventListener("input", renderDashboard);
-  const sSel   = $("status-select"); if(sSel) sSel.addEventListener("change", ()=>{
+  document.addEventListener("keydown", function(e){
+    if(e.key==="Escape"){
+      var mb = $("modal-backdrop");
+      if(mb) mb.style.display="none";
+    }
+  });
+
+  var pills = document.querySelectorAll(".status-pill");
+  for(var i=0;i<pills.length;i++){
+    (function(btn){
+      btn.addEventListener("click", function(){
+        for(var j=0;j<pills.length;j++) pills[j].classList.remove("active");
+        btn.classList.add("active");
+        currentFilter = btn.getAttribute("data-filter");
+        specialFilter = "none";
+        highlightCard("total");
+        renderDashboard();
+      });
+    })(pills[i]);
+  }
+
+  var sInput = $("search-input");
+  if(sInput) sInput.addEventListener("input", renderDashboard);
+
+  var sSel   = $("status-select");
+  if(sSel) sSel.addEventListener("change", function(){
     if(!currentId) return;
-    const inv = invoices.find(i=>i.id===currentId);
+    var inv = null;
+    for(var i=0;i<invoices.length;i++){
+      if(invoices[i].id===currentId){ inv = invoices[i]; break; }
+    }
     if(!inv) return;
     inv.status = sSel.value;
     saveInvoices();
   });
 
-  ["f-discount","f-tax","f-shipping"].forEach(id=>{
-    const el = $(id); if(el) el.addEventListener("input", recalcTotals);
-  });
+  var ids = ["f-discount","f-tax","f-shipping"];
+  for(i=0;i<ids.length;i++){
+    var el = $(ids[i]);
+    if(el) el.addEventListener("input", recalcTotals);
+  }
 
-  const addRowBtn = $("add-row-btn");
-  if(addRowBtn) addRowBtn.addEventListener("click", ()=>{
+  var addRowBtn = $("add-row-btn");
+  if(addRowBtn) addRowBtn.addEventListener("click", function(){
     $("items-body").appendChild(createItemRow({qty:1,price:0}));
     updateRowNumbers();
     recalcTotals();
   });
 
-  const poFilter = $("po-filter");
-  if(poFilter) poFilter.addEventListener("change", ()=>{ currentPoFilter = poFilter.value; renderDashboard(); });
+  var poFilter = $("po-filter");
+  if(poFilter) poFilter.addEventListener("change", function(){
+    currentPoFilter = poFilter.value;
+    renderDashboard();
+  });
 
-  [["card-total","total"],["card-soon","soon"],["card-paid","paid"],["card-unpaid","unpaid"]]
-    .forEach(([id,type])=>{
-      const el = $(id);
-      if(el) el.addEventListener("click", ()=>setFilterFromCard(type));
-    });
+  var cardsMap = [
+    ["card-total","total"],
+    ["card-soon","soon"],
+    ["card-paid","paid"],
+    ["card-unpaid","unpaid"]
+  ];
+  for(i=0;i<cardsMap.length;i++){
+    (function(mapItem){
+      var el = $(mapItem[0]);
+      var type = mapItem[1];
+      if(el) el.addEventListener("click", function(){ setFilterFromCard(type); });
+    })(cardsMap[i]);
+  }
 }
 
-// إتاحة الدوال لـ onclick في الـ HTML
+// إتاحة الدوال لـ onclick في الـ HTML (زر + فاتورة جديدة)
 window.createNewInvoice = createNewInvoice;
 window.editInvoice      = editInvoice;
 window.deleteInvoiceById= deleteInvoiceById;
 
 // تشغيل التهيئة بعد تحميل الصفحة
-window.addEventListener("DOMContentLoaded", ()=>{
+window.addEventListener("DOMContentLoaded", function(){
   setupEvents();
   loadInvoices();
   renderPoFilterOptions();
