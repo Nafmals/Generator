@@ -6,147 +6,592 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     *{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif}
-    body{margin:0;background:linear-gradient(135deg,#0f172a 0,#111827 35%,#020617 100%);padding:14px;color:#111827;}
+
+    body{
+      margin:0;
+      background:#f3f4f6;
+      padding:12px;
+      color:#111827;
+    }
+
     a{text-decoration:none;color:inherit}
-    .btn{border-radius:999px;border:1px solid #e5e7eb;padding:6px 12px;font-size:11px;background:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:4px;transition:background .15s,transform .12s,box-shadow .12s;}
-    .btn:hover{background:#f9fafb;transform:translateY(-1px);box-shadow:0 4px 10px rgba(15,23,42,.15);}
-    .btn-primary{background:#111827;color:#fff;border-color:#111827;}
+
+    .btn{
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      padding:6px 12px;
+      font-size:11px;
+      background:#fff;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:4px;
+    }
+    .btn:hover{background:#f9fafb;}
+    .btn-primary{
+      background:#111827;
+      color:#fff;
+      border-color:#111827;
+    }
     .btn-primary:hover{background:#020617;}
-    .btn-danger{background:#fef2f2;border-color:#fecaca;color:#b91c1c;}
-    .btn-sm{padding:3px 8px;font-size:10px;}
+    .btn-danger{
+      background:#fef2f2;
+      border-color:#fecaca;
+      color:#b91c1c;
+    }
+    .btn-sm{
+      padding:3px 8px;
+      font-size:10px;
+    }
 
-    .topbar-main{max-width:1180px;margin:0 auto 14px auto;padding:8px 12px;border-radius:16px;background:rgba(248,250,252,0.98);border:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(15,23,42,.25);backdrop-filter:blur(12px);}
-    .brand{display:flex;align-items:center;gap:8px;font-size:11px;}
-    .brand img{height:30px;border-radius:999px;}
-    .brand-info{display:flex;flex-direction:column;gap:2px;}
-    .brand-name{font-weight:bold;color:#f97316;font-size:15px;}
-    .brand-sub{font-size:10px;color:#6b7280;}
-    .top-actions{display:flex;gap:6px;flex-wrap:wrap;}
+    /* شريط علوي رئيسي */
+    .topbar-main{
+      max-width:1100px;
+      margin:0 auto 10px auto;
+      padding:6px 10px;
+      border-radius:999px;
+      background:#ffffff;
+      border:1px solid #e5e7eb;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:11px;
+    }
+    .brand img{
+      height:26px;
+    }
+    .brand-name{
+      font-weight:bold;
+      color:#f97316;
+      font-size:14px;
+    }
+    .brand-sub{
+      font-size:10px;
+      color:#6b7280;
+    }
+    .top-actions{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
 
-    #app{max-width:1180px;margin:0 auto;}
-    section{background:#f3f4f6;border-radius:18px;padding:10px 12px 12px;border:1px solid #e5e7eb;box-shadow:0 10px 30px rgba(15,23,42,.25);}
+    /* تخطيط رئيسي */
+    #app{
+      max-width:1100px;
+      margin:0 auto;
+    }
 
-    #dashboard{margin-top:8px;}
-    .dashboard-header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
-    .dashboard-title{font-size:16px;font-weight:bold;display:flex;align-items:center;gap:6px;}
-    .dashboard-title span{font-size:11px;font-weight:normal;color:#6b7280;}
-    .search-box{display:flex;align-items:center;gap:6px;background:#fff;border-radius:999px;border:1px solid #e5e7eb;padding:4px 10px;min-width:240px;}
-    .search-box input{border:none;outline:none;font-size:11px;width:100%;background:transparent;}
+    /* ======= لوحة الفواتير (Dashboard) ======= */
+    #dashboard{
+      margin-top:8px;
+    }
 
-    .filters-row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
-    .status-filters{display:flex;gap:6px;flex-wrap:wrap;}
-    .status-pill{padding:4px 8px;border-radius:999px;border:1px solid #e5e7eb;font-size:10px;cursor:pointer;background:#fff;}
-    .status-pill.active{background:#111827;color:#fff;border-color:#111827;}
-    .filters-right{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
-    .po-filter{font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid #e5e7eb;background:#fff;}
+    .dashboard-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+    .dashboard-title{
+      font-size:16px;
+      font-weight:bold;
+    }
 
-    .summary-cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px;}
-    .card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:8px 10px;font-size:11px;position:relative;overflow:hidden;cursor:pointer;transition:box-shadow .12s,border-color .12s,transform .12s;}
-    .card::after{content:"";position:absolute;inset:auto -40px -40px auto;width:80px;height:80px;border-radius:999px;background:radial-gradient(circle,#e5e7eb 0,transparent 60%);opacity:.8;}
-    .card:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(15,23,42,.2);}
-    .card.card-active{border-color:#111827;box-shadow:0 0 0 1px #111827,0 8px 18px rgba(15,23,42,.18);}
-    .card-label{color:#6b7280;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:4px;}
-    .card-label span{font-size:9px;color:#9ca3af;}
-    .card-value{font-size:14px;font-weight:bold;}
-    .card-sub{font-size:10px;color:#6b7280;}
+    .search-box{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      background:#fff;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      padding:4px 10px;
+      min-width:240px;
+    }
+    .search-box input{
+      border:none;
+      outline:none;
+      font-size:11px;
+      width:100%;
+      background:transparent;
+    }
 
-    .table-wrap{background:#fff;border-radius:12px;border:1px solid #e5e7eb;overflow:auto;max-height:460px;}
-    table{width:100%;border-collapse:collapse;font-size:11px;}
-    thead{background:#f9fafb;position:sticky;top:0;z-index:1;}
-    th,td{padding:6px 8px;border-bottom:1px solid #e5e7eb;white-space:nowrap;text-align:left;}
-    tr:hover td{background:#eef2ff;}
+    .filters-row{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+    .status-filters{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .status-pill{
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      font-size:10px;
+      cursor:pointer;
+      background:#fff;
+    }
+    .status-pill.active{
+      background:#111827;
+      color:#fff;
+      border-color:#111827;
+    }
 
-    .badge{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;font-size:10px;border:1px solid transparent;}
-    .badge-paid{background:#ecfdf5;color:#166534;border-color:#bbf7d0;}
-    .badge-unpaid{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
-    .badge-overdue{background:#fef2f2;color:#b91c1c;border-color:#fecaca;}
-    .badge-draft{background:#f9fafb;color:#6b7280;border-color:#e5e7eb;}
+    .summary-cards{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:8px;
+      margin-bottom:10px;
+    }
+    .card{
+      background:#fff;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:8px 10px;
+      font-size:11px;
+    }
+    .card-label{
+      color:#6b7280;
+      margin-bottom:4px;
+    }
+    .card-value{
+      font-size:14px;
+      font-weight:bold;
+    }
+    .card-sub{
+      font-size:10px;
+      color:#6b7280;
+    }
 
-    #editor{margin-top:8px;display:none;}
+    .table-wrap{
+      background:#fff;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      overflow:auto;
+      max-height:480px;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:11px;
+    }
+    thead{
+      background:#f9fafb;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    th,td{
+      padding:6px 8px;
+      border-bottom:1px solid #e5e7eb;
+      white-space:nowrap;
+      text-align:left;
+    }
+    tr:hover td{
+      background:#f3f4ff;
+    }
 
-    .editor-topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;}
-    .editor-title{font-size:14px;font-weight:bold;}
-    .editor-actions{display:flex;gap:6px;flex-wrap:wrap;}
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      padding:2px 6px;
+      border-radius:999px;
+      font-size:10px;
+      border:1px solid transparent;
+    }
+    .badge-paid{
+      background:#ecfdf5;
+      color:#166534;
+      border-color:#bbf7d0;
+    }
+    .badge-unpaid{
+      background:#eff6ff;
+      color:#1d4ed8;
+      border-color:#bfdbfe;
+    }
+    .badge-overdue{
+      background:#fef2f2;
+      color:#b91c1c;
+      border-color:#fecaca;
+    }
+    .badge-draft{
+      background:#f9fafb;
+      color:#6b7280;
+      border-color:#e5e7eb;
+    }
 
-    .invoice-page{width:800px;min-height:1120px;background:#ffffff;border-radius:6px;border:1px solid #d1d5db;padding:24px 28px;position:relative;overflow:hidden;margin:0 auto 20px auto;}
-    .watermark{position:absolute;right:120px;bottom:120px;width:260px;opacity:0.06;filter:grayscale(1);pointer-events:none;z-index:0;}
-    .invoice-inner{position:relative;z-index:1;font-size:11px;}
+    /* ======= محرر الفاتورة ======= */
 
-    .inv-header{display:flex;justify-content:space-between;align-items:flex-start;}
-    .inv-company{max-width:320px;line-height:1.35;font-size:11px;}
-    .inv-company-name{font-size:14px;font-weight:bold;color:#f97316;margin-bottom:2px;}
-    .inv-company p{margin:0;font-size:10px;}
-    .inv-right{text-align:right;font-size:10px;}
-    .inv-logo-top img{height:60px;display:block;margin-left:auto;}
-    .inv-logo-title{margin-top:4px;font-size:14px;color:#f97316;text-align:center;}
-    .meta{margin-top:8px;font-size:10px;}
-    .meta-row{display:flex;justify-content:flex-end;align-items:center;margin-bottom:2px;gap:4px;}
-    .meta-row .label{font-weight:bold;min-width:90px;text-align:right;}
-    .meta-row input{border:1px solid #000;padding:2px 4px;font-size:10px;min-width:170px;border-radius:0;}
+    #editor{
+      margin-top:8px;
+      display:none;
+    }
 
-    .bill-title-row{margin-top:12px;display:flex;justify-content:space-between;align-items:flex-end;font-size:11px;}
-    .bill-to-label{font-weight:bold;margin-bottom:2px;}
-    .bill-to-box{margin-top:4px;border-top:1px solid #000;padding-top:4px;font-size:10px;}
-    .bill-to-textarea{width:100%;min-height:90px;border:none;padding:0;margin:0;resize:vertical;white-space:pre-wrap;font-size:10px;}
-    .center-invoice-title{font-size:16px;color:#4b5563;margin-right:40px;}
+    .editor-topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    .editor-title{
+      font-size:14px;
+      font-weight:bold;
+    }
+    .editor-actions{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+
+    .invoice-page{
+      width:800px;
+      min-height:1120px;
+      background:#ffffff;
+      border-radius:4px;
+      border:1px solid #d1d5db;
+      padding:24px 28px;
+      position:relative;
+      overflow:hidden;
+      margin:0 auto 20px auto;
+    }
+    .watermark{
+      position:absolute;
+      right:120px;
+      bottom:120px;
+      width:260px;
+      opacity:0.06;
+      filter:grayscale(1);
+      pointer-events:none;
+      z-index:0;
+    }
+    .invoice-inner{
+      position:relative;
+      z-index:1;
+      font-size:11px;
+    }
+
+    .inv-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+    }
+    .inv-company{
+      max-width:320px;
+      line-height:1.35;
+      font-size:11px;
+    }
+    .inv-company-name{
+      font-size:14px;
+      font-weight:bold;
+      color:#f97316;
+      margin-bottom:2px;
+    }
+    .inv-company p{
+      margin:0;
+      font-size:10px;
+    }
+
+    .inv-right{
+      text-align:right;
+      font-size:10px;
+    }
+    .inv-logo-top img{
+      height:60px;
+      display:block;
+      margin-left:auto;
+    }
+    .inv-logo-title{
+      margin-top:4px;
+      font-size:14px;
+      color:#f97316;
+      text-align:center;
+    }
+    .meta{
+      margin-top:8px;
+      font-size:10px;
+    }
+    .meta-row{
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      margin-bottom:2px;
+      gap:4px;
+    }
+    .meta-row .label{
+      font-weight:bold;
+      min-width:90px;
+      text-align:right;
+    }
+    .meta-row input{
+      border:1px solid #000;
+      padding:2px 4px;
+      font-size:10px;
+      min-width:170px;
+      border-radius:0;
+    }
+
+    .bill-title-row{
+      margin-top:12px;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      font-size:11px;
+    }
+    .bill-to-label{
+      font-weight:bold;
+      margin-bottom:2px;
+    }
+    .bill-to-box{
+      margin-top:4px;
+      border-top:1px solid #000;
+      padding-top:4px;
+      font-size:10px;
+    }
+    .bill-to-textarea{
+      width:100%;
+      min-height:90px;
+      border:none;
+      padding:0;
+      margin:0;
+      resize:vertical;
+      white-space:pre-wrap;
+      font-size:10px;
+    }
+    .center-invoice-title{
+      font-size:16px;
+      color:#4b5563;
+      margin-right:40px;
+    }
 
     table.inv-table{border-collapse:collapse;width:100%;margin-top:10px;}
-    table.inv-table th,table.inv-table td{border:1px solid #000;padding:3px 4px;font-size:10px;vertical-align:top;}
-    table.inv-table thead tr:first-child th{border-bottom:none;background:#ffffff;}
-    table.inv-table thead tr:nth-child(2) th{border-top:none;background:#f5f5f5;}
-    .cell-input,.cell-textarea{width:100%;border:none;padding:0;margin:0;font-size:10px;background:transparent;}
-    .cell-textarea{resize:vertical;min-height:26px;}
+    table.inv-table th,
+    table.inv-table td{
+      border:1px solid #000;
+      padding:3px 4px;
+      font-size:10px;
+      vertical-align:top;
+    }
+    table.inv-table thead tr:first-child th{
+      border-bottom:none;
+      background:#ffffff;
+    }
+    table.inv-table thead tr:nth-child(2) th{
+      border-top:none;
+      background:#f5f5f5;
+    }
+    .cell-input,.cell-textarea{
+      width:100%;
+      border:none;
+      padding:0;
+      margin:0;
+      font-size:10px;
+      background:transparent;
+    }
+    .cell-textarea{
+      resize:vertical;
+      min-height:26px;
+    }
     .cell-input:focus,.cell-textarea:focus{outline:none;}
 
-    .add-row-bar{margin-top:4px;font-size:10px;}
-    .thankyou{font-size:9px;margin-top:6px;margin-bottom:6px;}
+    .add-row-bar{
+      margin-top:4px;
+      font-size:10px;
+    }
+    .thankyou{
+      font-size:9px;
+      margin-top:6px;
+      margin-bottom:6px;
+    }
 
-    .totals-wrap{display:flex;justify-content:flex-end;}
-    .totals{width:260px;border-collapse:collapse;font-size:9px;}
-    .totals td{padding:2px 4px;border:1px solid #000;}
-    .totals td:first-child{width:60%;text-align:right;font-weight:bold;}
-    .totals td:last-child{width:40%;text-align:right;min-width:100px;}
-    .totals input{width:100%;border:none;background:transparent;font-size:9px;text-align:right;padding:0;margin:0;}
+    .totals-wrap{
+      display:flex;
+      justify-content:flex-end;
+    }
+    .totals{
+      width:260px;
+      border-collapse:collapse;
+      font-size:9px;
+    }
+    .totals td{
+      padding:2px 4px;
+      border:1px solid #000;
+    }
+    .totals td:first-child{
+      width:60%;
+      text-align:right;
+      font-weight:bold;
+    }
+    .totals td:last-child{
+      width:40%;
+      text-align:right;
+      min-width:100px;
+    }
+    .totals input{
+      width:100%;
+      border:none;
+      background:transparent;
+      font-size:9px;
+      text-align:right;
+      padding:0;
+      margin:0;
+    }
     .totals input:focus{outline:none;}
     .balance{font-weight:bold;}
 
-    .bottom-row{margin-top:18px;display:flex;justify-content:space-between;gap:20px;font-size:9px;}
+    .bottom-row{
+      margin-top:18px;
+      display:flex;
+      justify-content:space-between;
+      gap:20px;
+      font-size:9px;
+    }
     .scope-col{width:55%;}
     .scope-label{font-weight:bold;margin-bottom:4px;}
-    .scope-textarea{width:100%;min-height:70px;border:none;padding:0;margin:0;white-space:pre-wrap;font-size:9px;resize:vertical;}
+    .scope-textarea{
+      width:100%;
+      min-height:70px;
+      border:none;
+      padding:0;
+      margin:0;
+      white-space:pre-wrap;
+      font-size:9px;
+      resize:vertical;
+    }
     .bank-col{width:38%;}
     .bank-label{font-weight:bold;margin-bottom:4px;}
-    .bank-table{width:100%;border-collapse:collapse;font-size:9px;}
-    .bank-table td{border:none;padding:1px 0;vertical-align:top;}
-    .bank-table td:first-child{width:40%;font-weight:bold;}
+    .bank-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:9px;
+    }
+    .bank-table td{
+      border:none;
+      padding:1px 0;
+      vertical-align:top;
+    }
+    .bank-table td:first-child{
+      width:40%;
+      font-weight:bold;
+    }
 
-    .note-block{margin-top:12px;font-size:9px;}
-    .note-block textarea{width:100%;min-height:60px;border:1px solid #d1d5db;border-radius:4px;padding:4px;font-size:9px;resize:vertical;}
-
-    .sign-row{margin-top:32px;display:flex;justify-content:flex-start;font-size:9px;}
-    .sign-name{border-top:1px solid #000;padding-top:3px;width:200px;}
+    .sign-row{
+      margin-top:40px;
+      display:flex;
+      justify-content:flex-start;
+      font-size:9px;
+    }
+    .sign-name{
+      border-top:1px solid #000;
+      padding-top:3px;
+      width:200px;
+    }
     .sign-name span:first-child{font-weight:bold;}
 
-    .status-select{font-size:10px;padding:2px 6px;border-radius:999px;border:1px solid #e5e7eb;background:#f9fafb;}
+    .status-select{
+      font-size:10px;
+      padding:2px 6px;
+      border-radius:999px;
+      border:1px solid #e5e7eb;
+      background:#f9fafb;
+    }
 
-    .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.3);display:none;align-items:center;justify-content:center;z-index:50;}
-    .modal{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:10px 12px 12px;width:720px;max-width:95vw;max-height:80vh;display:flex;flex-direction:column;font-size:11px;box-shadow:0 20px 45px rgba(15,23,42,.35);}
-    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
-    .modal-header h3{margin:0;font-size:13px;}
-    .modal-body{flex:1;overflow:auto;border:1px solid #e5e7eb;border-radius:8px;}
-    .report-table{width:100%;border-collapse:collapse;}
-    .report-table th,.report-table td{padding:4px 6px;border-bottom:1px solid #e5e7eb;font-size:11px;white-space:nowrap;text-align:left;}
-    .report-table th{background:#f9fafb;position:sticky;top:0;z-index:1;}
-    .modal-footer{margin-top:4px;font-size:10px;color:#6b7280;text-align:right;}
+    /* نافذة تقرير الفواتير */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.3);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:50;
+    }
+    .modal{
+      background:#fff;
+      border-radius:10px;
+      border:1px solid #e5e7eb;
+      padding:10px 12px 12px;
+      width:720px;
+      max-width:95vw;
+      max-height:80vh;
+      display:flex;
+      flex-direction:column;
+      font-size:11px;
+    }
+    .modal-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:6px;
+    }
+    .modal-header h3{
+      margin:0;
+      font-size:13px;
+    }
+    .modal-body{
+      flex:1;
+      overflow:auto;
+      border:1px solid #e5e7eb;
+      border-radius:8px;
+    }
+    .report-table{
+      width:100%;
+      border-collapse:collapse;
+    }
+    .report-table th,
+    .report-table td{
+      padding:4px 6px;
+      border-bottom:1px solid #e5e7eb;
+      font-size:11px;
+      white-space:nowrap;
+      text-align:left;
+    }
+    .report-table th{
+      background:#f9fafb;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    .modal-footer{
+      margin-top:4px;
+      font-size:10px;
+      color:#6b7280;
+      text-align:right;
+    }
 
+    /* للطباعة: نظهر صفحة الفاتورة فقط */
     @media print{
       body{background:#fff;padding:0;}
-      .topbar-main,#dashboard,.modal-backdrop,.editor-topbar{display:none !important;}
+      .topbar-main,#dashboard,#contracts,.modal-backdrop,.editor-topbar{display:none !important;}
       #editor{display:block !important;}
-      .invoice-page{width:210mm;min-height:297mm;border:none;border-radius:0;padding:15mm 15mm 18mm 15mm;margin:0;}
+      .invoice-page{
+        width:210mm;
+        min-height:297mm;
+        border:none;
+        border-radius:0;
+        padding:15mm 15mm 18mm 15mm;
+        margin:0;
+      }
       .watermark{opacity:0.06;}
-      @page{size:A4;margin:0;}
+      @page{
+        size:A4;
+        margin:0;
+      }
     }
+
     @media(max-width:900px){
       .summary-cards{grid-template-columns:repeat(2,minmax(0,1fr));}
       .invoice-page{width:100%;padding:18px 12px;}
@@ -155,37 +600,32 @@
 </head>
 <body>
 
+  <!-- الشريط العلوي -->
   <div class="topbar-main">
     <div class="brand">
       <img src="logo-main.png" alt="Logo">
-      <div class="brand-info">
+      <div>
         <div class="brand-name">Nafithat Al-Amal Co.</div>
-        <div class="brand-sub">Advanced Invoice Management (Local)</div>
+        <div class="brand-sub">Invoice Management System (Local)</div>
       </div>
     </div>
     <div class="top-actions">
       <button class="btn btn-primary" id="btn-dashboard">📊 لوحة الفواتير</button>
+      <button class="btn" id="btn-contracts">📑 العقود</button>
       <button class="btn" id="btn-report">📄 تقرير الفواتير</button>
-      <!-- هذه تعتمد على onclick مباشر -->
-      <button class="btn" id="btn-new" onclick="createNewInvoice()">+ فاتورة جديدة</button>
+      <button class="btn" id="btn-new">+ فاتورة جديدة</button>
       <button class="btn" id="btn-export">⬇ تقرير Excel (CSV)</button>
-      <button class="btn" id="btn-save-json">💾 حفظ JSON</button>
-      <button class="btn" id="btn-load-json">📂 استرداد JSON</button>
-      <button class="btn btn-danger" id="btn-reset">🧹 إعادة ضبط</button>
-      <input type="file" id="json-file-input" accept="application/json" style="display:none">
     </div>
   </div>
 
   <div id="app">
+    <!-- ========= لوحة الفواتير ========= -->
     <section id="dashboard">
       <div class="dashboard-header">
-        <div class="dashboard-title">
-          الفواتير
-          <span>إدارة حسب الحالة</span>
-        </div>
+        <div class="dashboard-title">الفواتير</div>
         <div class="search-box">
           <span>🔍</span>
-          <input id="search-input" placeholder="بحث في الفواتير (عميل، رقم، عقد، وصف)...">
+          <input id="search-input" placeholder="بحث في الفواتير (عميل، رقم، عقد)...">
         </div>
       </div>
 
@@ -194,48 +634,37 @@
           <button class="status-pill active" data-filter="all">الكل</button>
           <button class="status-pill" data-filter="paid">مدفوعة</button>
           <button class="status-pill" data-filter="unpaid">غير مدفوعة</button>
+          <button class="status-pill" data-filter="overdue">متأخرة</button>
           <button class="status-pill" data-filter="draft">مسودة</button>
         </div>
-        <div class="filters-right">
-          <select id="po-filter" class="po-filter">
-            <option value="all">كل العقود</option>
-          </select>
-          <div style="font-size:10px;color:#6b7280;">
-            اضغط على أي سطر أو زر <b>تعديل</b> لفتح الفاتورة
-          </div>
+        <div style="font-size:10px;color:#6b7280;">
+          اضغط على أي سطر لفتح الفاتورة
         </div>
       </div>
 
       <div class="summary-cards">
-        <div class="card" id="card-total" data-type="total">
-          <div class="card-label">
-            إجمالي الفواتير
-            <span>حسب الفلاتر الحالية</span>
-          </div>
+        <div class="card">
+          <div class="card-label">إجمالي الفواتير</div>
           <div class="card-value" id="card-total-amount">IQD 0</div>
           <div class="card-sub" id="card-total-count">0 فاتورة</div>
         </div>
-        <div class="card" id="card-soon" data-type="soon">
-          <div class="card-label">
-            تستحق خلال 30 يوم
-            <span>تنبيه مبكر</span>
-          </div>
+        <div class="card">
+          <div class="card-label">الفواتير المتأخرة</div>
+          <div class="card-value" id="card-overdue-amount">IQD 0</div>
+          <div class="card-sub" id="card-overdue-count">0 فاتورة</div>
+        </div>
+        <div class="card">
+          <div class="card-label">تستحق خلال 30 يوم</div>
           <div class="card-value" id="card-soon-amount">IQD 0</div>
           <div class="card-sub" id="card-soon-count">0 فاتورة</div>
         </div>
-        <div class="card" id="card-paid" data-type="paid">
-          <div class="card-label">
-            المدفوع
-            <span>تم تسويته</span>
-          </div>
+        <div class="card">
+          <div class="card-label">المدفوع</div>
           <div class="card-value" id="card-paid-amount">IQD 0</div>
           <div class="card-sub" id="card-paid-count">0 فاتورة</div>
         </div>
-        <div class="card" id="card-unpaid" data-type="unpaid">
-          <div class="card-label">
-            غير المدفوع
-            <span>يشمل جميع الفواتير غير المدفوعة</span>
-          </div>
+        <div class="card">
+          <div class="card-label">غير المدفوع</div>
           <div class="card-value" id="card-unpaid-amount">IQD 0</div>
           <div class="card-sub" id="card-unpaid-count">0 فاتورة</div>
         </div>
@@ -248,20 +677,47 @@
               <th>التاريخ</th>
               <th>تاريخ الاستحقاق</th>
               <th>رقم الفاتورة</th>
-              <th>العقد (PO)</th>
               <th>العميل</th>
-              <th>الوصف المختصر</th>
-              <th>تفاصيل</th>
               <th>الحالة</th>
               <th>المبلغ (Balance)</th>
-              <th>إجراءات</th>
+              <th>العقد</th>
             </tr>
           </thead>
-          <tbody id="invoice-table-body"></tbody>
+          <tbody id="invoice-table-body">
+          </tbody>
         </table>
       </div>
     </section>
 
+    <!-- ========= شاشة العقود ========= -->
+    <section id="contracts" style="display:none;margin-top:8px;">
+      <div class="dashboard-header">
+        <div class="dashboard-title">العقود / أوامر الشراء (PO)</div>
+        <div style="font-size:10px;color:#6b7280;">
+          تظهر هنا معلومات العقد: اسم العميل، موقع العمل، مدة العقد الكلية، وحالة المدفوعات. اضغط على أي عقد لعرض فواتيره.
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>رقم العقد (PO)</th>
+              <th>اسم العميل</th>
+              <th>موقع العمل</th>
+              <th>عدد الفواتير</th>
+              <th>المبلغ المدفوع</th>
+              <th>المبلغ غير المدفوع</th>
+              <th>الإجمالي</th>
+              <th>مدة العقد</th>
+              <th>حالة العقد</th>
+            </tr>
+          </thead>
+          <tbody id="contracts-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========= محرر الفاتورة ========= -->
     <section id="editor">
       <div class="editor-topbar">
         <div class="editor-title">
@@ -401,11 +857,6 @@
             </div>
           </div>
 
-          <div class="note-block">
-            <div style="font-weight:bold;margin-bottom:3px;">Invoice Notes (Internal):</div>
-            <textarea id="f-note" placeholder="ملاحظات داخلية، تفاصيل إضافية، مرجع دفع، رقم شيك ..."></textarea>
-          </div>
-
           <div class="sign-row">
             <div class="sign-name">
               <span>Ayad Kazem</span><br>
@@ -417,6 +868,7 @@
     </section>
   </div>
 
+  <!-- نافذة تقرير الفواتير -->
   <div class="modal-backdrop" id="modal-backdrop">
     <div class="modal">
       <div class="modal-header">
@@ -429,6 +881,7 @@
             <tr>
               <th>Invoice No</th>
               <th>Date</th>
+              <th>Customer</th>
               <th>Contract</th>
               <th>Status</th>
               <th>Balance (IQD)</th>
@@ -444,36 +897,278 @@
   </div>
 
   <script>
-    const STORAGE_KEY = "naf_invoice_system_advanced_main";
+    const STORAGE_KEY = "naf_invoice_system_local_v1";
     let invoices = [];
     let currentId = null;
     let currentFilter = "all";
-    let currentPoFilter = "all";
-    let specialFilter = "none";
     const $ = id => document.getElementById(id);
 
+    const DESC1 = "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.";
+    const DESC2 = "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.";
+
     function todayStr(){ return new Date().toISOString().slice(0,10); }
-    function formatIQD(n){ n = Number(n)||0; return "IQD " + n.toLocaleString("en-US"); }
-    function parseNumber(v){ if(typeof v!=="string") v=String(v||""); return Number(v.replace(/[^\d.-]/g,"")) || 0; }
+    function formatIQD(n){ n = Number(n) || 0; return "IQD " + n.toLocaleString("en-US"); }
+    function parseNumber(v){ if(typeof v !== "string") v = String(v || ""); return Number(v.replace(/[^\d.-]/g,"")) || 0; }
+
+    function loadInvoices(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return;
+        const arr = JSON.parse(raw);
+        if(Array.isArray(arr)) invoices = arr;
+      }catch(e){ console.error("Error loading invoices:", e); }
+    }
+
+    function saveInvoices(){
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
+      renderDashboard();
+      renderReport();
+    }
+
+    function getSeedInvoices(){
+      return [
+        {
+          id: "seed-1",
+          number: "CP-INV00001",
+          issueDate: "2024-03-01",
+          dueDate: "2024-03-31",
+          contract: "PO00023",
+          billTo: "",
+          customerName: "",
+          scope: DESC1,
+          items: [{ desc: DESC1, location: "", date: "01-Mar-24 - 31-Mar-24", unit: "Lot", qty: 1, price: 5500000 }],
+          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
+        },
+        {
+          id: "seed-2",
+          number: "CP-INV00001",
+          issueDate: "2024-04-01",
+          dueDate: "2024-04-30",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC1,
+          items: [{ desc: DESC1, location: "", date: "01-Apr-24 - 30-Apr-24", unit: "Lot", qty: 1, price: 5500000 }],
+          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
+        },
+        {
+          id: "seed-3",
+          number: "CP-INV00003",
+          issueDate: "2024-05-01",
+          dueDate: "2024-05-31",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC1,
+          items: [{ desc: DESC1, location: "", date: "01-May-24 - 31-May-24", unit: "Lot", qty: 1, price: 5500000 }],
+          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
+        },
+        {
+          id: "seed-4",
+          number: "CP-INV00004",
+          issueDate: "2024-06-01",
+          dueDate: "2024-06-30",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC1,
+          items: [{ desc: DESC1, location: "", date: "01-Jun-24 - 30-Jun-24", unit: "Lot", qty: 1, price: 5500000 }],
+          subtotal: 5500000, discount: 0, taxPerc: 0, shipping: 0, balance: 5500000, status: "paid"
+        },
+        {
+          id: "seed-5",
+          number: "CP-INV00005",
+          issueDate: "2024-07-01",
+          dueDate: "2024-07-31",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Jul-24 - 31-Jul-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
+        },
+        {
+          id: "seed-6",
+          number: "CP-INV00006",
+          issueDate: "2024-08-01",
+          dueDate: "2024-08-31",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Aug-24 - 31-Aug-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
+        },
+        {
+          id: "seed-7",
+          number: "CP-INV00009",
+          issueDate: "2024-09-01",
+          dueDate: "2024-09-30",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Sep-24 - 30-Sep-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
+        },
+        {
+          id: "seed-8",
+          number: "CP-INV00010",
+          issueDate: "2024-10-01",
+          dueDate: "2024-10-30",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Oct-24 - 30-Oct-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
+        },
+        {
+          id: "seed-9",
+          number: "CP-INV00012",
+          issueDate: "2024-11-01",
+          dueDate: "2024-11-30",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Nov-24 - 30-Nov-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
+        },
+        {
+          id: "seed-10",
+          number: "CP-INV00012",
+          issueDate: "2024-12-01",
+          dueDate: "2024-12-31",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Dec-24 - 31-Dec-24", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
+        },
+        {
+          id: "seed-11",
+          number: "CP-INV00013",
+          issueDate: "2025-01-01",
+          dueDate: "2025-01-31",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Jan-25 - 31-Jan-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
+        },
+        {
+          id: "seed-12",
+          number: "CP-INV00015",
+          issueDate: "2025-02-01",
+          dueDate: "2025-02-28",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Feb-25 - 28-Feb-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
+        },
+        {
+          id: "seed-13",
+          number: "CP-INV00015",
+          issueDate: "2025-03-01",
+          dueDate: "2025-03-31",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Mar-25 - 31-Mar-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "paid"
+        },
+        {
+          id: "seed-14",
+          number: "CP-INV00016",
+          issueDate: "2025-04-01",
+          dueDate: "2025-04-30",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Apr-25 - 30-Apr-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
+        },
+        {
+          id: "seed-15",
+          number: "CP-INV00016",
+          issueDate: "2025-05-01",
+          dueDate: "2025-05-31",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-May-25 - 31-May-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
+        },
+        {
+          id: "seed-16",
+          number: "CP-INV00018",
+          issueDate: "2025-06-01",
+          dueDate: "2025-06-30",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Jun-25 - 30-Jun-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
+        },
+        {
+          id: "seed-17",
+          number: "CP-INV00018",
+          issueDate: "2025-07-01",
+          dueDate: "2025-07-31",
+          contract: "PO00023",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Jul-25 - 31-Jul-25", unit: "Lot", qty: 2, price: 3375000 }],
+          subtotal: 6750000, discount: 0, taxPerc: 0, shipping: 0, balance: 6750000, status: "unpaid"
+        },
+        {
+          id: "seed-18",
+          number: "NA-2025-INV00024",
+          issueDate: "2025-08-01",
+          dueDate: "2025-08-31",
+          contract: "4400013837",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Aug-25 - 31-Aug-25", unit: "Lot", qty: 2, price: 4325000 }],
+          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "paid"
+        },
+        {
+          id: "seed-19",
+          number: "NA-2025-INV00026",
+          issueDate: "2025-09-01",
+          dueDate: "2025-09-30",
+          contract: "4400013837",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Sep-25 - 30-Sep-25", unit: "Lot", qty: 2, price: 4325000 }],
+          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "paid"
+        },
+        {
+          id: "seed-20",
+          number: "NA-2025-INV00031",
+          issueDate: "2025-10-01",
+          dueDate: "2025-10-31",
+          contract: "4400013837",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Oct-25 - 31-Oct-25", unit: "Lot", qty: 2, price: 4325000 }],
+          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "paid"
+        },
+        {
+          id: "seed-21",
+          number: "NA-2025-INV00036",
+          issueDate: "2025-11-01",
+          dueDate: "2025-11-30",
+          contract: "4400013837",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Nov-25 - 30-Nov-25", unit: "Lot", qty: 2, price: 4325000 }],
+          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "unpaid"
+        },
+        {
+          id: "seed-22",
+          number: "NA-2025-D-INV00039",
+          issueDate: "2025-12-01",
+          dueDate: "2025-12-31",
+          contract: "4400013837",
+          billTo: "", customerName: "", scope: DESC2,
+          items: [{ desc: DESC2, location: "", date: "01-Dec-25 - 31-Dec-25", unit: "Lot", qty: 2, price: 4325000 }],
+          subtotal: 8650000, discount: 0, taxPerc: 0, shipping: 0, balance: 8650000, status: "unpaid"
+        }
+      ];
+    }
 
     function createItemRow(data={}){
       const tr = document.createElement("tr");
       tr.className = "item-row";
       tr.innerHTML = `
-        <td class="no-cell"></td>
+        <td class="text-center no-cell"></td>
         <td><textarea class="cell-textarea cell-desc">${data.desc || ""}</textarea></td>
         <td><input class="cell-input cell-loc" value="${data.location || ""}"></td>
         <td><input class="cell-input cell-date" value="${data.date || ""}"></td>
-        <td><input class="cell-input cell-unit" value="${data.unit || ""}"></td>
-        <td><input class="cell-input cell-qty" type="number" min="0" value="${data.qty != null ? data.qty : 1}"></td>
-        <td>
+        <td class="text-center"><input class="cell-input cell-unit" value="${data.unit || ""}"></td>
+        <td class="text-center"><input class="cell-input cell-qty" type="number" min="0" value="${data.qty != null ? data.qty : 1}"></td>
+        <td class="text-right">
           <input class="cell-input cell-price" type="number" min="0" value="${data.price != null ? data.price : 0}">
           <br>
           <input class="cell-input cell-total" type="text" readonly>
-        </td>`;
-      tr.querySelectorAll(".cell-qty,.cell-price").forEach(inp=>{
-        inp.addEventListener("input", recalcTotals);
-      });
+        </td>
+      `;
+      attachRowEvents(tr);
       return tr;
     }
 
@@ -493,15 +1188,24 @@
       const rows = document.querySelectorAll("#items-body .item-row");
       let subtotal = 0;
       rows.forEach(tr => subtotal += recalcRow(tr));
+
       const discount = parseNumber($("f-discount").value);
       const taxPerc  = parseNumber($("f-tax").value);
       const shipping = parseNumber($("f-shipping").value);
+
       const subLess = subtotal - discount;
       const taxVal  = subLess * (taxPerc/100);
       const balance = subLess + taxVal + shipping;
+
       $("f-subtotal").value = formatIQD(subtotal);
       $("f-sub-less").value = formatIQD(subLess);
       $("f-balance").value  = formatIQD(balance);
+    }
+
+    function attachRowEvents(tr){
+      tr.querySelectorAll(".cell-qty,.cell-price").forEach(inp=>{
+        inp.addEventListener("input", recalcTotals);
+      });
     }
 
     function readForm(inv){
@@ -512,7 +1216,7 @@
       inv.billTo      = $("f-billto").value.trim();
       inv.scope       = $("f-scope").value.trim();
       inv.status      = $("status-select").value;
-      inv.note        = $("f-note").value.trim();
+
       const firstLine = inv.billTo.split("\n")[0] || "";
       inv.customerName = firstLine;
 
@@ -541,7 +1245,6 @@
       $("f-contract").value = inv.contract    || "";
       $("f-billto").value   = inv.billTo      || "";
       $("f-scope").value    = inv.scope       || "";
-      $("f-note").value     = inv.note        || "";
       $("status-select").value = inv.status || "draft";
 
       $("items-body").innerHTML = "";
@@ -557,29 +1260,21 @@
       $("editor-subtitle").textContent = inv.number ? `(${inv.number})` : "";
     }
 
-    function loadInvoices(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return;
-        const arr = JSON.parse(raw);
-        if(Array.isArray(arr)) invoices = arr;
-      }catch(e){ console.error("Error loading invoices:", e); }
-    }
-
-    function saveInvoices(){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
-      renderPoFilterOptions();
-      renderDashboard();
-      renderReport();
-    }
-
     function showDashboard(){
       $("dashboard").style.display = "";
       $("editor").style.display = "none";
+      $("contracts").style.display = "none";
     }
     function showEditor(){
       $("dashboard").style.display = "none";
       $("editor").style.display = "";
+      $("contracts").style.display = "none";
+    }
+    function showContracts(){
+      $("dashboard").style.display = "none";
+      $("editor").style.display = "none";
+      $("contracts").style.display = "";
+      renderContracts();
     }
 
     function openEditor(id){
@@ -611,118 +1306,97 @@
       let cls="badge-draft",txt="مسودة";
       if(status==="paid"){cls="badge-paid";txt="مدفوعة";}
       else if(status==="unpaid"){
-        cls = isOverdue(inv)?"badge-overdue":"badge-unpaid";
-        txt = isOverdue(inv)?"متأخرة":"غير مدفوعة";
+        const overdue = isOverdue(inv);
+        cls = overdue?"badge-overdue":"badge-unpaid";
+        txt = overdue?"متأخرة":"غير مدفوعة";
       }
       return `<span class="badge ${cls}">${txt}</span>`;
     }
 
-    function renderPoFilterOptions(){
-      const select = $("po-filter");
-      if(!select) return;
-      const current = select.value || "all";
-      const contracts = Array.from(new Set(invoices
-        .map(inv=>inv.contract)
-        .filter(c=>c && c.trim().length)))
-        .sort();
-      select.innerHTML = `<option value="all">كل العقود</option>` +
-        contracts.map(c=>`<option value="${c}">${c}</option>`).join("");
-      if(contracts.includes(current)) select.value = current; else select.value = "all";
-      currentPoFilter = select.value;
-    }
-
-    function matchesFilters(inv, searchText){
-      if(currentPoFilter!=="all" && (inv.contract||"") !== currentPoFilter) return false;
-      if(searchText){
-        const hay = [inv.number,inv.customerName,inv.contract,inv.billTo,inv.scope,inv.note].join(" ").toLowerCase();
-        if(!hay.includes(searchText)) return false;
-      }
-      if(specialFilter === "soon"){
-        return isDueSoon(inv);
-      }
-      if(currentFilter==="paid")   return inv.status==="paid";
-      if(currentFilter==="draft")  return inv.status==="draft";
-      if(currentFilter==="unpaid") return inv.status==="unpaid";
-      return true;
-    }
-
-    function editInvoice(id){ openEditor(id); }
-
-    function deleteInvoiceById(id, ask){
-      if(ask && !confirm("هل أنت متأكد من حذف هذه الفاتورة؟ لا يمكن التراجع.")) return;
-      invoices = invoices.filter(inv => inv.id !== id);
-      if(currentId === id) currentId = null;
-      saveInvoices();
-      showDashboard();
-    }
-
     function renderDashboard(){
       const tbody = $("invoice-table-body");
-      if(!tbody) return;
       tbody.innerHTML = "";
-      const searchText = ($("search-input")?.value || "").trim().toLowerCase();
-      const filtered = invoices.filter(inv => matchesFilters(inv, searchText));
 
-      let total=0,paid=0,unpaid=0,soonAmt=0;
-      let countTotal=0,countPaid=0,countUnpaid=0,countSoon=0;
+      let total = 0, paid=0, unpaid=0, overdueAmt=0, soonAmt=0;
+      let countTotal=0, countPaid=0, countUnpaid=0, countOverdue=0, countSoon=0;
 
-      filtered.forEach(inv=>{
-        total += inv.balance || 0; countTotal++;
-        if(inv.status==="paid"){paid+=inv.balance||0;countPaid++;}
-        else if(inv.status==="unpaid"){unpaid+=inv.balance||0;countUnpaid++;}
-      });
+      const searchText = $("search-input").value.trim().toLowerCase();
 
       invoices.forEach(inv=>{
-        if(isDueSoon(inv)){soonAmt+=inv.balance||0;countSoon++;}
+        total += inv.balance || 0;
+        countTotal++;
+        if(inv.status==="paid"){
+          paid += inv.balance || 0;
+          countPaid++;
+        }else{
+          unpaid += inv.balance || 0;
+          countUnpaid++;
+        }
+        if(isOverdue(inv)){
+          overdueAmt += inv.balance || 0;
+          countOverdue++;
+        }
+        if(isDueSoon(inv)){
+          soonAmt += inv.balance || 0;
+          countSoon++;
+        }
       });
 
-      if($("card-total-amount")){
-        $("card-total-amount").textContent   = formatIQD(total);
-        $("card-total-count").textContent    = countTotal + " فاتورة";
-        $("card-paid-amount").textContent    = formatIQD(paid);
-        $("card-paid-count").textContent     = countPaid + " فاتورة";
-        $("card-unpaid-amount").textContent  = formatIQD(unpaid);
-        $("card-unpaid-count").textContent   = countUnpaid + " فاتورة";
-        $("card-soon-amount").textContent    = formatIQD(soonAmt);
-        $("card-soon-count").textContent     = countSoon + " فاتورة";
-      }
+      $("card-total-amount").textContent   = formatIQD(total);
+      $("card-total-count").textContent    = countTotal + " فاتورة";
+      $("card-paid-amount").textContent    = formatIQD(paid);
+      $("card-paid-count").textContent     = countPaid + " فاتورة";
+      $("card-unpaid-amount").textContent  = formatIQD(unpaid);
+      $("card-unpaid-count").textContent   = countUnpaid + " فاتورة";
+      $("card-overdue-amount").textContent = formatIQD(overdueAmt);
+      $("card-overdue-count").textContent  = countOverdue + " فاتورة";
+      $("card-soon-amount").textContent    = formatIQD(soonAmt);
+      $("card-soon-count").textContent     = countSoon;
 
-      const sorted = filtered.slice().sort((a,b)=>(b.issueDate||"").localeCompare(a.issueDate||""));
-      if(!sorted.length){
-        tbody.innerHTML = `<tr><td colspan="10" style="font-size:11px;color:#6b7280;">لا توجد فواتير بعد، اضغط على زر "فاتورة جديدة" أو استرد JSON.</td></tr>`;
-        return;
-      }
-
-      sorted.forEach(inv=>{
-        const descSource = inv.scope || (inv.items && inv.items[0] && inv.items[0].desc) || "";
-        const shortDesc  = descSource.slice(0,48) + (descSource.length>48?"...":"");
-        const noteSnippet = (inv.note||"").slice(0,32) + ((inv.note||"").length>32?"...":"");
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${inv.issueDate || ""}</td>
-          <td>${inv.dueDate || ""}</td>
-          <td>${inv.number || ""}</td>
-          <td>${inv.contract || ""}</td>
-          <td>${inv.customerName || ""}</td>
-          <td>${shortDesc}</td>
-          <td>${noteSnippet || "-"}</td>
-          <td>${getStatusBadge(inv.status,inv)}</td>
-          <td style="text-align:right;">${formatIQD(inv.balance || 0)}</td>
-          <td>
-            <button class="btn btn-sm" onclick="event.stopPropagation(); editInvoice('${inv.id}')">تعديل</button>
-            <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteInvoiceById('${inv.id}', true)">حذف</button>
-          </td>`;
-        tr.addEventListener("click", ()=>openEditor(inv.id));
-        tbody.appendChild(tr);
+      const filtered = invoices.slice().filter(inv=>{
+        if(searchText){
+          const hay = [
+            inv.number,
+            inv.customerName,
+            inv.contract,
+            inv.billTo
+          ].join(" ").toLowerCase();
+          if(!hay.includes(searchText)) return false;
+        }
+        if(currentFilter==="paid") return inv.status==="paid";
+        if(currentFilter==="unpaid") return inv.status==="unpaid" && !isOverdue(inv);
+        if(currentFilter==="overdue") return isOverdue(inv);
+        if(currentFilter==="draft") return inv.status==="draft";
+        return true;
+      }).sort((a,b)=>{
+        return (b.issueDate||"").localeCompare(a.issueDate||"");
       });
+
+      if(!filtered.length){
+        tbody.innerHTML = `<tr><td colspan="7" style="font-size:11px;color:#6b7280;">لا توجد فواتير مطابقة.</td></tr>`;
+      }else{
+        filtered.forEach(inv=>{
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${inv.issueDate || ""}</td>
+            <td>${inv.dueDate || ""}</td>
+            <td>${inv.number || ""}</td>
+            <td>${inv.customerName || ""}</td>
+            <td>${getStatusBadge(inv.status,inv)}</td>
+            <td style="text-align:right;">${formatIQD(inv.balance || 0)}</td>
+            <td>${inv.contract || ""}</td>
+          `;
+          tr.addEventListener("click", ()=>openEditor(inv.id));
+          tbody.appendChild(tr);
+        });
+      }
     }
 
     function renderReport(){
       const tbody = $("report-body");
-      if(!tbody) return;
       tbody.innerHTML = "";
       if(!invoices.length){
-        tbody.innerHTML = `<tr><td colspan="5" style="font-size:11px;color:#6b7280;">لا توجد فواتير بعد.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="font-size:11px;color:#6b7280;">لا توجد فواتير بعد.</td></tr>`;
         return;
       }
       invoices.slice().sort((a,b)=>(b.issueDate||"").localeCompare(a.issueDate||""))
@@ -734,19 +1408,114 @@
           tr.innerHTML = `
             <td>${inv.number || ""}</td>
             <td>${inv.issueDate || ""}</td>
+            <td>${inv.customerName || ""}</td>
             <td>${inv.contract || ""}</td>
             <td>${statusTxt}</td>
-            <td style="text-align:right;">${inv.balance != null ? inv.balance.toLocaleString("en-US") : ""}</td>`;
+            <td style="text-align:right;">${inv.balance != null ? inv.balance.toLocaleString("en-US") : ""}</td>
+          `;
           tr.addEventListener("click", ()=>{
-            if($("modal-backdrop")) $("modal-backdrop").style.display = "none";
+            $("modal-backdrop").style.display = "none";
             openEditor(inv.id);
           });
           tbody.appendChild(tr);
         });
     }
 
+    function renderContracts(){
+      const tbody = $("contracts-table-body");
+      tbody.innerHTML = "";
+
+      if(!invoices.length){
+        tbody.innerHTML = `<tr><td colspan="9" style="font-size:11px;color:#6b7280;">لا توجد عقود بعد.</td></tr>`;
+        return;
+      }
+
+      const map = {};
+      invoices.forEach(inv=>{
+        const key = inv.contract && inv.contract.trim() ? inv.contract.trim() : "بدون رقم عقد";
+        if(!map[key]) map[key] = [];
+        map[key].push(inv);
+      });
+
+      const keys = Object.keys(map).sort();
+      keys.forEach(contractNo=>{
+        const arr = map[contractNo];
+        let total=0, paid=0, unpaid=0;
+        let firstDate=null, lastDate=null;
+        let hasUnpaid=false;
+
+        // اسم العميل (من أول فاتورة فيها اسم)
+        let customerName = "";
+        for(const inv of arr){
+          if(inv.customerName && inv.customerName.trim()){
+            customerName = inv.customerName.trim();
+            break;
+          }
+        }
+
+        // موقع العمل (من أول بند فيه Location)
+        let site = "";
+        outer: for(const inv of arr){
+          if(inv.items){
+            for(const it of inv.items){
+              if(it.location && it.location.trim()){
+                site = it.location.trim();
+                break outer;
+              }
+            }
+          }
+        }
+
+        arr.forEach(inv=>{
+          const bal = inv.balance || 0;
+          total += bal;
+          if(inv.status==="paid") paid += bal;
+          else { unpaid += bal; hasUnpaid = true; }
+
+          const start = inv.issueDate || inv.dueDate;
+          const end = inv.dueDate || inv.issueDate;
+          if(start){ if(!firstDate || start < firstDate) firstDate = start; }
+          if(end){ if(!lastDate || end > lastDate) lastDate = end; }
+        });
+
+        let durationText = "";
+        if(firstDate && lastDate){
+          const d1 = new Date(firstDate);
+          const d2 = new Date(lastDate);
+          const diffDays = Math.round((d2-d1)/(1000*60*60*24)) + 1;
+          durationText = `${firstDate} → ${lastDate} (${diffDays} يومًا)`;
+        }else{
+          durationText = firstDate || lastDate || "";
+        }
+
+        const statusText = hasUnpaid ? "يوجد مبالغ غير مدفوعة" : "مدفوع بالكامل";
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${contractNo}</td>
+          <td>${customerName || "—"}</td>
+          <td>${site || "—"}</td>
+          <td>${arr.length}</td>
+          <td>${formatIQD(paid)}</td>
+          <td>${formatIQD(unpaid)}</td>
+          <td>${formatIQD(total)}</td>
+          <td>${durationText}</td>
+          <td style="color:${hasUnpaid ? '#b91c1c' : '#166534'};">${statusText}</td>
+        `;
+        tr.addEventListener("click", ()=>{
+          $("search-input").value = contractNo;
+          currentFilter = "all";
+          document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
+          const allBtn = document.querySelector('.status-pill[data-filter="all"]');
+          if(allBtn) allBtn.classList.add("active");
+          showDashboard();
+          renderDashboard();
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
     function generateId(){
-      if(window.crypto && crypto.randomUUID) return crypto.randomUUID();
+      if(window.crypto && crypto.randomUUID){ return crypto.randomUUID(); }
       return String(Date.now()) + "-" + String(Math.random()).slice(2);
     }
 
@@ -755,14 +1524,13 @@
       const id = generateId();
       const inv = {
         id,
-        number:"INV-"+today.replace(/-/g,""),
+        number:"NA-"+today.replace(/-/g,"")+"-INV",
         issueDate:today,
         dueDate:today,
-        contract: currentPoFilter !== "all" ? currentPoFilter : "",
+        contract:"",
         billTo:"",
         customerName:"",
         scope:"",
-        note:"",
         items:[],
         subtotal:0,
         discount:0,
@@ -794,20 +1562,31 @@
     }
 
     function deleteCurrentInvoice(){
-      if(!currentId){ alert("لا توجد فاتورة محددة لحذفها."); return; }
-      deleteInvoiceById(currentId, true);
+      if(!currentId){
+        alert("لا توجد فاتورة محددة لحذفها.");
+        return;
+      }
+      const ok = confirm("هل أنت متأكد من حذف هذه الفاتورة؟ لا يمكن التراجع.");
+      if(!ok) return;
+      invoices = invoices.filter(inv => inv.id !== currentId);
+      currentId = null;
+      saveInvoices();
+      showDashboard();
       alert("تم حذف الفاتورة ✅");
     }
 
     function duplicateCurrentInvoice(){
-      if(!currentId){ alert("لا توجد فاتورة مفتوحة لنسخها."); return; }
+      if(!currentId){
+        alert("لا توجد فاتورة مفتوحة لنسخها.");
+        return;
+      }
       const original = invoices.find(i=>i.id===currentId);
       if(!original) return;
       const id = generateId();
       const copy = JSON.parse(JSON.stringify(original));
       const today = todayStr();
       copy.id = id;
-      copy.number = original.number ? original.number + "-COPY" : "INV-"+today.replace(/-/g,"");
+      copy.number = original.number ? original.number + "-COPY" : "NA-"+today.replace(/-/g,"")+"-INV";
       copy.issueDate = today;
       copy.dueDate = today;
       copy.status = "draft";
@@ -822,8 +1601,11 @@
     }
 
     function exportCsv(){
-      if(!invoices.length){ alert("لا توجد فواتير لتصديرها."); return; }
-      const header = ["Invoice No","Issue Date","Due Date","Customer","Contract","Status","Balance (IQD)","Note"];
+      if(!invoices.length){
+        alert("لا توجد فواتير لتصديرها.");
+        return;
+      }
+      const header = ["Invoice No","Issue Date","Due Date","Customer","Contract","Status","Balance (IQD)"];
       const lines = [header.join(",")];
       invoices.forEach(inv=>{
         const statusTxt = inv.status==="paid" ? "PAID" :
@@ -836,8 +1618,7 @@
           `"${(inv.customerName||"").replace(/"/g,'""')}"`,
           `"${(inv.contract||"").replace(/"/g,'""')}"`,
           `"${statusTxt}"`,
-          inv.balance != null ? inv.balance : 0,
-          `"${(inv.note||"").replace(/"/g,'""')}"`
+          inv.balance != null ? inv.balance : 0
         ];
         lines.push(row.join(","));
       });
@@ -850,161 +1631,74 @@
       URL.revokeObjectURL(url);
     }
 
-    function exportJson(){
-      const data = JSON.stringify(invoices,null,2);
-      const blob = new Blob([data],{type:"application/json"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "invoices-backup.json";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function importJsonFromFile(file){
-      const reader = new FileReader();
-      reader.onload = e=>{
-        try{
-          const data = JSON.parse(e.target.result);
-          if(!Array.isArray(data)){ alert("ملف JSON غير صحيح."); return; }
-          if(!confirm("سيتم استبدال جميع الفواتير الحالية بالبيانات من الملف، هل أنت متأكد؟")) return;
-          data.forEach(inv=>{ if(!inv.id) inv.id = generateId(); });
-          invoices = data;
-          currentId = null;
-          saveInvoices();
-          showDashboard();
-          alert("تم استرداد بيانات JSON بنجاح ✅");
-        }catch(err){
-          console.error(err);
-          alert("تعذر قراءة ملف JSON، تأكد من صحته.");
-        }
-      };
-      reader.readAsText(file,"utf-8");
-    }
-
-    function resetSystem(){
-      if(!confirm("سيتم حذف كل الفواتير المخزّنة محليًا، هل أنت متأكد؟")) return;
-      localStorage.removeItem(STORAGE_KEY);
-      invoices = [];
-      currentId = null;
-      saveInvoices();
-      showDashboard();
-      alert("تمت إعادة ضبط النظام ✅");
-    }
-
-    function highlightCard(type){
-      document.querySelectorAll(".card[data-type]").forEach(c=>{
-        c.classList.toggle("card-active", c.dataset.type === type);
-      });
-    }
-
-    function updateActiveStatusPills(){
-      document.querySelectorAll(".status-pill").forEach(b=>{
-        b.classList.remove("active");
-        if(currentFilter === b.dataset.filter){
-          b.classList.add("active");
-        }
-        if(currentFilter==="all" && b.dataset.filter==="all"){
-          b.classList.add("active");
-        }
-      });
-    }
-
-    function setFilterFromCard(type){
-      specialFilter = "none";
-      if(type === "total"){
-        currentFilter = "all";
-      }else if(type === "soon"){
-        currentFilter = "all";
-        specialFilter = "soon";
-      }else if(type === "paid"){
-        currentFilter = "paid";
-      }else if(type === "unpaid"){
-        currentFilter = "unpaid";
-      }
-      highlightCard(type);
-      updateActiveStatusPills();
-      renderDashboard();
-    }
-
     function setupEvents(){
-      const bDash = $("btn-dashboard"); if(bDash) bDash.addEventListener("click", ()=>{showDashboard();highlightCard("total");});
-      const bRep  = $("btn-report");    if(bRep)  bRep.addEventListener("click", ()=>{const mb=$("modal-backdrop");if(mb)mb.style.display="flex";renderReport();});
-      const bBack = $("btn-back");      if(bBack) bBack.addEventListener("click", showDashboard);
-      const bPr   = $("btn-print");     if(bPr)   bPr.addEventListener("click", ()=>window.print());
-      const bSave = $("btn-save");      if(bSave) bSave.addEventListener("click", saveCurrentInvoice);
-      const bDel  = $("btn-delete");    if(bDel)  bDel.addEventListener("click", deleteCurrentInvoice);
-      const bDup  = $("btn-duplicate"); if(bDup)  bDup.addEventListener("click", duplicateCurrentInvoice);
-      const bExp  = $("btn-export");    if(bExp)  bExp.addEventListener("click", exportCsv);
-      const bSJ   = $("btn-save-json"); if(bSJ)   bSJ.addEventListener("click", exportJson);
-      const bLJ   = $("btn-load-json"); if(bLJ)   bLJ.addEventListener("click", ()=>$("json-file-input")?.click());
-      const bRes  = $("btn-reset");     if(bRes)  bRes.addEventListener("click", resetSystem);
-
-      const fileInput = $("json-file-input");
-      if(fileInput) fileInput.addEventListener("change", e=>{
-        const file = e.target.files[0];
-        if(file) importJsonFromFile(file);
-        e.target.value = "";
+      $("btn-dashboard").addEventListener("click", showDashboard);
+      $("btn-contracts").addEventListener("click", showContracts);
+      $("btn-report").addEventListener("click", ()=>{
+        $("modal-backdrop").style.display = "flex";
+        renderReport();
       });
+      $("btn-new").addEventListener("click", createNewInvoice);
+      $("btn-back").addEventListener("click", showDashboard);
+      $("btn-print").addEventListener("click", ()=>window.print());
+      $("btn-save").addEventListener("click", saveCurrentInvoice);
+      $("btn-delete").addEventListener("click", deleteCurrentInvoice);
+      $("btn-duplicate").addEventListener("click", duplicateCurrentInvoice);
+      $("btn-export").addEventListener("click", exportCsv);
 
-      const cModal = $("close-modal-btn");
-      if(cModal) cModal.addEventListener("click", ()=>{const mb=$("modal-backdrop");if(mb)mb.style.display="none";});
-      document.addEventListener("keydown", e=>{ if(e.key==="Escape"){const mb=$("modal-backdrop");if(mb)mb.style.display="none";} });
+      $("close-modal-btn").addEventListener("click", ()=>{
+        $("modal-backdrop").style.display = "none";
+      });
+      document.addEventListener("keydown", (e)=>{
+        if(e.key==="Escape"){
+          $("modal-backdrop").style.display = "none";
+        }
+      });
 
       document.querySelectorAll(".status-pill").forEach(btn=>{
         btn.addEventListener("click", ()=>{
           document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
           btn.classList.add("active");
           currentFilter = btn.dataset.filter;
-          specialFilter = "none";
-          highlightCard("total");
           renderDashboard();
         });
       });
 
-      const sInput = $("search-input"); if(sInput) sInput.addEventListener("input", renderDashboard);
-      const sSel   = $("status-select"); if(sSel) sSel.addEventListener("change", ()=>{
+      $("search-input").addEventListener("input", ()=>{ renderDashboard(); });
+
+      $("status-select").addEventListener("change", ()=>{
         if(!currentId) return;
         const inv = invoices.find(i=>i.id===currentId);
         if(!inv) return;
-        inv.status = sSel.value;
+        inv.status = $("status-select").value;
         saveInvoices();
       });
 
       ["f-discount","f-tax","f-shipping"].forEach(id=>{
-        const el = $(id); if(el) el.addEventListener("input", recalcTotals);
+        $(id).addEventListener("input", recalcTotals);
       });
 
-      const addRowBtn = $("add-row-btn");
-      if(addRowBtn) addRowBtn.addEventListener("click", ()=>{
+      $("add-row-btn").addEventListener("click", ()=>{
         $("items-body").appendChild(createItemRow({qty:1,price:0}));
         updateRowNumbers();
         recalcTotals();
       });
-
-      const poFilter = $("po-filter");
-      if(poFilter) poFilter.addEventListener("change", ()=>{ currentPoFilter = poFilter.value; renderDashboard(); });
-
-      [["card-total","total"],["card-soon","soon"],["card-paid","paid"],["card-unpaid","unpaid"]]
-        .forEach(([id,type])=>{
-          const el = $(id);
-          if(el) el.addEventListener("click", ()=>setFilterFromCard(type));
-        });
     }
-
-    // جعل الدوال متاحة للـ onclick حتى لو فشل أي شيء آخر
-    window.createNewInvoice = createNewInvoice;
-    window.editInvoice      = editInvoice;
-    window.deleteInvoiceById= deleteInvoiceById;
 
     (function init(){
       setupEvents();
       loadInvoices();
-      renderPoFilterOptions();
-      showDashboard();
-      highlightCard("total");
-      renderDashboard();
-      renderReport();
+      if(!invoices.length){
+        invoices = getSeedInvoices();
+        saveInvoices();
+      }
+      if(!invoices.length){
+        createNewInvoice();
+      }else{
+        showDashboard();
+        renderDashboard();
+        renderReport();
+      }
     })();
   </script>
 </body>
