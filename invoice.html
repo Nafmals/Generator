@@ -624,12 +624,13 @@ function setupEvents(){
     });
 }
 
-// expose for inline onclick
+// لجعل الدوال متاحة لـ onclick في الـ HTML
 window.createNewInvoice = createNewInvoice;
 window.editInvoice      = editInvoice;
 window.deleteInvoiceById= deleteInvoiceById;
 
-(function init(){
+// ننتظر تحميل الـ DOM ثم نبدأ
+window.addEventListener("DOMContentLoaded", function(){
   setupEvents();
   loadInvoices();
   renderPoFilterOptions();
@@ -637,5 +638,5 @@ window.deleteInvoiceById= deleteInvoiceById;
   highlightCard("total");
   renderDashboard();
   renderReport();
-})();
+});
 </script>
