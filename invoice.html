@@ -56,7 +56,7 @@
     th,td{padding:6px 8px;border-bottom:1px solid #e5e7eb;white-space:nowrap;text-align:left;}
     tr:hover td{background:#eef2ff;}
 
-    .badge{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;font-size:10px;border:1px solid transparent;}
+    .badge{display:inline-flex;align-items:center;padding:2px 6px;border-radius:999px;font-size:10px;border:1px solid透明;}
     .badge-paid{background:#ecfdf5;color:#166534;border-color:#bbf7d0;}
     .badge-unpaid{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
     .badge-overdue{background:#fef2f2;color:#b91c1c;border-color:#fecaca;}
@@ -166,7 +166,6 @@
     <div class="top-actions">
       <button class="btn btn-primary" id="btn-dashboard">📊 لوحة الفواتير</button>
       <button class="btn" id="btn-report">📄 تقرير الفواتير</button>
-      <!-- هذه تعتمد على onclick مباشر -->
       <button class="btn" id="btn-new" onclick="createNewInvoice()">+ فاتورة جديدة</button>
       <button class="btn" id="btn-export">⬇ تقرير Excel (CSV)</button>
       <button class="btn" id="btn-save-json">💾 حفظ JSON</button>
@@ -450,6 +449,582 @@
     let currentFilter = "all";
     let currentPoFilter = "all";
     let specialFilter = "none";
+
+    // بيانات الفواتير المستوردة من ملف Excel (Book1.xlsx)
+    const seedInvoices = [
+      {
+        "id": "CP-INV00001",
+        "number": "CP-INV00001",
+        "issueDate": "2024-03-01",
+        "dueDate": "2024-04-30",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2024-03-01",
+            "unit": "Lot",
+            "qty": 1,
+            "price": 5500000
+          },
+          {
+            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2024-03-01",
+            "unit": "Lot",
+            "qty": 1,
+            "price": 5500000
+          }
+        ],
+        "subtotal": 11000000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 11000000,
+        "status": "paid",
+        "createdAt": "2024-03-01T00:00:00.000Z",
+        "updatedAt": "2024-03-01T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00003",
+        "number": "CP-INV00003",
+        "issueDate": "2024-05-01",
+        "dueDate": "2024-05-31",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2024-05-01",
+            "unit": "Lot",
+            "qty": 1,
+            "price": 5500000
+          }
+        ],
+        "subtotal": 5500000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 5500000,
+        "status": "paid",
+        "createdAt": "2024-05-01T00:00:00.000Z",
+        "updatedAt": "2024-05-01T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00004",
+        "number": "CP-INV00004",
+        "issueDate": "2024-06-01",
+        "dueDate": "2024-06-30",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2024-06-01",
+            "unit": "Lot",
+            "qty": 1,
+            "price": 5500000
+          }
+        ],
+        "subtotal": 5500000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 5500000,
+        "status": "paid",
+        "createdAt": "2024-06-01T00:00:00.000Z",
+        "updatedAt": "2024-06-01T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00005",
+        "number": "CP-INV00005",
+        "issueDate": "2024-07-01",
+        "dueDate": "2024-07-31",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Rental of 2 Electric Power Generation : 200 KVA, including operators available 24/7 and fuel  -  Site: Al- Shamiya  USD ( 21,500 )",
+            "location": "",
+            "date": "2024-07-01",
+            "unit": "Lot",
+            "qty": 2,
+            "price": 3375000
+          }
+        ],
+        "subtotal": 6750000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 6750000,
+        "status": "paid",
+        "createdAt": "2024-07-01T00:00:00.000Z",
+        "updatedAt": "2024-07-01T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00006",
+        "number": "CP-INV00006",
+        "issueDate": "2024-07-28",
+        "dueDate": "2024-08-31",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Rental of 2 Electric Power Generation : 200 KVA, including operators available 24/7 and fuel  -  Site: Al- Shamiya  USD ( 21,500 )",
+            "location": "",
+            "date": "2024-07-28",
+            "unit": "Lot",
+            "qty": 2,
+            "price": 3375000
+          }
+        ],
+        "subtotal": 6750000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 6750000,
+        "status": "paid",
+        "createdAt": "2024-07-28T00:00:00.000Z",
+        "updatedAt": "2024-07-28T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00009",
+        "number": "CP-INV00009",
+        "issueDate": "2024-09-19",
+        "dueDate": "2024-09-30",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Rental of 2 Electric Power Generation : 200 KVA, including operators available 24/7 and fuel  -  Site: Al- Shamiya  USD ( 21,500 )",
+            "location": "",
+            "date": "2024-09-19",
+            "unit": "Lot",
+            "qty": 2,
+            "price": 3375000
+          }
+        ],
+        "subtotal": 6750000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 6750000,
+        "status": "paid",
+        "createdAt": "2024-09-19T00:00:00.000Z",
+        "updatedAt": "2024-09-19T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00010",
+        "number": "CP-INV00010",
+        "issueDate": "2024-10-16",
+        "dueDate": "2024-10-30",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2024-10-16",
+            "unit": "Lot",
+            "qty": 2,
+            "price": 3375000
+          }
+        ],
+        "subtotal": 6750000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 6750000,
+        "status": "paid",
+        "createdAt": "2024-10-16T00:00:00.000Z",
+        "updatedAt": "2024-10-16T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00012",
+        "number": "CP-INV00012",
+        "issueDate": "2024-12-31",
+        "dueDate": "2024-12-31",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2024-12-31",
+            "unit": "Lot",
+            "qty": 2,
+            "price": 3375000
+          },
+          {
+            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2024-12-31",
+            "unit": "Lot",
+            "qty": 2,
+            "price": 3375000
+          }
+        ],
+        "subtotal": 13500000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 13500000,
+        "status": "paid",
+        "createdAt": "2024-12-31T00:00:00.000Z",
+        "updatedAt": "2024-12-31T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00013",
+        "number": "CP-INV00013",
+        "issueDate": "2025-01-06",
+        "dueDate": "2025-01-31",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2025-01-06",
+            "unit": "Lot",
+            "qty": 2,
+            "price": 3375000
+          }
+        ],
+        "subtotal": 6750000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 6750000,
+        "status": "paid",
+        "createdAt": "2025-01-06T00:00:00.000Z",
+        "updatedAt": "2025-01-06T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00015",
+        "number": "CP-INV00015",
+        "issueDate": "2025-02-01",
+        "dueDate": "2025-03-31",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2025-02-01",
+            "unit": "Lot",
+            "qty": 2,
+            "price": 3375000
+          },
+          {
+            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2025-03-24",
+            "unit": "Lot",
+            "qty": 2,
+            "price": 3375000
+          }
+        ],
+        "subtotal": 13500000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 13500000,
+        "status": "paid",
+        "createdAt": "2025-02-01T00:00:00.000Z",
+        "updatedAt": "2025-02-01T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00016",
+        "number": "CP-INV00016",
+        "issueDate": "2025-04-29",
+        "dueDate": "2025-05-31",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2025-04-29",
+            "unit": "Lot",
+            "qty": 2,
+            "price": 3375000
+          },
+          {
+            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+            "location": "",
+            "date": "2025-05-29",
+            "unit": "Lot",
+            "qty": 2,
+            "price": 3375000
+          }
+        ],
+        "subtotal": 13500000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 13500000,
+        "status": "unpaid",
+        "createdAt": "2025-04-29T00:00:00.000Z",
+        "updatedAt": "2025-04-29T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00011",
+        "number": "CP-INV00011",
+        "issueDate": "2024-10-15",
+        "dueDate": "2024-11-18",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Diesel Fuel for Generators POD 29",
+            "location": "",
+            "date": "2024-10-15",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 30",
+            "location": "",
+            "date": "2024-10-20",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 31",
+            "location": "",
+            "date": "2024-10-27",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 32",
+            "location": "",
+            "date": "2024-11-11",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 33",
+            "location": "",
+            "date": "2024-11-18",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          }
+        ],
+        "subtotal": 3750000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 3750000,
+        "status": "paid",
+        "createdAt": "2024-10-15T00:00:00.000Z",
+        "updatedAt": "2024-10-15T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00014",
+        "number": "CP-INV00014",
+        "issueDate": "2025-01-01",
+        "dueDate": "2025-03-12",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Diesel Fuel for Generators POD 34",
+            "location": "",
+            "date": "2025-01-05",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 34",
+            "location": "",
+            "date": "2025-01-28",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 34",
+            "location": "",
+            "date": "2025-02-01",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 34 & 37",
+            "location": "",
+            "date": "2025-01-01",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 37",
+            "location": "",
+            "date": "2025-03-12",
+            "unit": "Liters",
+            "qty": 2000,
+            "price": 750
+          }
+        ],
+        "subtotal": 5250000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 5250000,
+        "status": "paid",
+        "createdAt": "2025-01-01T00:00:00.000Z",
+        "updatedAt": "2025-01-01T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00017",
+        "number": "CP-INV00017",
+        "issueDate": "2025-06-02",
+        "dueDate": "2025-06-13",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Diesel Fuel for Generators POD 38",
+            "location": "",
+            "date": "2025-06-09",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 39",
+            "location": "",
+            "date": "2025-06-13",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 38",
+            "location": "",
+            "date": "2025-06-02",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          }
+        ],
+        "subtotal": 2250000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 2250000,
+        "status": "unpaid",
+        "createdAt": "2025-06-02T00:00:00.000Z",
+        "updatedAt": "2025-06-02T00:00:00.000Z"
+      },
+      {
+        "id": "CP-INV00019",
+        "number": "CP-INV00019",
+        "issueDate": "2025-06-20",
+        "dueDate": "2025-07-24",
+        "contract": "PO00023",
+        "billTo": "",
+        "customerName": "",
+        "scope": "",
+        "note": "",
+        "items": [
+          {
+            "desc": "Diesel Fuel for Generators POD 38",
+            "location": "",
+            "date": "2025-06-20",
+            "unit": "Liters",
+            "qty": 2000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 36",
+            "location": "",
+            "date": "2025-07-09",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 36",
+            "location": "",
+            "date": "2025-07-19",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          },
+          {
+            "desc": "Diesel Fuel for Generators POD 35",
+            "location": "",
+            "date": "2025-07-24",
+            "unit": "Liters",
+            "qty": 1000,
+            "price": 750
+          }
+        ],
+        "subtotal": 3750000,
+        "discount": 0,
+        "taxPerc": 0,
+        "shipping": 0,
+        "balance": 3750000,
+        "status": "unpaid",
+        "createdAt": "2025-06-20T00:00:00.000Z",
+        "updatedAt": "2025-06-20T00:00:00.000Z"
+      }
+    ];
+
     const $ = id => document.getElementById(id);
 
     function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -560,10 +1135,22 @@
     function loadInvoices(){
       try{
         const raw = localStorage.getItem(STORAGE_KEY);
-        if(!raw) return;
-        const arr = JSON.parse(raw);
-        if(Array.isArray(arr)) invoices = arr;
-      }catch(e){ console.error("Error loading invoices:", e); }
+        if(raw){
+          const arr = JSON.parse(raw);
+          if(Array.isArray(arr) && arr.length){
+            invoices = arr;
+            return;
+          }
+        }
+      }catch(e){
+        console.error("Error loading invoices:", e);
+      }
+
+      // إذا لم توجد بيانات مخزنة مسبقاً في المتصفح، نحمّل بيانات الإكسل الافتراضية
+      if (typeof seedInvoices !== "undefined" && Array.isArray(seedInvoices) && seedInvoices.length){
+        invoices = seedInvoices.slice();
+        saveInvoices();
+      }
     }
 
     function saveInvoices(){
