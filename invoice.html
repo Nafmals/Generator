@@ -1,444 +1,133 @@
-import React, { useEffect, useState } from "react";
+// ===============================
+// INVOICE APP CORE SCRIPT
+// Enable: New Invoice + Edit Invoice
+// ===============================
 
-// توليد ID عشوائي للفواتير الجديدة
-function makeId() {
-  if (window.crypto && window.crypto.randomUUID) {
-    return window.crypto.randomUUID();
-  }
-  return "inv-" + Math.random().toString(36).slice(2);
-}
+// GLOBAL STATE =====================
+let invoices = [];
+let editMode = false;
+let currentInvoiceId = null;
 
-// شكل فاتورة فارغة
-function createEmptyInvoice() {
-  const today = new Date().toISOString().slice(0, 10);
-  return {
-    id: "",
-    number: "",
-    issueDate: today,
-    dueDate: today,
-    contract: "",
-    customerName: "",
-    scope: "",
-    note: "",
-    items: [],
-    subtotal: 0,
-    discount: 0,
-    taxPerc: 0,
-    shipping: 0,
-    balance: 0,
-    status: "draft", // draft | paid | unpaid | overdue
-    createdAt: today + "T00:00:00.000Z",
-    updatedAt: today + "T00:00:00.000Z",
-  };
-}
-
-// ====== الفورم لإضافة/تعديل فاتورة ======
-function InvoiceForm({ mode, initialInvoice, onCancel, onSave }) {
-  const [form, setForm] = useState(initialInvoice);
-
-  useEffect(() => {
-    setForm(initialInvoice);
-  }, [initialInvoice]);
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]:
-        name === "subtotal" || name === "balance" || name === "discount" || name === "taxPerc" || name === "shipping"
-          ? value.replace(/[^0-9.]/g, "")
-          : value,
-    }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const nowIso = new Date().toISOString();
-
-    const updated = {
-      ...form,
-      subtotal: Number(form.subtotal) || 0,
-      discount: Number(form.discount) || 0,
-      taxPerc: Number(form.taxPerc) || 0,
-      shipping: Number(form.shipping) || 0,
-      balance: Number(form.balance) || 0,
-      status: String(form.status || "draft").toLowerCase(), // مهم للمنصة
-      createdAt: form.createdAt || nowIso,
-      updatedAt: nowIso,
-    };
-
-    if (!updated.id) {
-      updated.id = makeId();
-    }
-
-    onSave(updated);
-  };
-
-  return (
-    <div style={{ padding: "16px" }}>
-      <h2>{mode === "create" ? "New Invoice" : `Edit Invoice ${form.number}`}</h2>
-
-      <form onSubmit={handleSubmit} style={{ maxWidth: 480, display: "grid", gap: 12 }}>
-        <label>
-          Invoice No
-          <input
-            type="text"
-            name="number"
-            value={form.number}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label>
-          Contract (PO)
-          <input
-            type="text"
-            name="contract"
-            value={form.contract}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label>
-          Customer
-          <input
-            type="text"
-            name="customerName"
-            value={form.customerName}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label>
-          Short Description
-          <input
-            type="text"
-            name="scope"
-            value={form.scope}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label>
-          Issue Date
-          <input
-            type="date"
-            name="issueDate"
-            value={form.issueDate?.slice(0, 10) || ""}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label>
-          Due Date
-          <input
-            type="date"
-            name="dueDate"
-            value={form.dueDate?.slice(0, 10) || ""}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label>
-          Status
-          <select name="status" value={form.status} onChange={handleChange}>
-            <option value="draft">Draft</option>
-            <option value="paid">Paid</option>
-            <option value="unpaid">Unpaid</option>
-            <option value="overdue">Overdue</option>
-          </select>
-        </label>
-
-        <label>
-          Subtotal
-          <input
-            type="text"
-            name="subtotal"
-            value={form.subtotal}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label>
-          Balance
-          <input
-            type="text"
-            name="balance"
-            value={form.balance}
-            onChange={handleChange}
-          />
-        </label>
-
-        <label>
-          Note
-          <textarea
-            name="note"
-            value={form.note}
-            onChange={handleChange}
-            rows={3}
-          />
-        </label>
-
-        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-          <button type="submit" style={{ padding: "6px 16px" }}>
-            {mode === "create" ? "Create Invoice" : "Save Changes"}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            style={{ padding: "6px 16px" }}
-          >
-            Cancel
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-}
-
-// ====== صفحة الفواتير الرئيسية ======
-export default function InvoicesApp() {
-  const [invoices, setInvoices] = useState([]);
-  const [mode, setMode] = useState("list"); // list | create | edit
-  const [editingInvoice, setEditingInvoice] = useState(null);
-  const [filter, setFilter] = useState("all"); // all | paid | unpaid | overdue | draft
-
-  // تحميل الفواتير من localStorage عند فتح الصفحة
-  useEffect(() => {
-    const stored = localStorage.getItem("invoices");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          // توحيد صيغة status
-          const normalized = parsed.map((inv) => ({
-            ...inv,
-            status: String(inv.status || "draft").toLowerCase(),
-          }));
-          setInvoices(normalized);
-        }
-      } catch (e) {
-        console.error("Cannot parse stored invoices", e);
-      }
-    }
-  }, []);
-
-  // حفظ أي تغييرات في localStorage
-  useEffect(() => {
-    localStorage.setItem("invoices", JSON.stringify(invoices));
-  }, [invoices]);
-
-  const handleNewInvoice = () => {
-    setEditingInvoice(createEmptyInvoice());
-    setMode("create");
-  };
-
-  const handleEditInvoice = (inv) => {
-    setEditingInvoice(inv);
-    setMode("edit");
-  };
-
-  const handleDeleteInvoice = (id) => {
-    if (!window.confirm("Delete this invoice?")) return;
-    setInvoices((prev) => prev.filter((inv) => inv.id !== id));
-  };
-
-  const handleSaveInvoice = (invoice) => {
-    setInvoices((prev) => {
-      if (mode === "edit") {
-        return prev.map((inv) => (inv.id === invoice.id ? invoice : inv));
-      } else {
-        return [...prev, invoice];
-      }
-    });
-    setMode("list");
-    setEditingInvoice(null);
-  };
-
-  const handleCancelForm = () => {
-    setMode("list");
-    setEditingInvoice(null);
-  };
-
-  const handleLoadJson = (event) => {
-    const file = event.target.files && event.target.files[0];
-    if (!file) return;
-
+// Load JSON file ==================
+document.getElementById("loadJsonBtn").addEventListener("change", function(event){
+    const file = event.target.files[0];
     const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const text = e.target.result;
-        const data = JSON.parse(text);
-        if (Array.isArray(data)) {
-          const normalized = data.map((inv) => ({
-            ...inv,
-            status: String(inv.status || "draft").toLowerCase(),
-          }));
-          setInvoices(normalized);
-        } else {
-          alert("JSON must be an array of invoices");
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Invalid JSON file");
-      }
+    reader.onload = function(e){
+        invoices = JSON.parse(e.target.result);
+        renderInvoices();
     };
     reader.readAsText(file);
-  };
+});
 
-  const handleSaveJson = () => {
-    const blob = new Blob([JSON.stringify(invoices, null, 2)], {
-      type: "application/json",
-    });
+// Save JSON file ==================
+document.getElementById("saveJsonBtn").addEventListener("click", function(){
+    const dataStr = JSON.stringify(invoices, null, 2);
+    const blob = new Blob([dataStr], {type: "application/json"});
     const url = URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
-    a.download = "invoices-export.json";
+    a.download = "invoices.json";
     a.click();
-    URL.revokeObjectURL(url);
-  };
+});
 
-  const filteredInvoices =
-    filter === "all"
-      ? invoices
-      : invoices.filter((inv) => inv.status === filter);
+// =============================================================
+// SHOW FORM FOR NEW INVOICE
+// =============================================================
+document.getElementById("btnNewInvoice").addEventListener("click", function(){
+    editMode = false;
+    currentInvoiceId = null;
 
-  if (mode === "create" || mode === "edit") {
-    return (
-      <InvoiceForm
-        mode={mode}
-        initialInvoice={editingInvoice || createEmptyInvoice()}
-        onCancel={handleCancelForm}
-        onSave={handleSaveInvoice}
-      />
-    );
-  }
+    clearForm();
+    document.getElementById("invoiceFormModal").style.display = "block";
+});
 
-  // ======= واجهة القائمة =======
-  return (
-    <div style={{ padding: "16px" }}>
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
-        <h2>Invoices</h2>
-        <div style={{ display: "flex", gap: 8 }}>
-          <button onClick={handleNewInvoice}>+ New Invoice</button>
+// =============================================================
+// EDIT INVOICE
+// =============================================================
+function editInvoice(id){
+    const inv = invoices.find(i => i.id === id);
+    if(!inv){ alert("Invoice not found!"); return; }
 
-          <button onClick={handleSaveJson}>Save JSON</button>
+    editMode = true;
+    currentInvoiceId = id;
 
-          <label
-            style={{
-              border: "1px solid #ccc",
-              padding: "4px 8px",
-              cursor: "pointer",
-            }}
-          >
-            Load JSON
-            <input
-              type="file"
-              accept="application/json"
-              onChange={handleLoadJson}
-              style={{ display: "none" }}
-            />
-          </label>
-        </div>
-      </div>
+    // Fill form
+    document.getElementById("invNumber").value = inv.number;
+    document.getElementById("invIssue").value  = inv.issueDate;
+    document.getElementById("invDue").value    = inv.dueDate;
+    document.getElementById("invContract").value = inv.contract;
+    document.getElementById("invStatus").value = inv.status;
 
-      {/* Tabs للفلاتر */}
-      <div style={{ marginBottom: 12, display: "flex", gap: 8 }}>
-        {["all", "paid", "unpaid", "overdue", "draft"].map((key) => (
-          <button
-            key={key}
-            onClick={() => setFilter(key)}
-            style={{
-              padding: "4px 12px",
-              borderRadius: 16,
-              border: filter === key ? "2px solid #000" : "1px solid #ccc",
-              background: filter === key ? "#eee" : "white",
-              textTransform: "capitalize",
-            }}
-          >
-            {key}
-          </button>
-        ))}
-      </div>
+    document.getElementById("invoiceFormModal").style.display = "block";
+}
 
-      <table
-        style={{
-          width: "100%",
-          borderCollapse: "collapse",
-          fontSize: 14,
-        }}
-      >
-        <thead>
-          <tr>
-            <th style={{ borderBottom: "1px solid #ddd", padding: 8 }}>Date</th>
-            <th style={{ borderBottom: "1px solid #ddd", padding: 8 }}>Due</th>
-            <th style={{ borderBottom: "1px solid #ddd", padding: 8 }}>Invoice No</th>
-            <th style={{ borderBottom: "1px solid #ddd", padding: 8 }}>Contract (PO)</th>
-            <th style={{ borderBottom: "1px solid #ddd", padding: 8 }}>Customer</th>
-            <th style={{ borderBottom: "1px solid #ddd", padding: 8 }}>Short Description</th>
-            <th style={{ borderBottom: "1px solid #ddd", padding: 8 }}>Status</th>
-            <th style={{ borderBottom: "1px solid #ddd", padding: 8 }}>Amount (Balance)</th>
-            <th style={{ borderBottom: "1px solid #ddd", padding: 8 }}>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredInvoices.length === 0 && (
-            <tr>
-              <td colSpan={9} style={{ padding: 12, textAlign: "center" }}>
-                No invoices
-              </td>
-            </tr>
-          )}
-          {filteredInvoices.map((inv) => (
-            <tr key={inv.id}>
-              <td style={{ borderBottom: "1px solid #f0f0f0", padding: 8 }}>
-                {inv.issueDate?.slice(0, 10)}
-              </td>
-              <td style={{ borderBottom: "1px solid #f0f0f0", padding: 8 }}>
-                {inv.dueDate?.slice(0, 10)}
-              </td>
-              <td style={{ borderBottom: "1px solid #f0f0f0", padding: 8 }}>
-                {inv.number}
-              </td>
-              <td style={{ borderBottom: "1px solid #f0f0f0", padding: 8 }}>
-                {inv.contract}
-              </td>
-              <td style={{ borderBottom: "1px solid #f0f0f0", padding: 8 }}>
-                {inv.customerName || "-"}
-              </td>
-              <td style={{ borderBottom: "1px solid #f0f0f0", padding: 8 }}>
-                {inv.scope || "-"}
-              </td>
-              <td style={{ borderBottom: "1px solid #f0f0f0", padding: 8, textTransform: "capitalize" }}>
-                {inv.status}
-              </td>
-              <td style={{ borderBottom: "1px solid #f0f0f0", padding: 8 }}>
-                {inv.balance?.toLocaleString?.() ?? inv.balance}
-              </td>
-              <td style={{ borderBottom: "1px solid #f0f0f0", padding: 8 }}>
-                <button
-                  onClick={() => handleEditInvoice(inv)}
-                  style={{ marginRight: 6 }}
-                >
-                  Edit
-                </button>
-                <button onClick={() => handleDeleteInvoice(inv.id)}>Delete</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
+// =============================================================
+// SAVE INVOICE (NEW or EDIT)
+// =============================================================
+document.getElementById("btnSaveInvoice").addEventListener("click", function(){
+
+    const newInv = {
+        id: currentInvoiceId || (Date.now()+""),
+        number: document.getElementById("invNumber").value,
+        issueDate: document.getElementById("invIssue").value,
+        dueDate: document.getElementById("invDue").value,
+        contract: document.getElementById("invContract").value,
+        status: document.getElementById("invStatus").value.toLowerCase()
+    };
+
+    if(editMode){
+        // update existing invoice
+        const i = invoices.findIndex(x => x.id === currentInvoiceId);
+        invoices[i] = {...invoices[i], ...newInv};
+    } else {
+        invoices.push(newInv);
+    }
+
+    document.getElementById("invoiceFormModal").style.display = "none";
+    renderInvoices();
+});
+
+// =============================================================
+// DELETE INVOICE
+// =============================================================
+function deleteInvoice(id){
+    if(!confirm("Delete invoice?")) return;
+    invoices = invoices.filter(x => x.id !== id);
+    renderInvoices();
+}
+
+// =============================================================
+// RENDER INVOICE LIST
+// =============================================================
+function renderInvoices(){
+    const tbody = document.getElementById("invoiceTableBody");
+    tbody.innerHTML = "";
+
+    invoices.forEach(inv => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td>${inv.issueDate}</td>
+            <td>${inv.dueDate}</td>
+            <td>${inv.number}</td>
+            <td>${inv.contract}</td>
+            <td>${inv.status === "paid" ? "✔ Paid" : "❗ Unpaid"}</td>
+            <td>
+                <button onclick="editInvoice('${inv.id}')" class="btn-edit">Edit</button>
+                <button onclick="deleteInvoice('${inv.id}')" class="btn-delete">Delete</button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// =============================================================
+// CLEAR FORM
+// =============================================================
+function clearForm(){
+    document.getElementById("invNumber").value = "";
+    document.getElementById("invIssue").value = "";
+    document.getElementById("invDue").value = "";
+    document.getElementById("invContract").value = "";
+    document.getElementById("invStatus").value = "unpaid";
 }
