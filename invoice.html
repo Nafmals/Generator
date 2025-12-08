@@ -188,21 +188,6 @@
         </div>
       </div>
 
-      <!-- فقرة العمليات السريعة: إضافة / تعديل فاتورة -->
-      <div style="margin:8px 0;font-size:11px;background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:6px 8px;">
-        <b>عمليات سريعة على الفواتير:</b>
-        <a href="#" id="quick-new" style="margin-inline-start:8px;">
-          + إضافة فاتورة جديدة
-        </a>
-        |
-        <a href="#" id="quick-edit" style="margin-inline-start:4px;">
-          ✏ تعديل فاتورة موجودة
-        </a>
-        <span style="color:#6b7280;margin-inline-start:8px;">
-          (اضغط لاختيار الفاتورة أو إنشاء فاتورة جديدة)
-        </span>
-      </div>
-
       <div class="filters-row">
         <div class="status-filters">
           <button class="status-pill active" data-filter="all">الكل</button>
@@ -458,7 +443,7 @@
   </div>
 
   <script>
-    var STORAGE_KEY = "naf_invoice_system_advanced_main";
+    var STORAGE_KEY = "naf_invoice_system_advanced_main_v2";
     var invoices = [];
     var currentId = null;
     var currentFilter = "all";
@@ -744,16 +729,14 @@
         if(isDueSoon(invoices[k])){soonAmt+=invoices[k].balance||0;countSoon++;}
       }
 
-      if($("card-total-amount")){
-        $("card-total-amount").textContent   = formatIQD(total);
-        $("card-total-count").textContent    = countTotal + " فاتورة";
-        $("card-paid-amount").textContent    = formatIQD(paid);
-        $("card-paid-count").textContent     = countPaid + " فاتورة";
-        $("card-unpaid-amount").textContent  = formatIQD(unpaid);
-        $("card-unpaid-count").textContent   = countUnpaid + " فاتورة";
-        $("card-soon-amount").textContent    = formatIQD(soonAmt);
-        $("card-soon-count").textContent     = countSoon + " فاتورة";
-      }
+      $("card-total-amount").textContent   = formatIQD(total);
+      $("card-total-count").textContent    = countTotal + " فاتورة";
+      $("card-paid-amount").textContent    = formatIQD(paid);
+      $("card-paid-count").textContent     = countPaid + " فاتورة";
+      $("card-unpaid-amount").textContent  = formatIQD(unpaid);
+      $("card-unpaid-count").textContent   = countUnpaid + " فاتورة";
+      $("card-soon-amount").textContent    = formatIQD(soonAmt);
+      $("card-soon-count").textContent     = countSoon + " فاتورة";
 
       filtered.sort(function(a,b){
         return (b.issueDate||"").localeCompare(a.issueDate||"");
@@ -765,7 +748,7 @@
       }
 
       for(var m=0;m<filtered.length;m++){
-        inv = filtered[m];
+        var inv = filtered[m];
         var descSource = inv.scope || (inv.items && inv.items[0] && inv.items[0].desc) || "";
         var shortDesc  = descSource.slice(0,48) + (descSource.length>48?"...":"");
         var noteSnippet = (inv.note||"").slice(0,32) + ((inv.note||"").length>32?"...":"");
@@ -1022,110 +1005,66 @@
     }
 
     function setupEvents(){
-      var bDash = $("btn-dashboard");
-      if(bDash) bDash.addEventListener("click", function(){ showDashboard();highlightCard("total"); });
+      $("btn-dashboard").addEventListener("click", function(){ showDashboard();highlightCard("total"); });
 
-      var bRep  = $("btn-report");
-      if(bRep)  bRep.addEventListener("click", function(){
-        var mb = $("modal-backdrop");
-        if(mb) mb.style.display = "flex";
-        renderReport();
+      $("btn-report").addEventListener("click", openInvoiceSelector);
+      $("btn-new").addEventListener("click", function(e){ e.preventDefault(); createNewInvoice(); });
+
+      $("btn-back").addEventListener("click", showDashboard);
+      $("btn-print").addEventListener("click", function(){ window.print(); });
+      $("btn-save").addEventListener("click", saveCurrentInvoice);
+      $("btn-delete").addEventListener("click", deleteCurrentInvoice);
+      $("btn-duplicate").addEventListener("click", duplicateCurrentInvoice);
+
+      $("btn-export").addEventListener("click", exportCsv);
+      $("btn-save-json").addEventListener("click", exportJson);
+      $("btn-load-json").addEventListener("click", function(){
+        $("json-file-input").click();
       });
+      $("btn-reset").addEventListener("click", resetSystem);
 
-      var bNew = $("btn-new");
-      if(bNew) bNew.addEventListener("click", function(e){ e.preventDefault(); createNewInvoice(); });
-
-      var qNew = $("quick-new");
-      if(qNew) qNew.addEventListener("click", function(e){ e.preventDefault(); createNewInvoice(); });
-
-      var qEdit = $("quick-edit");
-      if(qEdit) qEdit.addEventListener("click", function(e){ e.preventDefault(); openInvoiceSelector(); });
-
-      var bBack = $("btn-back");
-      if(bBack) bBack.addEventListener("click", showDashboard);
-
-      var bPr   = $("btn-print");
-      if(bPr)   bPr.addEventListener("click", function(){ window.print(); });
-
-      var bSave = $("btn-save");
-      if(bSave) bSave.addEventListener("click", saveCurrentInvoice);
-
-      var bDel  = $("btn-delete");
-      if(bDel)  bDel.addEventListener("click", deleteCurrentInvoice);
-
-      var bDup  = $("btn-duplicate");
-      if(bDup)  bDup.addEventListener("click", duplicateCurrentInvoice);
-
-      var bExp  = $("btn-export");
-      if(bExp)  bExp.addEventListener("click", exportCsv);
-
-      var bSJ   = $("btn-save-json");
-      if(bSJ)   bSJ.addEventListener("click", exportJson);
-
-      var bLJ   = $("btn-load-json");
-      if(bLJ)   bLJ.addEventListener("click", function(){
-        var fi = $("json-file-input");
-        if(fi) fi.click();
-      });
-
-      var bRes  = $("btn-reset");
-      if(bRes)  bRes.addEventListener("click", resetSystem);
-
-      var fileInput = $("json-file-input");
-      if(fileInput) fileInput.addEventListener("change", function(e){
+      $("json-file-input").addEventListener("change", function(e){
         var file = e.target.files[0];
         if(file) importJsonFromFile(file);
         e.target.value = "";
       });
 
-      var cModal = $("close-modal-btn");
-      if(cModal) cModal.addEventListener("click", function(){
-        var mb = $("modal-backdrop");
-        if(mb) mb.style.display="none";
+      $("close-modal-btn").addEventListener("click", function(){
+        $("modal-backdrop").style.display="none";
       });
 
       document.addEventListener("keydown", function(e){
         if(e.key==="Escape"){
-          var mb = $("modal-backdrop");
-          if(mb) mb.style.display="none";
+          $("modal-backdrop").style.display="none";
         }
       });
 
       // تفويض أحداث جدول الفواتير
-      var tbody = $("invoice-table-body");
-      if(tbody){
-        tbody.addEventListener("click", function(e){
-          var target = e.target;
-          if(target.classList.contains("edit-btn")){
-            e.stopPropagation();
-            var id = target.getAttribute("data-id");
-            openEditor(id);
-          }else if(target.classList.contains("delete-btn")){
-            e.stopPropagation();
-            var id = target.getAttribute("data-id");
-            deleteInvoiceById(id, true);
-          }else{
-            var tr = target.closest("tr[data-id]");
-            if(tr){
-              var idRow = tr.getAttribute("data-id");
-              openEditor(idRow);
-            }
+      $("invoice-table-body").addEventListener("click", function(e){
+        var target = e.target;
+        if(target.classList.contains("edit-btn")){
+          var id = target.getAttribute("data-id");
+          openEditor(id);
+        }else if(target.classList.contains("delete-btn")){
+          var id = target.getAttribute("data-id");
+          deleteInvoiceById(id, true);
+        }else{
+          var tr = target.closest("tr[data-id]");
+          if(tr){
+            var idRow = tr.getAttribute("data-id");
+            openEditor(idRow);
           }
-        });
-      }
+        }
+      });
 
       // تفويض أحداث جدول التقرير داخل المودال
-      var reportBody = $("report-body");
-      if(reportBody){
-        reportBody.addEventListener("click", function(e){
-          var tr = e.target.closest("tr[data-id]");
-          if(!tr) return;
-          var id = tr.getAttribute("data-id");
-          var mb = $("modal-backdrop");
-          if(mb) mb.style.display = "none";
-          openEditor(id);
-        });
-      }
+      $("report-body").addEventListener("click", function(e){
+        var tr = e.target.closest("tr[data-id]");
+        if(!tr) return;
+        var id = tr.getAttribute("data-id");
+        $("modal-backdrop").style.display = "none";
+        openEditor(id);
+      });
 
       var pills = document.querySelectorAll(".status-pill");
       for(var i=0;i<pills.length;i++){
@@ -1141,60 +1080,42 @@
         })(pills[i]);
       }
 
-      var sInput = $("search-input");
-      if(sInput) sInput.addEventListener("input", renderDashboard);
+      $("search-input").addEventListener("input", renderDashboard);
 
-      var sSel   = $("status-select");
-      if(sSel) sSel.addEventListener("change", function(){
+      $("status-select").addEventListener("change", function(){
         if(!currentId) return;
         var inv = null;
         for(var i=0;i<invoices.length;i++){
           if(invoices[i].id===currentId){ inv = invoices[i]; break; }
         }
         if(!inv) return;
-        inv.status = sSel.value;
+        inv.status = this.value;
         saveInvoices();
       });
 
-      var ids = ["f-discount","f-tax","f-shipping"];
-      for(var k=0;k<ids.length;k++){
-        var el = $(ids[k]);
-        if(el) el.addEventListener("input", recalcTotals);
-      }
+      ["f-discount","f-tax","f-shipping"].forEach(function(id){
+        $(id).addEventListener("input", recalcTotals);
+      });
 
-      var addRowBtn = $("add-row-btn");
-      if(addRowBtn) addRowBtn.addEventListener("click", function(){
+      $("add-row-btn").addEventListener("click", function(){
         $("items-body").appendChild(createItemRow({qty:1,price:0}));
         updateRowNumbers();
         recalcTotals();
       });
 
-      var poFilter = $("po-filter");
-      if(poFilter) poFilter.addEventListener("change", function(){
-        currentPoFilter = poFilter.value;
+      $("po-filter").addEventListener("change", function(){
+        currentPoFilter = this.value;
         renderDashboard();
       });
 
-      var cardsMap = [
-        ["card-total","total"],
-        ["card-soon","soon"],
-        ["card-paid","paid"],
-        ["card-unpaid","unpaid"]
-      ];
-      for(var c=0;c<cardsMap.length;c++){
-        (function(mapItem){
-          var el = $(mapItem[0]);
-          var type = mapItem[1];
-          if(el) el.addEventListener("click", function(){ setFilterFromCard(type); });
-        })(cardsMap[c]);
-      }
+      [["card-total","total"],["card-soon","soon"],["card-paid","paid"],["card-unpaid","unpaid"]]
+      .forEach(function(mapItem){
+        var el = $(mapItem[0]);
+        var type = mapItem[1];
+        el.addEventListener("click", function(){ setFilterFromCard(type); });
+      });
     }
 
-    // توفير بعض الدوال في window (اختياري)
-    window.createNewInvoice   = createNewInvoice;
-    window.openInvoiceSelector= openInvoiceSelector;
-
-    // تشغيل التهيئة عند تحميل الصفحة + إنشاء فاتورة جديدة إذا لا توجد فواتير
     window.addEventListener("DOMContentLoaded", function(){
       setupEvents();
       loadInvoices();
