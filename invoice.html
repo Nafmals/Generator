@@ -1,470 +1,169 @@
-<script>
-var STORAGE_KEY = "nafith_invoice_system_v4_es5";
-
-var invoices = [];
-var currentId = null;
-var currentStatusFilter = "all"; // all / paid / unpaid / draft
-var currentPoFilter = "all";     // all أو رقم عقد محدد
-var specialFilter = "none";      // "soon" للفواتير التي تستحق خلال 30 يوم
-
-function $(id){ return document.getElementById(id); }
-
-function todayStr(){
-  return new Date().toISOString().slice(0,10);
-}
-
-function formatIQD(n){
-  n = Number(n) || 0;
-  return "IQD " + n.toLocaleString("en-US");
-}
-
-function parseNumber(v){
-  if(typeof v!=="string") v = String(v || "");
-  return Number(v.replace(/[^\d.-]/g,"")) || 0;
-}
-
-function generateId(){
-  if(window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
-  return String(Date.now()) + "-" + String(Math.random()).slice(2);
-}
-
-/* =========== البنود (Items) =========== */
-
-function createItemRow(data){
-  if(!data) data = {};
-  var tr = document.createElement("tr");
-  tr.className = "item-row";
-  tr.innerHTML =
-    '<td class="no-cell"></td>' +
-    '<td><textarea class="cell-textarea cell-desc">' + (data.desc || "") + '</textarea></td>' +
-    '<td><input class="cell-input cell-loc" value="' + (data.location || "") + '"></td>' +
-    '<td><input class="cell-input cell-date" value="' + (data.date || "") + '"></td>' +
-    '<td><input class="cell-input cell-unit" value="' + (data.unit || "") + '"></td>' +
-    '<td><input class="cell-input cell-qty" type="number" min="0" value="' + (data.qty != null ? data.qty : 1) + '"></td>' +
-    '<td>' +
-      '<input class="cell-input cell-price" type="number" min="0" value="' + (data.price != null ? data.price : 0) + '">' +
-      '<br>' +
-      '<input class="cell-input cell-total" type="text" readonly>' +
-    '</td>';
-
-  var qtyEl   = tr.querySelector(".cell-qty");
-  var priceEl = tr.querySelector(".cell-price");
-  qtyEl.addEventListener("input", recalcTotals);
-  priceEl.addEventListener("input", recalcTotals);
-
-  return tr;
-}
-
-function updateRowNumbers(){
-  var cells = document.querySelectorAll(".item-row .no-cell");
-  for(var i=0;i<cells.length;i++){
-    cells[i].textContent = i+1;
-  }
-}
-
-function recalcRow(tr){
-  var qty   = parseNumber(tr.querySelector(".cell-qty").value);
-  var price = parseNumber(tr.querySelector(".cell-price").value);
-  var total = qty * price;
-  tr.querySelector(".cell-total").value = formatIQD(total);
-  return total;
-}
-
-function recalcTotals(){
-  var rows = document.querySelectorAll("#items-body .item-row");
-  var subtotal = 0;
-  var i;
-  for(i=0;i<rows.length;i++){
-    subtotal += recalcRow(rows[i]);
-  }
-
-  var discount = parseNumber($("f-discount").value);
-  var taxPerc  = parseNumber($("f-tax").value);
-  var shipping = parseNumber($("f-shipping").value);
-
-  var subLess  = subtotal - discount;
-  var taxVal   = subLess * (taxPerc / 100);
-  var balance  = subLess + taxVal + shipping;
-
-  $("f-subtotal").value = formatIQD(subtotal);
-  $("f-sub-less").value = formatIQD(subLess);
-  $("f-balance").value  = formatIQD(balance);
-}
-
-/* =========== قراءة / تعبئة نموذج الفاتورة =========== */
-
-function readFormToInvoice(inv){
-  inv.number      = $("f-number").value.trim();
-  inv.issueDate   = $("f-date").value.trim();
-  inv.dueDate     = $("f-due").value.trim();
-  inv.contract    = $("f-contract").value.trim();
-  inv.billTo      = $("f-billto").value.trim();
-  inv.scope       = $("f-scope").value.trim();
-  inv.note        = $("f-note").value.trim();
-  inv.status      = $("status-select").value;
-
-  var firstLine   = inv.billTo.split("\n")[0] || "";
-  inv.customerName = firstLine.trim();
-
-  var rows = document.querySelectorAll("#items-body .item-row");
-  var items = [];
-  var i;
-  for(i=0;i<rows.length;i++){
-    var tr = rows[i];
-    items.push({
-      desc:     tr.querySelector(".cell-desc").value.trim(),
-      location: tr.querySelector(".cell-loc").value.trim(),
-      date:     tr.querySelector(".cell-date").value.trim(),
-      unit:     tr.querySelector(".cell-unit").value.trim(),
-      qty:      parseNumber(tr.querySelector(".cell-qty").value),
-      price:    parseNumber(tr.querySelector(".cell-price").value)
-    });
-  }
-
-  inv.items    = items;
-  inv.subtotal = parseNumber($("f-subtotal").value);
-  inv.discount = parseNumber($("f-discount").value);
-  inv.taxPerc  = parseNumber($("f-tax").value);
-  inv.shipping = parseNumber($("f-shipping").value);
-  inv.balance  = parseNumber($("f-balance").value);
-  inv.updatedAt = new Date().toISOString();
-}
-
-function fillFormFromInvoice(inv){
-  $("f-number").value   = inv.number      || "";
-  $("f-date").value     = inv.issueDate   || todayStr();
-  $("f-due").value      = inv.dueDate     || "";
-  $("f-contract").value = inv.contract    || "";
-  $("f-billto").value   = inv.billTo      || "";
-  $("f-scope").value    = inv.scope       || "";
-  $("f-note").value     = inv.note        || "";
-  $("status-select").value = inv.status || "draft";
-
-  var body = $("items-body");
-  body.innerHTML = "";
-  var items = (inv.items && inv.items.length) ? inv.items : [{},{},{},{}];
-  var i;
-  for(i=0;i<items.length;i++){
-    body.appendChild(createItemRow(items[i]));
-  }
-  updateRowNumbers();
-
-  $("f-discount").value = inv.discount != null ? inv.discount : 0;
-  $("f-tax").value      = inv.taxPerc  != null ? inv.taxPerc  : 0;
-  $("f-shipping").value = inv.shipping != null ? inv.shipping : 0;
-
-  recalcTotals();
-  $("editor-subtitle").textContent = inv.number ? "(" + inv.number + ")" : "";
-}
-
-/* =========== تخزين / استرجاع =========== */
-
-function loadInvoices(){
-  try{
-    var raw = localStorage.getItem(STORAGE_KEY);
-    if(!raw) return;
-    var arr = JSON.parse(raw);
-    if(arr && arr.length) invoices = arr;
-  }catch(err){
-    console.error("Load error:", err);
-  }
-}
-
-function saveInvoices(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
-  renderPoFilterOptions();
-  renderDashboard();
-  renderReport();
-}
-
-function resetSystem(){
-  if(!confirm("سيتم حذف كل الفواتير المخزّنة محليًا، هل أنت متأكد؟")) return;
-  localStorage.removeItem(STORAGE_KEY);
-  invoices = [];
-  currentId = null;
-  saveInvoices();
-  showDashboard();
-  alert("تمت إعادة ضبط النظام ✅");
-}
-
-/* =========== تنقّل بين لوحة الفواتير / المحرّر =========== */
-
-function showDashboard(){
-  $("dashboard").style.display = "";
-  $("editor").style.display = "none";
-}
-
-function showEditor(){
-  $("dashboard").style.display = "none";
-  $("editor").style.display = "";
-}
-
-function openEditor(id){
-  var i, inv=null;
-  for(i=0;i<invoices.length;i++){
-    if(invoices[i].id === id){ inv = invoices[i]; break; }
-  }
-  if(!inv) return;
-  currentId = id;
-  fillFormFromInvoice(inv);
-  showEditor();
-}
-
-/* =========== إنشاء / حفظ / حذف / نسخ الفواتير =========== */
-
-function createNewInvoice(){
-  var today = todayStr();
-  var id = generateId();
-
-  var inv = {
-    id: id,
-    number: "INV-" + today.replace(/-/g,""),
-    issueDate: today,
-    dueDate: today,
-    contract: currentPoFilter !== "all" ? currentPoFilter : "",
-    billTo: "",
-    customerName: "",
-    scope: "",
-    note: "",
-    items: [],
-    subtotal: 0,
-    discount: 0,
-    taxPerc: 0,
-    shipping: 0,
-    balance: 0,
-    status: "draft",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-
-  invoices.push(inv);
-  currentId = id;
-  fillFormFromInvoice(inv);
-  saveInvoices();
-  showEditor();
-}
-
-function saveCurrentInvoice(){
-  if(!currentId){
-    createNewInvoice();
-    return;
-  }
-  var i, inv=null;
-  for(i=0;i<invoices.length;i++){
-    if(invoices[i].id===currentId){ inv = invoices[i]; break; }
-  }
-  if(!inv) return;
-  recalcTotals();
-  readFormToInvoice(inv);
-  saveInvoices();
-  alert("تم حفظ الفاتورة ✅");
-}
-
-function deleteInvoiceById(id, askConfirm){
-  if(askConfirm && !confirm("هل أنت متأكد من حذف هذه الفاتورة؟ لا يمكن التراجع.")) return;
-  var out = [];
-  var i;
-  for(i=0;i<invoices.length;i++){
-    if(invoices[i].id !== id) out.push(invoices[i]);
-  }
-  invoices = out;
-  if(currentId === id) currentId = null;
-  saveInvoices();
-  showDashboard();
-}
-
-function deleteCurrentInvoice(){
-  if(!currentId){
-    alert("لا توجد فاتورة محددة لحذفها.");
-    return;
-  }
-  deleteInvoiceById(currentId, true);
-  alert("تم حذف الفاتورة ✅");
-}
-
-function duplicateCurrentInvoice(){
-  if(!currentId){
-    alert("لا توجد فاتورة مفتوحة لنسخها.");
-    return;
-  }
-  var i, original=null;
-  for(i=0;i<invoices.length;i++){
-    if(invoices[i].id===currentId){ original = invoices[i]; break; }
-  }
-  if(!original) return;
-
-  var today = todayStr();
-  var copy = JSON.parse(JSON.stringify(original));
-  copy.id = generateId();
-  copy.number = original.number ? original.number + "-COPY" : "INV-" + today.replace(/-/g,"");
-  copy.issueDate = today;
-  copy.dueDate = today;
-  copy.status = "draft";
-  copy.createdAt = new Date().toISOString();
-  copy.updatedAt = new Date().toISOString();
-
-  invoices.push(copy);
-  currentId = copy.id;
-  fillFormFromInvoice(copy);
-  saveInvoices();
-  showEditor();
-  alert("تم إنشاء نسخة من الفاتورة ✅");
-}
-
-/* =========== حالة الفاتورة (متأخرة / تستحق قريبًا) =========== */
-
-function isOverdue(inv){
-  if(inv.status === "paid") return false;
-  if(!inv.dueDate) return false;
-  var due = new Date(inv.dueDate);
-  var today = new Date(todayStr());
-  return due < today;
-}
-
-function isDueSoon(inv){
-  if(inv.status === "paid") return false;
-  if(!inv.dueDate) return false;
-  var due = new Date(inv.dueDate);
-  var today = new Date(todayStr());
-  var diffDays = (due - today) / (1000*60*60*24);
-  return diffDays >= 0 && diffDays <= 30;
-}
-
-function getStatusBadge(status, inv){
-  var cls = "badge-draft";
-  var txt = "مسودة";
-
-  if(status === "paid"){
-    cls = "badge-paid";
-    txt = "مدفوعة";
-  }else if(status === "unpaid"){
-    if(isOverdue(inv)){
-      cls = "badge-overdue";
-      txt = "متأخرة";
-    }else{
-      cls = "badge-unpaid";
-      txt = "غير مدفوعة";
-    }
-  }
-  return '<span class="badge ' + cls + '">' + txt + '</span>';
-}
-
-/* =========== فلاتر العقود / الحالة / البحث =========== */
-
-function renderPoFilterOptions(){
-  var select = $("po-filter");
-  if(!select) return;
-
-  var previous = select.value || "all";
-  var map = {};
-  var contracts = [];
-  var i;
-
-  for(i=0;i<invoices.length;i++){
-    var c = invoices[i].contract;
-    if(c && c.trim() && !map[c]){
-      map[c] = true;
-      contracts.push(c);
-    }
-  }
-  contracts.sort();
-
-  var html = '<option value="all">كل العقود</option>';
-  for(i=0;i<contracts.length;i++){
-    html += '<option value="' + contracts[i] + '">' + contracts[i] + '</option>';
-  }
-  select.innerHTML = html;
-  if(contracts.indexOf(previous) !== -1){
-    select.value = previous;
-  }else{
-    select.value = "all";
-  }
-  currentPoFilter = select.value;
-}
-
-function matchesFilters(inv, searchText){
-  if(currentPoFilter !== "all" && (inv.contract || "") !== currentPoFilter) return false;
-
-  if(searchText){
-    var hay = [
-      inv.number,
-      inv.customerName,
-      inv.contract,
-      inv.billTo,
-      inv.scope,
-      inv.note
-    ].join(" ").toLowerCase();
-    if(hay.indexOf(searchText) === -1) return false;
-  }
-
-  if(specialFilter === "soon"){
-    return isDueSoon(inv);
-  }
-
-  if(currentStatusFilter === "paid")   return inv.status==="paid";
-  if(currentStatusFilter === "unpaid") return inv.status==="unpaid";
-  if(currentStatusFilter === "draft")  return inv.status==="draft";
-  return true;
-}
-
-function highlightCard(type){
-  var cards = document.querySelectorAll(".card[data-type]");
-  var i;
-  for(i=0;i<cards.length;i++){
-    cards[i].classList.toggle("card-active", cards[i].getAttribute("data-type") === type);
-  }
-}
-
-function updateActiveStatusPills(){
-  var pills = document.querySelectorAll(".status-pill");
-  var i;
-  for(i=0;i<pills.length;i++){
-    var btn = pills[i];
-    btn.classList.remove("active");
-    if(currentStatusFilter === btn.getAttribute("data-filter")) btn.classList.add("active");
-    if(currentStatusFilter==="all" && btn.getAttribute("data-filter")==="all"){
-      btn.classList.add("active");
-    }
-  }
-}
-
-function setFilterFromCard(type){
-  specialFilter = "none";
-  if(type === "total"){
-    currentStatusFilter = "all";
-  }else if(type === "soon"){
-    currentStatusFilter = "all";
-    specialFilter = "soon";
-  }else if(type === "paid"){
-    currentStatusFilter = "paid";
-  }else if(type === "unpaid"){
-    currentStatusFilter = "unpaid";
-  }
-  highlightCard(type);
-  updateActiveStatusPills();
-  renderDashboard();
-}
-
-/* =========== عرض لوحة الفواتير =========== */
-
-function renderDashboard(){
-  var tbody = $("invoice-table-body");
-  if(!tbody) return;
-  tbody.innerHTML = "";
-
-  var searchText = "";
-  var sEl = $("search-input");
-  if(sEl && sEl.value) searchText = sEl.value.trim().toLowerCase();
-
-  var filtered = [];
-  var i;
-  for(i=0;i<invoices.length;i++){
-    if(matchesFilters(invoices[i], searchText)) filtered.push(invoices[i]);
-  }
-
-  var total=0, paid=0, unpaid=0, soonAmt=0;
-  var countTotal=0, countPaid=0, countUnpaid=0, countSoon=0;
-
-  for(i=0;i<filtered.length;i++){
-    var inv = filtered[i];
-    total += inv.balance ||
+<section id="dashboard">
+
+  <div class="dashboard-header">
+    <div class="dashboard-title">
+      الفواتير <span>الإدارة والتحكم الكامل</span>
+    </div>
+
+    <div class="search-box">
+      🔍 <input id="search-input" placeholder="بحث... (اسم عميل، رقم، عقد)">
+    </div>
+  </div>
+
+  <div class="filters-row">
+    <div class="status-filters">
+      <div class="status-pill active" data-filter="all">الكل</div>
+      <div class="status-pill" data-filter="paid">مدفوعة</div>
+      <div class="status-pill" data-filter="unpaid">غير مدفوعة</div>
+      <div class="status-pill" data-filter="draft">مسودة</div>
+    </div>
+
+    <select id="po-filter" class="status-pill">
+      <option value="all">كل العقود</option>
+    </select>
+  </div>
+
+  <div class="summary-cards">
+    <div class="card" id="card-total" data-type="total">
+      <div class="card-label">إجمالي الفواتير</div>
+      <div class="card-value" id="card-total-amount">IQD 0</div>
+      <div class="card-sub" id="card-total-count">0 فاتورة</div>
+    </div>
+
+    <div class="card" id="card-soon" data-type="soon">
+      <div class="card-label">تستحق خلال 30 يوم</div>
+      <div class="card-value" id="card-soon-amount">IQD 0</div>
+      <div class="card-sub" id="card-soon-count">0 فاتورة</div>
+    </div>
+
+    <div class="card" id="card-paid" data-type="paid">
+      <div class="card-label">مدفوعة</div>
+      <div class="card-value" id="card-paid-amount">IQD 0</div>
+      <div class="card-sub" id="card-paid-count">0 فاتورة</div>
+    </div>
+
+    <div class="card" id="card-unpaid" data-type="unpaid">
+      <div class="card-label">غير مدفوعة</div>
+      <div class="card-value" id="card-unpaid-amount">IQD 0</div>
+      <div class="card-sub" id="card-unpaid-count">0 فاتورة</div>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>التاريخ</th>
+          <th>الاستحقاق</th>
+          <th>رقم</th>
+          <th>عقد</th>
+          <th>عميل</th>
+          <th>وصف</th>
+          <th>ملاحظات</th>
+          <th>الحالة</th>
+          <th>الرصيد</th>
+          <th>إجراءات</th>
+        </tr>
+      </thead>
+      <tbody id="invoice-table-body"></tbody>
+    </table>
+  </div>
+
+</section>
+
+<!-- ====================== صفحة تحرير الفاتورة ====================== -->
+
+<section id="editor">
+
+  <div class="topbar-main" style="margin-bottom:12px;">
+    <div class="dashboard-title">
+      🔧 تحرير الفاتورة
+      <span id="editor-subtitle"></span>
+    </div>
+
+    <div class="top-actions">
+      <select id="status-select" class="status-pill">
+        <option value="draft">مسودة</option>
+        <option value="unpaid">غير مدفوعة</option>
+        <option value="paid">مدفوعة</option>
+      </select>
+
+      <button class="btn" id="btn-back">⬅ رجوع</button>
+      <button class="btn" id="btn-duplicate">📄 نسخة</button>
+      <button class="btn btn-danger" id="btn-delete">🗑 حذف</button>
+      <button class="btn btn-primary" id="btn-save">💾 حفظ</button>
+      <button class="btn" id="btn-print">🖨 طباعة</button>
+    </div>
+  </div>
+
+  <div class="invoice-page">
+    <h2 style="text-align:center;color:#f97316;margin-top:0;">Invoice</h2>
+
+    <div>
+      <label>رقم الفاتورة:</label>
+      <input id="f-number"><br>
+      <label>تاريخ الفاتورة:</label>
+      <input id="f-date" type="date"><br>
+      <label>تاريخ الاستحقاق:</label>
+      <input id="f-due" type="date"><br>
+      <label>رقم العقد:</label>
+      <input id="f-contract">
+    </div>
+
+    <hr>
+
+    <label>Bill To:</label>
+    <textarea id="f-billto" style="width:100%;height:70px;"></textarea>
+
+    <h3>تفاصيل البنود</h3>
+
+    <table class="inv-table" style="width:100%;border:1px solid #000;">
+      <thead>
+        <tr><th>No</th><th>Description</th><th>Location</th><th>Date</th><th>Unit</th><th>Qty</th><th>Price</th></tr>
+      </thead>
+      <tbody id="items-body"></tbody>
+    </table>
+
+    <button id="add-row-btn" class="btn-sm" style="margin-top:6px;">+ إضافة بند</button>
+
+    <hr>
+
+    <label>Scope of Work:</label>
+    <textarea id="f-scope" style="width:100%;height:70px;"></textarea>
+
+    <label>Notes:</label>
+    <textarea id="f-note" style="width:100%;height:60px;"></textarea>
+
+    <h3>Totals:</h3>
+    <div>
+      Subtotal: <input id="f-subtotal" readonly><br>
+      Discount: <input id="f-discount" type="number" value="0"><br>
+      Sub-Less: <input id="f-sub-less" readonly><br>
+      Tax (%): <input id="f-tax" type="number" value="0"><br>
+      Shipping: <input id="f-shipping" type="number" value="0"><br>
+      Balance: <input id="f-balance" readonly>
+    </div>
+
+  </div>
+</section>
+
+<!-- ====================== نافذة التقرير ====================== -->
+
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal">
+    <h3>قائمة الفواتير</h3>
+    <table style="width:100%;">
+      <thead>
+        <tr>
+          <th>رقم</th>
+          <th>تاريخ</th>
+          <th>عقد</th>
+          <th>حالة</th>
+          <th>رصيد</th>
+        </tr>
+      </thead>
+      <tbody id="report-body"></tbody>
+    </table>
+    <button class="btn" id="close-modal-btn">إغلاق</button>
+  </div>
+</div>
