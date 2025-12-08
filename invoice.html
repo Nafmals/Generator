@@ -1,169 +1,812 @@
-<section id="dashboard">
-
-  <div class="dashboard-header">
-    <div class="dashboard-title">
-      الفواتير <span>الإدارة والتحكم الكامل</span>
-    </div>
-
-    <div class="search-box">
-      🔍 <input id="search-input" placeholder="بحث... (اسم عميل، رقم، عقد)">
-    </div>
-  </div>
-
-  <div class="filters-row">
-    <div class="status-filters">
-      <div class="status-pill active" data-filter="all">الكل</div>
-      <div class="status-pill" data-filter="paid">مدفوعة</div>
-      <div class="status-pill" data-filter="unpaid">غير مدفوعة</div>
-      <div class="status-pill" data-filter="draft">مسودة</div>
-    </div>
-
-    <select id="po-filter" class="status-pill">
-      <option value="all">كل العقود</option>
-    </select>
-  </div>
-
-  <div class="summary-cards">
-    <div class="card" id="card-total" data-type="total">
-      <div class="card-label">إجمالي الفواتير</div>
-      <div class="card-value" id="card-total-amount">IQD 0</div>
-      <div class="card-sub" id="card-total-count">0 فاتورة</div>
-    </div>
-
-    <div class="card" id="card-soon" data-type="soon">
-      <div class="card-label">تستحق خلال 30 يوم</div>
-      <div class="card-value" id="card-soon-amount">IQD 0</div>
-      <div class="card-sub" id="card-soon-count">0 فاتورة</div>
-    </div>
-
-    <div class="card" id="card-paid" data-type="paid">
-      <div class="card-label">مدفوعة</div>
-      <div class="card-value" id="card-paid-amount">IQD 0</div>
-      <div class="card-sub" id="card-paid-count">0 فاتورة</div>
-    </div>
-
-    <div class="card" id="card-unpaid" data-type="unpaid">
-      <div class="card-label">غير مدفوعة</div>
-      <div class="card-value" id="card-unpaid-amount">IQD 0</div>
-      <div class="card-sub" id="card-unpaid-count">0 فاتورة</div>
-    </div>
-  </div>
-
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>التاريخ</th>
-          <th>الاستحقاق</th>
-          <th>رقم</th>
-          <th>عقد</th>
-          <th>عميل</th>
-          <th>وصف</th>
-          <th>ملاحظات</th>
-          <th>الحالة</th>
-          <th>الرصيد</th>
-          <th>إجراءات</th>
-        </tr>
-      </thead>
-      <tbody id="invoice-table-body"></tbody>
-    </table>
-  </div>
-
-</section>
-
-<!-- ====================== صفحة تحرير الفاتورة ====================== -->
-
-<section id="editor">
-
-  <div class="topbar-main" style="margin-bottom:12px;">
-    <div class="dashboard-title">
-      🔧 تحرير الفاتورة
-      <span id="editor-subtitle"></span>
-    </div>
-
-    <div class="top-actions">
-      <select id="status-select" class="status-pill">
-        <option value="draft">مسودة</option>
-        <option value="unpaid">غير مدفوعة</option>
-        <option value="paid">مدفوعة</option>
-      </select>
-
-      <button class="btn" id="btn-back">⬅ رجوع</button>
-      <button class="btn" id="btn-duplicate">📄 نسخة</button>
-      <button class="btn btn-danger" id="btn-delete">🗑 حذف</button>
-      <button class="btn btn-primary" id="btn-save">💾 حفظ</button>
-      <button class="btn" id="btn-print">🖨 طباعة</button>
-    </div>
-  </div>
-
-  <div class="invoice-page">
-    <h2 style="text-align:center;color:#f97316;margin-top:0;">Invoice</h2>
-
-    <div>
-      <label>رقم الفاتورة:</label>
-      <input id="f-number"><br>
-      <label>تاريخ الفاتورة:</label>
-      <input id="f-date" type="date"><br>
-      <label>تاريخ الاستحقاق:</label>
-      <input id="f-due" type="date"><br>
-      <label>رقم العقد:</label>
-      <input id="f-contract">
-    </div>
-
-    <hr>
-
-    <label>Bill To:</label>
-    <textarea id="f-billto" style="width:100%;height:70px;"></textarea>
-
-    <h3>تفاصيل البنود</h3>
-
-    <table class="inv-table" style="width:100%;border:1px solid #000;">
-      <thead>
-        <tr><th>No</th><th>Description</th><th>Location</th><th>Date</th><th>Unit</th><th>Qty</th><th>Price</th></tr>
-      </thead>
-      <tbody id="items-body"></tbody>
-    </table>
-
-    <button id="add-row-btn" class="btn-sm" style="margin-top:6px;">+ إضافة بند</button>
-
-    <hr>
-
-    <label>Scope of Work:</label>
-    <textarea id="f-scope" style="width:100%;height:70px;"></textarea>
-
-    <label>Notes:</label>
-    <textarea id="f-note" style="width:100%;height:60px;"></textarea>
-
-    <h3>Totals:</h3>
-    <div>
-      Subtotal: <input id="f-subtotal" readonly><br>
-      Discount: <input id="f-discount" type="number" value="0"><br>
-      Sub-Less: <input id="f-sub-less" readonly><br>
-      Tax (%): <input id="f-tax" type="number" value="0"><br>
-      Shipping: <input id="f-shipping" type="number" value="0"><br>
-      Balance: <input id="f-balance" readonly>
-    </div>
-
-  </div>
-</section>
-
-<!-- ====================== نافذة التقرير ====================== -->
-
-<div class="modal-backdrop" id="modal-backdrop">
-  <div class="modal">
-    <h3>قائمة الفواتير</h3>
-    <table style="width:100%;">
-      <thead>
-        <tr>
-          <th>رقم</th>
-          <th>تاريخ</th>
-          <th>عقد</th>
-          <th>حالة</th>
-          <th>رصيد</th>
-        </tr>
-      </thead>
-      <tbody id="report-body"></tbody>
-    </table>
-    <button class="btn" id="close-modal-btn">إغلاق</button>
-  </div>
-</div>
+[
+  {
+    "id": "seed-1",
+    "number": "CP-INV00001",
+    "issueDate": "2024-03-01",
+    "dueDate": "2024-03-31",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Mar-24 - 31-Mar-24",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 5500000
+      }
+    ],
+    "subtotal": 5500000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 5500000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-2",
+    "number": "CP-INV00001",
+    "issueDate": "2024-04-01",
+    "dueDate": "2024-04-30",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Apr-24 - 30-Apr-24",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 5500000
+      }
+    ],
+    "subtotal": 5500000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 5500000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-3",
+    "number": "CP-INV00003",
+    "issueDate": "2024-05-01",
+    "dueDate": "2024-05-31",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-May-24 - 31-May-24",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 5500000
+      }
+    ],
+    "subtotal": 5500000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 5500000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-4",
+    "number": "CP-INV00004",
+    "issueDate": "2024-06-01",
+    "dueDate": "2024-06-30",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Jun-24 - 30-Jun-24",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 5500000
+      }
+    ],
+    "subtotal": 5500000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 5500000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-5",
+    "number": "CP-INV00005",
+    "issueDate": "2024-07-01",
+    "dueDate": "2024-07-31",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Jul-24 - 31-Jul-24",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-6",
+    "number": "CP-INV00006",
+    "issueDate": "2024-08-01",
+    "dueDate": "2024-08-31",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Aug-24 - 31-Aug-24",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-7",
+    "number": "CP-INV00009",
+    "issueDate": "2024-09-01",
+    "dueDate": "2024-09-30",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Sep-24 - 30-Sep-24",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-8",
+    "number": "CP-INV00010",
+    "issueDate": "2024-10-01",
+    "dueDate": "2024-10-30",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Oct-24 - 30-Oct-24",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-9",
+    "number": "CP-INV00012",
+    "issueDate": "2024-11-01",
+    "dueDate": "2024-11-30",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Nov-24 - 30-Nov-24",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-10",
+    "number": "CP-INV00012",
+    "issueDate": "2024-12-01",
+    "dueDate": "2024-12-31",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Dec-24 - 31-Dec-24",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-11",
+    "number": "CP-INV00013",
+    "issueDate": "2025-01-01",
+    "dueDate": "2025-01-31",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Jan-25 - 31-Jan-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-12",
+    "number": "CP-INV00015",
+    "issueDate": "2025-02-01",
+    "dueDate": "2025-02-28",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Feb-25 - 28-Feb-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-13",
+    "number": "CP-INV00015",
+    "issueDate": "2025-03-01",
+    "dueDate": "2025-03-31",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Mar-25 - 31-Mar-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-14",
+    "number": "CP-INV00016",
+    "issueDate": "2025-04-01",
+    "dueDate": "2025-04-30",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Apr-25 - 30-Apr-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "unpaid"
+  },
+  {
+    "id": "seed-15",
+    "number": "CP-INV00016",
+    "issueDate": "2025-05-01",
+    "dueDate": "2025-05-31",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-May-25 - 31-May-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "unpaid"
+  },
+  {
+    "id": "seed-16",
+    "number": "CP-INV00018",
+    "issueDate": "2025-06-01",
+    "dueDate": "2025-06-30",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Jun-25 - 30-Jun-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "unpaid"
+  },
+  {
+    "id": "seed-17",
+    "number": "CP-INV00018",
+    "issueDate": "2025-07-01",
+    "dueDate": "2025-07-31",
+    "contract": "PO00023",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Jul-25 - 31-Jul-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 3375000
+      }
+    ],
+    "subtotal": 6750000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 6750000,
+    "status": "unpaid"
+  },
+  {
+    "id": "seed-18",
+    "number": "NA-2025-INV00024",
+    "issueDate": "2025-08-01",
+    "dueDate": "2025-08-31",
+    "contract": "4400013837",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Aug-25 - 31-Aug-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 4325000
+      }
+    ],
+    "subtotal": 8650000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 8650000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-19",
+    "number": "NA-2025-INV00026",
+    "issueDate": "2025-09-01",
+    "dueDate": "2025-09-30",
+    "contract": "4400013837",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Sep-25 - 30-Sep-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 4325000
+      }
+    ],
+    "subtotal": 8650000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 8650000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-20",
+    "number": "NA-2025-INV00031",
+    "issueDate": "2025-10-01",
+    "dueDate": "2025-10-31",
+    "contract": "4400013837",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Oct-25 - 31-Oct-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 4325000
+      }
+    ],
+    "subtotal": 8650000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 8650000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-21",
+    "number": "NA-2025-INV00036",
+    "issueDate": "2025-11-01",
+    "dueDate": "2025-11-30",
+    "contract": "4400013837",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Nov-25 - 30-Nov-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 4325000
+      }
+    ],
+    "subtotal": 8650000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 8650000,
+    "status": "unpaid"
+  },
+  {
+    "id": "seed-22",
+    "number": "NA-2025-D-INV00039",
+    "issueDate": "2025-12-01",
+    "dueDate": "2025-12-31",
+    "contract": "4400013837",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
+        "location": "",
+        "date": "01-Dec-25 - 31-Dec-25",
+        "unit": "Lot",
+        "qty": 2,
+        "price": 4325000
+      }
+    ],
+    "subtotal": 8650000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 8650000,
+    "status": "unpaid"
+  },
+  {
+    "id": "seed-23",
+    "number": "CP-INV-D-00001",
+    "issueDate": "2025-02-01",
+    "dueDate": "2025-02-28",
+    "contract": "4400013503",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+        "location": "",
+        "date": "01-Feb-25 - 28-Feb-25",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 12000000
+      }
+    ],
+    "subtotal": 12000000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 12000000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-24",
+    "number": "CP-INV-D-00002",
+    "issueDate": "2025-03-01",
+    "dueDate": "2025-03-31",
+    "contract": "4400013503",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+        "location": "",
+        "date": "01-Mar-25 - 31-Mar-25",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 12000000
+      }
+    ],
+    "subtotal": 12000000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 12000000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-25",
+    "number": "CP-INV-D-00003",
+    "issueDate": "2025-04-01",
+    "dueDate": "2025-04-30",
+    "contract": "4400013503",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+        "location": "",
+        "date": "01-Apr-25 - 30-Apr-25",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 12000000
+      }
+    ],
+    "subtotal": 12000000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 12000000,
+    "status": "paid"
+  },
+  {
+    "id": "seed-26",
+    "number": "CP-INV-D-00004",
+    "issueDate": "2025-08-01",
+    "dueDate": "2025-08-31",
+    "contract": "4400013503",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+        "location": "",
+        "date": "01-Aug-25 - 31-Aug-25",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 12000000
+      }
+    ],
+    "subtotal": 12000000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 12000000,
+    "status": "unpaid"
+  },
+  {
+    "id": "seed-27",
+    "number": "CP-INV-D-00005",
+    "issueDate": "2025-09-01",
+    "dueDate": "2025-09-30",
+    "contract": "4400013503",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+        "location": "",
+        "date": "01-Sep-25 - 30-Sep-25",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 12000000
+      }
+    ],
+    "subtotal": 12000000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 12000000,
+    "status": "unpaid"
+  },
+  {
+    "id": "seed-28",
+    "number": "CP-INV-D-00006",
+    "issueDate": "2025-10-01",
+    "dueDate": "2025-10-31",
+    "contract": "4400013503",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+        "location": "",
+        "date": "01-Oct-25 - 31-Oct-25",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 12000000
+      }
+    ],
+    "subtotal": 12000000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 12000000,
+    "status": "unpaid"
+  },
+  {
+    "id": "seed-29",
+    "number": "CP-INV-D-00007",
+    "issueDate": "2025-11-01",
+    "dueDate": "2025-11-30",
+    "contract": "4400013503",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+        "location": "",
+        "date": "01-Nov-25 - 30-Nov-25",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 12000000
+      }
+    ],
+    "subtotal": 12000000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 12000000,
+    "status": "unpaid"
+  },
+  {
+    "id": "seed-30",
+    "number": "CP-INV-D-00008",
+    "issueDate": "2025-12-01",
+    "dueDate": "2025-12-31",
+    "contract": "4400013503",
+    "billTo": "",
+    "customerName": "",
+    "scope": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+    "note": "",
+    "items": [
+      {
+        "desc": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.",
+        "location": "",
+        "date": "01-Dec-25 - 31-Dec-25",
+        "unit": "Lot",
+        "qty": 1,
+        "price": 12000000
+      }
+    ],
+    "subtotal": 12000000,
+    "discount": 0,
+    "taxPerc": 0,
+    "shipping": 0,
+    "balance": 12000000,
+    "status": "unpaid"
+  }
+]
