@@ -613,8 +613,8 @@
       }
       if(!inv) return;
       currentId = id;
-      fillForm(inv);
-      showEditor();
+      fillForm(inv);      // تعبئة النموذج بالبيانات المحفوظة
+      showEditor();       // فتح صفحة التعديل
     }
 
     function isOverdue(inv){
@@ -841,7 +841,7 @@
       currentId = id;
       fillForm(inv);
       saveInvoices();
-      showEditor();
+      showEditor();   // فتح صفحة الفاتورة الجديدة مباشرة
     }
 
     function saveCurrentInvoice(){
@@ -1040,7 +1040,7 @@
         }
       });
 
-      // تفويض أحداث جدول الفواتير
+      // تفويض أحداث جدول الفواتير – فتح التعديل عند الضغط على الصف أو زر تعديل
       $("invoice-table-body").addEventListener("click", function(e){
         var target = e.target;
         var tr = target.closest("tr[data-id]");
@@ -1051,11 +1051,11 @@
         }else if(target.classList.contains("delete-btn")){
           deleteInvoiceById(id,true);
         }else{
-          openEditor(id);
+          openEditor(id); // الضغط على الصف يفتح صفحة التعديل
         }
       });
 
-      // تفويض أحداث تقرير الفواتير
+      // تفويض أحداث تقرير الفواتير (modal)
       $("report-body").addEventListener("click", function(e){
         var tr = e.target.closest("tr[data-id]");
         if(!tr) return;
@@ -1080,6 +1080,7 @@
 
       $("search-input").addEventListener("input", renderDashboard);
 
+      // تغيير حالة الفاتورة من داخل صفحة التعديل (مدفوعة/غير مدفوعة/مسودة)
       $("status-select").addEventListener("change", function(){
         if(!currentId) return;
         var inv = null;
@@ -1088,7 +1089,8 @@
         }
         if(!inv) return;
         inv.status = this.value;
-        saveInvoices();
+        inv.updatedAt = new Date().toISOString();
+        saveInvoices(); // حفظ التغيير مباشرة وتحديث الشاشة
       });
 
       var ids = ["f-discount","f-tax","f-shipping"];
