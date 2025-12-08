@@ -188,6 +188,21 @@
         </div>
       </div>
 
+      <!-- فقرة العمليات السريعة: إضافة / تعديل فاتورة -->
+      <div style="margin:8px 0;font-size:11px;background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:6px 8px;">
+        <b>عمليات سريعة على الفواتير:</b>
+        <a href="#" onclick="createNewInvoice(); return false;" style="margin-inline-start:8px;">
+          + إضافة فاتورة جديدة
+        </a>
+        |
+        <a href="#" onclick="openInvoiceSelector(); return false;" style="margin-inline-start:4px;">
+          ✏ تعديل فاتورة موجودة
+        </a>
+        <span style="color:#6b7280;margin-inline-start:8px;">
+          (اضغط لاختيار الفاتورة أو إنشاء فاتورة جديدة)
+        </span>
+      </div>
+
       <div class="filters-row">
         <div class="status-filters">
           <button class="status-pill active" data-filter="all">الكل</button>
@@ -815,6 +830,13 @@
       }
     }
 
+    // فتح نافذة اختيار الفاتورة لتعديلها
+    function openInvoiceSelector(){
+      var mb = $("modal-backdrop");
+      if(mb) mb.style.display = "flex";
+      renderReport();
+    }
+
     function generateId(){
       if(window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
       return String(Date.now()) + "-" + String(Math.random()).slice(2);
@@ -847,7 +869,7 @@
       currentId = id;
       fillForm(inv);
       saveInvoices();
-      showEditor(); // هنا يتم فتح صفحة إدخال/تحديث الفاتورة الجديدة
+      showEditor(); // فتح صفحة إدخال/تحديث الفاتورة الجديدة
     }
 
     function saveCurrentInvoice(){
@@ -1136,10 +1158,11 @@
       }
     }
 
-    // إتاحة الدوال لـ onclick في الـ HTML (زر + فاتورة جديدة)
-    window.createNewInvoice = createNewInvoice;
-    window.editInvoice      = editInvoice;
-    window.deleteInvoiceById= deleteInvoiceById;
+    // إتاحة الدوال لـ onclick في الـ HTML
+    window.createNewInvoice   = createNewInvoice;
+    window.editInvoice        = editInvoice;
+    window.deleteInvoiceById  = deleteInvoiceById;
+    window.openInvoiceSelector= openInvoiceSelector;
 
     // تشغيل التهيئة بعد تحميل الصفحة
     window.addEventListener("DOMContentLoaded", function(){
