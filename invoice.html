@@ -1,19 +1,22 @@
-// import_invoices.js
-// سكربت واحد يقوم بـ:
-// 1) حفظ بيانات الفواتير في ملف JSON
-// 2) إنشاء قاعدة بيانات SQLite وجدول invoices
-// 3) استيراد الفواتير إلى الجدول
-// 4) حساب مجموع المبالغ المدفوعة وغير المدفوعة
+// server.js
+// سكربت كامل:
+// 1) يولّد ملف JSON للفواتير
+// 2) ينشئ قاعدة SQLite ويعمل استيراد للفواتير
+// 3) يحسب مجموع المبالغ المدفوعة وغير المدفوعة
+// 4) يشغّل API بسيط لعرض الفواتير والإحصائيات
 
 const fs = require('fs');
 const path = require('path');
 const sqlite3 = require('sqlite3').verbose();
+const express = require('express');
+const cors = require('cors');
 
 // =======================
 // 1) بيانات الفواتير
 // =======================
 
 const invoices = [
+  // ===== قسم إيجار المولدات PO00023 =====
   {
     po: "PO00023",
     invoice_no: "CP-INV00001",
@@ -235,6 +238,8 @@ const invoices = [
     total: "IQD 6,750,000",
     status: "Unpaid"
   },
+
+  // ===== قسم عقود 4400013837 =====
   {
     po: "4400013837",
     invoice_no: "NA-2025-INV00024",
@@ -300,6 +305,8 @@ const invoices = [
     total: "IQD 8,650,000",
     status: "Unpaid"
   },
+
+  // ===== قسم عقود 4400013503 =====
   {
     po: "4400013503",
     invoice_no: "CP-INV-D-00001",
@@ -404,6 +411,8 @@ const invoices = [
     total: "IQD 12,000,000",
     status: "Unpaid"
   },
+
+  // ===== قسم الديزل =====
   {
     po: "PO00023",
     invoice_no: "CP-INV00002",
@@ -745,12 +754,12 @@ const invoices = [
 ];
 
 // =======================
-// 2) حفظ ملف JSON
+// 2) حفظ JSON
 // =======================
 
 const jsonPath = path.join(__dirname, 'invoices_seed.json');
 fs.writeFileSync(jsonPath, JSON.stringify(invoices, null, 2), 'utf8');
-console.log('✓ تم حفظ ملف JSON:', jsonPath);
+console.log('✓ تم حفظ ملف JSON في:', jsonPath);
 
 // =======================
 // 3) إعداد قاعدة البيانات
@@ -773,86 +782,173 @@ function parseMoney(value) {
   );
 }
 
-db.serialize(() => {
-  db.run(`
-    CREATE TABLE IF NOT EXISTS invoices (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      no INTEGER,
-      po TEXT NOT NULL,
-      invoice_no TEXT NOT NULL,
-      date TEXT NOT NULL,
-      description TEXT NOT NULL,
-      duration_from TEXT NOT NULL,
-      duration_to TEXT NOT NULL,
-      unit TEXT NOT NULL,
-      qty REAL NOT NULL,
-      invoice_amount REAL NOT NULL,
-      total REAL NOT NULL,
-      status TEXT NOT NULL
-    )
-  `);
+// عمل seed للبيانات مرة واحدة عند تشغيل السيرفر
+function seedDatabase(callback) {
+  db.serialize(() => {
+    db.run(
+      `CREATE TABLE IF NOT EXISTS invoices (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        no INTEGER,
+        po TEXT NOT NULL,
+        invoice_no TEXT NOT NULL,
+        date TEXT NOT NULL,
+        description TEXT NOT NULL,
+        duration_from TEXT NOT NULL,
+        duration_to TEXT NOT NULL,
+        unit TEXT NOT NULL,
+        qty REAL NOT NULL,
+        invoice_amount REAL NOT NULL,
+        total REAL NOT NULL,
+        status TEXT NOT NULL
+      )`,
+      function (err) {
+        if (err) {
+          console.error('خطأ في إنشاء الجدول:', err);
+          if (callback) callback(err);
+          return;
+        }
 
-  const insertSql = `
-    INSERT INTO invoices (
-      no, po, invoice_no, date, description,
-      duration_from, duration_to, unit, qty,
-      invoice_amount, total, status
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+        // لحذف البيانات القديمة حتى لا تتكرر الإدخالات
+        db.run('DELETE FROM invoices', function (delErr) {
+          if (delErr) {
+            console.error('خطأ في حذف البيانات القديمة:', delErr);
+            if (callback) callback(delErr);
+            return;
+          }
 
-  const stmt = db.prepare(insertSql);
+          const insertSql = `
+            INSERT INTO invoices (
+              no, po, invoice_no, date, description,
+              duration_from, duration_to, unit, qty,
+              invoice_amount, total, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `;
+          const stmt = db.prepare(insertSql);
 
-  let paidTotal = 0;
-  let unpaidTotal = 0;
+          let paidTotal = 0;
+          let unpaidTotal = 0;
 
-  invoices.forEach((row, index) => {
-    const qty = Number(row.qty);
-    const invoiceAmount = parseMoney(row.invoice_amount);
-    const total = parseMoney(row.total);
+          invoices.forEach((row, index) => {
+            const qty = Number(row.qty);
+            const invoiceAmount = parseMoney(row.invoice_amount);
+            const total = parseMoney(row.total);
 
-    if (String(row.status).toLowerCase().startsWith('paid')) {
-      paidTotal += total;
-    } else {
-      unpaidTotal += total;
-    }
+            if (String(row.status).toLowerCase().startsWith('paid')) {
+              paidTotal += total;
+            } else {
+              unpaidTotal += total;
+            }
 
-    stmt.run(
-      index + 1, // no
-      row.po,
-      row.invoice_no,
-      row.date,
-      row.description,
-      row.duration_from,
-      row.duration_to,
-      row.unit,
-      qty,
-      invoiceAmount,
-      total,
-      row.status
+            stmt.run(
+              index + 1,
+              row.po,
+              row.invoice_no,
+              row.date,
+              row.description,
+              row.duration_from,
+              row.duration_to,
+              row.unit,
+              qty,
+              invoiceAmount,
+              total,
+              row.status
+            );
+          });
+
+          stmt.finalize(err2 => {
+            if (err2) {
+              console.error('خطأ في إدخال البيانات:', err2);
+              if (callback) callback(err2);
+              return;
+            }
+
+            console.log('✓ تم استيراد جميع الفواتير إلى قاعدة البيانات:', dbPath);
+            console.log('---------------------------------------------');
+            console.log(
+              'إجمالي المبالغ المدفوعة (Paid):',
+              paidTotal.toLocaleString('en-US'),
+              'IQD'
+            );
+            console.log(
+              'إجمالي المبالغ غير المدفوعة (Unpaid + Un-Paid):',
+              unpaidTotal.toLocaleString('en-US'),
+              'IQD'
+            );
+            console.log('---------------------------------------------');
+
+            if (callback) callback(null);
+          });
+        });
+      }
     );
   });
+}
 
-  stmt.finalize(err => {
+// =======================
+// 4) تشغيل السيرفر بعد الـ seed
+// =======================
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+const PORT = process.env.PORT || 3000;
+
+// عرض كل الفواتير
+app.get('/api/invoices', (req, res) => {
+  db.all('SELECT * FROM invoices ORDER BY id ASC', [], (err, rows) => {
     if (err) {
-      console.error('✗ خطأ في إدخال البيانات:', err);
-      db.close();
-      return;
+      console.error('خطأ في جلب الفواتير:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json(rows);
+  });
+});
+
+// إرجاع مجاميع المدفوعة وغير المدفوعة من القاعدة
+app.get('/api/stats', (req, res) => {
+  const sqlPaid = `
+    SELECT COALESCE(SUM(total), 0) AS paid
+    FROM invoices
+    WHERE LOWER(status) LIKE 'paid%'
+  `;
+  const sqlUnpaid = `
+    SELECT COALESCE(SUM(total), 0) AS unpaid
+    FROM invoices
+    WHERE LOWER(status) NOT LIKE 'paid%'
+  `;
+
+  db.get(sqlPaid, [], (err1, rowPaid) => {
+    if (err1) {
+      console.error('خطأ في حساب المدفوع:', err1);
+      return res.status(500).json({ error: 'Database error' });
     }
 
-    console.log('✓ تم استيراد جميع الفواتير إلى قاعدة البيانات:', dbPath);
-    console.log('---------------------------------------------');
-    console.log(
-      'إجمالي المبالغ المدفوعة (Paid):',
-      paidTotal.toLocaleString('en-US'),
-      'IQD'
-    );
-    console.log(
-      'إجمالي المبالغ غير المدفوعة (Unpaid + Un-Paid):',
-      unpaidTotal.toLocaleString('en-US'),
-      'IQD'
-    );
-    console.log('---------------------------------------------');
+    db.get(sqlUnpaid, [], (err2, rowUnpaid) => {
+      if (err2) {
+        console.error('خطأ في حساب غير المدفوع:', err2);
+        return res.status(500).json({ error: 'Database error' });
+      }
 
-    db.close();
+      res.json({
+        paid: rowPaid.paid,
+        unpaid: rowUnpaid.unpaid
+      });
+    });
+  });
+});
+
+// نعمل seed ثم نشغّل السيرفر
+seedDatabase(err => {
+  if (err) {
+    console.error('فشل تهيئة قاعدة البيانات، لن يتم تشغيل السيرفر.');
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`✓ السيرفر يعمل الآن على http://localhost:${PORT}`);
+    console.log('Endpoints:');
+    console.log('  GET /api/invoices  -> كل الفواتير');
+    console.log('  GET /api/stats     -> مجاميع المدفوع وغير المدفوع');
   });
 });
