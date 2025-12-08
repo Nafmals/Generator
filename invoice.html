@@ -139,6 +139,18 @@
     .report-table th{background:#f9fafb;position:sticky;top:0;z-index:1;}
     .modal-footer{margin-top:4px;font-size:10px;color:#6b7280;text-align:right;}
 
+    /* sortable headers */
+    .th-sortable{
+      cursor:pointer;
+      user-select:none;
+    }
+    .th-sortable .sort-indicator{
+      font-size:9px;
+      color:#9ca3af;
+      margin-left:4px;
+      visibility:hidden;
+    }
+
     @media print{
       body{background:#fff;padding:0;}
       .topbar-main,#dashboard,.modal-backdrop,.editor-topbar{display:none !important;}
@@ -244,15 +256,31 @@
         <table>
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Due Date</th>
-              <th>Invoice No</th>
-              <th>Contract (PO)</th>
-              <th>Customer</th>
-              <th>Short Description</th>
+              <th class="th-sortable" data-sort="issueDate">
+                Date <span class="sort-indicator">▲</span>
+              </th>
+              <th class="th-sortable" data-sort="dueDate">
+                Due Date <span class="sort-indicator">▲</span>
+              </th>
+              <th class="th-sortable" data-sort="number">
+                Invoice No <span class="sort-indicator">▲</span>
+              </th>
+              <th class="th-sortable" data-sort="contract">
+                Contract (PO) <span class="sort-indicator">▲</span>
+              </th>
+              <th class="th-sortable" data-sort="customerName">
+                Customer <span class="sort-indicator">▲</span>
+              </th>
+              <th class="th-sortable" data-sort="shortDesc">
+                Short Description <span class="sort-indicator">▲</span>
+              </th>
               <th>Details</th>
-              <th>Status</th>
-              <th>Amount (Balance)</th>
+              <th class="th-sortable" data-sort="status">
+                Status <span class="sort-indicator">▲</span>
+              </th>
+              <th class="th-sortable" data-sort="balance">
+                Amount (Balance) <span class="sort-indicator">▲</span>
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -444,588 +472,20 @@
 
   <script>
     const STORAGE_KEY = "naf_invoice_system_advanced_main";
+
     let invoices = [];
     let currentId = null;
     let currentFilter = "all";
     let currentPoFilter = "all";
     let specialFilter = "none";
 
-    // Invoices seeded from Excel (Book1.xlsx)
-    const seedInvoices = [
-      {
-        "id": "CP-INV00001",
-        "number": "CP-INV00001",
-        "issueDate": "2024-03-01",
-        "dueDate": "2024-04-30",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-03-01",
-            "unit": "Lot",
-            "qty": 1,
-            "price": 5500000
-          },
-          {
-            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-03-01",
-            "unit": "Lot",
-            "qty": 1,
-            "price": 5500000
-          }
-        ],
-        "subtotal": 11000000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 11000000,
-        "status": "paid",
-        "createdAt": "2024-03-01T00:00:00.000Z",
-        "updatedAt": "2024-03-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00003",
-        "number": "CP-INV00003",
-        "issueDate": "2024-05-01",
-        "dueDate": "2024-05-31",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-05-01",
-            "unit": "Lot",
-            "qty": 1,
-            "price": 5500000
-          }
-        ],
-        "subtotal": 5500000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 5500000,
-        "status": "paid",
-        "createdAt": "2024-05-01T00:00:00.000Z",
-        "updatedAt": "2024-05-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00004",
-        "number": "CP-INV00004",
-        "issueDate": "2024-06-01",
-        "dueDate": "2024-06-30",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-06-01",
-            "unit": "Lot",
-            "qty": 1,
-            "price": 5500000
-          }
-        ],
-        "subtotal": 5500000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 5500000,
-        "status": "paid",
-        "createdAt": "2024-06-01T00:00:00.000Z",
-        "updatedAt": "2024-06-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00005",
-        "number": "CP-INV00005",
-        "issueDate": "2024-07-01",
-        "dueDate": "2024-07-31",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA, including operators available 24/7 and fuel  -  Site: Al- Shamiya  USD ( 21,500 )",
-            "location": "",
-            "date": "2024-07-01",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          }
-        ],
-        "subtotal": 6750000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 6750000,
-        "status": "paid",
-        "createdAt": "2024-07-01T00:00:00.000Z",
-        "updatedAt": "2024-07-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00006",
-        "number": "CP-INV00006",
-        "issueDate": "2024-07-28",
-        "dueDate": "2024-08-31",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA, including operators available 24/7 and fuel  -  Site: Al- Shamiya  USD ( 21,500 )",
-            "location": "",
-            "date": "2024-07-28",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          }
-        ],
-        "subtotal": 6750000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 6750000,
-        "status": "paid",
-        "createdAt": "2024-07-28T00:00:00.000Z",
-        "updatedAt": "2024-07-28T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00009",
-        "number": "CP-INV00009",
-        "issueDate": "2024-09-19",
-        "dueDate": "2024-09-30",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA, including operators available 24/7 and fuel  -  Site: Al- Shamiya  USD ( 21,500 )",
-            "location": "",
-            "date": "2024-09-19",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          }
-        ],
-        "subtotal": 6750000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 6750000,
-        "status": "paid",
-        "createdAt": "2024-09-19T00:00:00.000Z",
-        "updatedAt": "2024-09-19T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00010",
-        "number": "CP-INV00010",
-        "issueDate": "2024-10-16",
-        "dueDate": "2024-10-30",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-10-16",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          }
-        ],
-        "subtotal": 6750000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 6750000,
-        "status": "paid",
-        "createdAt": "2024-10-16T00:00:00.000Z",
-        "updatedAt": "2024-10-16T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00012",
-        "number": "CP-INV00012",
-        "issueDate": "2024-12-31",
-        "dueDate": "2024-12-31",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-12-31",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          },
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-12-31",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          }
-        ],
-        "subtotal": 13500000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 13500000,
-        "status": "paid",
-        "createdAt": "2024-12-31T00:00:00.000Z",
-        "updatedAt": "2024-12-31T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00013",
-        "number": "CP-INV00013",
-        "issueDate": "2025-01-06",
-        "dueDate": "2025-01-31",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2025-01-06",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          }
-        ],
-        "subtotal": 6750000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 6750000,
-        "status": "paid",
-        "createdAt": "2025-01-06T00:00:00.000Z",
-        "updatedAt": "2025-01-06T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00015",
-        "number": "CP-INV00015",
-        "issueDate": "2025-02-01",
-        "dueDate": "2025-03-31",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2025-02-01",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          },
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2025-03-24",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          }
-        ],
-        "subtotal": 13500000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 13500000,
-        "status": "paid",
-        "createdAt": "2025-02-01T00:00:00.000Z",
-        "updatedAt": "2025-02-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00016",
-        "number": "CP-INV00016",
-        "issueDate": "2025-04-29",
-        "dueDate": "2025-05-31",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2025-04-29",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          },
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, ...24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2025-05-29",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          }
-        ],
-        "subtotal": 13500000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 13500000,
-        "status": "unpaid",
-        "createdAt": "2025-04-29T00:00:00.000Z",
-        "updatedAt": "2025-04-29T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00011",
-        "number": "CP-INV00011",
-        "issueDate": "2024-10-15",
-        "dueDate": "2024-11-18",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Diesel Fuel for Generators POD 29",
-            "location": "",
-            "date": "2024-10-15",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 30",
-            "location": "",
-            "date": "2024-10-20",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 31",
-            "location": "",
-            "date": "2024-10-27",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 32",
-            "location": "",
-            "date": "2024-11-11",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 33",
-            "location": "",
-            "date": "2024-11-18",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          }
-        ],
-        "subtotal": 3750000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 3750000,
-        "status": "paid",
-        "createdAt": "2024-10-15T00:00:00.000Z",
-        "updatedAt": "2024-10-15T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00014",
-        "number": "CP-INV00014",
-        "issueDate": "2025-01-01",
-        "dueDate": "2025-03-12",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Diesel Fuel for Generators POD 34",
-            "location": "",
-            "date": "2025-01-05",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 34",
-            "location": "",
-            "date": "2025-01-28",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 34",
-            "location": "",
-            "date": "2025-02-01",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 34 & 37",
-            "location": "",
-            "date": "2025-01-01",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 37",
-            "location": "",
-            "date": "2025-03-12",
-            "unit": "Liters",
-            "qty": 2000,
-            "price": 750
-          }
-        ],
-        "subtotal": 5250000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 5250000,
-        "status": "paid",
-        "createdAt": "2025-01-01T00:00:00.000Z",
-        "updatedAt": "2025-01-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00017",
-        "number": "CP-INV00017",
-        "issueDate": "2025-06-02",
-        "dueDate": "2025-06-13",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Diesel Fuel for Generators POD 38",
-            "location": "",
-            "date": "2025-06-09",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 39",
-            "location": "",
-            "date": "2025-06-13",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 38",
-            "location": "",
-            "date": "2025-06-02",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          }
-        ],
-        "subtotal": 2250000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 2250000,
-        "status": "unpaid",
-        "createdAt": "2025-06-02T00:00:00.000Z",
-        "updatedAt": "2025-06-02T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00019",
-        "number": "CP-INV00019",
-        "issueDate": "2025-06-20",
-        "dueDate": "2025-07-24",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Diesel Fuel for Generators POD 38",
-            "location": "",
-            "date": "2025-06-20",
-            "unit": "Liters",
-            "qty": 2000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 36",
-            "location": "",
-            "date": "2025-07-09",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 36",
-            "location": "",
-            "date": "2025-07-19",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          },
-          {
-            "desc": "Diesel Fuel for Generators POD 35",
-            "location": "",
-            "date": "2025-07-24",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          }
-        ],
-        "subtotal": 3750000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 3750000,
-        "status": "unpaid",
-        "createdAt": "2025-06-20T00:00:00.000Z",
-        "updatedAt": "2025-06-20T00:00:00.000Z"
-      }
-    ];
+    // default seed: يمكنك تركه فارغاً واستخدام Load JSON
+    const seedInvoices = [];
 
     const $ = id => document.getElementById(id);
+
+    let currentSortField = "issueDate"; // default sort
+    let currentSortDir   = "desc";      // desc = newest first
 
     function todayStr(){ return new Date().toISOString().slice(0,10); }
     function formatIQD(n){ n = Number(n)||0; return "IQD " + n.toLocaleString("en-US"); }
@@ -1146,8 +606,7 @@
         console.error("Error loading invoices:", e);
       }
 
-      // If no stored data in browser, load default Excel-seeded data
-      if (typeof seedInvoices !== "undefined" && Array.isArray(seedInvoices) && seedInvoices.length){
+      if (Array.isArray(seedInvoices) && seedInvoices.length){
         invoices = seedInvoices.slice();
         saveInvoices();
       }
@@ -1233,6 +692,68 @@
       return true;
     }
 
+    function sortInvoices(list){
+      const field = currentSortField;
+      const dir   = currentSortDir === "asc" ? 1 : -1;
+
+      const statusOrder = { unpaid:0, paid:1, draft:2 };
+
+      return list.slice().sort((a,b)=>{
+        let va, vb;
+
+        switch(field){
+          case "issueDate":
+            va = a.issueDate || "";
+            vb = b.issueDate || "";
+            return va.localeCompare(vb) * dir;
+
+          case "dueDate":
+            va = a.dueDate || "";
+            vb = b.dueDate || "";
+            return va.localeCompare(vb) * dir;
+
+          case "number":
+            va = (a.number || "").toLowerCase();
+            vb = (b.number || "").toLowerCase();
+            return va.localeCompare(vb) * dir;
+
+          case "contract":
+            va = (a.contract || "").toLowerCase();
+            vb = (b.contract || "").toLowerCase();
+            return va.localeCompare(vb) * dir;
+
+          case "customerName":
+            va = (a.customerName || "").toLowerCase();
+            vb = (b.customerName || "").toLowerCase();
+            return va.localeCompare(vb) * dir;
+
+          case "shortDesc": {
+            const ad = (a.scope || (a.items && a.items[0] && a.items[0].desc) || "").toLowerCase();
+            const bd = (b.scope || (b.items && b.items[0] && b.items[0].desc) || "").toLowerCase();
+            return ad.localeCompare(bd) * dir;
+          }
+
+          case "status": {
+            const sa = a.status || "draft";
+            const sb = b.status || "draft";
+            const oa = statusOrder[sa] ?? 9;
+            const ob = statusOrder[sb] ?? 9;
+            if (oa === ob) return 0;
+            return (oa - ob) * dir;
+          }
+
+          case "balance":
+            va = Number(a.balance || 0);
+            vb = Number(b.balance || 0);
+            if (va === vb) return 0;
+            return (va - vb) * dir;
+
+          default:
+            return 0;
+        }
+      });
+    }
+
     function editInvoice(id){ openEditor(id); }
 
     function deleteInvoiceById(id, ask){
@@ -1274,7 +795,7 @@
         $("card-soon-count").textContent     = countSoon + " invoice(s)";
       }
 
-      const sorted = filtered.slice().sort((a,b)=>(b.issueDate||"").localeCompare(a.issueDate||""));
+      const sorted = sortInvoices(filtered);
       if(!sorted.length){
         tbody.innerHTML = `<tr><td colspan="10" style="font-size:11px;color:#6b7280;">No invoices yet. Click "New Invoice" or Load JSON.</td></tr>`;
         return;
@@ -1514,6 +1035,20 @@
       renderDashboard();
     }
 
+    function updateSortIndicators(){
+      document.querySelectorAll("th.th-sortable").forEach(th=>{
+        const span  = th.querySelector(".sort-indicator");
+        if(!span) return;
+        const field = th.dataset.sort;
+        if(field === currentSortField){
+          span.textContent = currentSortDir === "asc" ? "▲" : "▼";
+          span.style.visibility = "visible";
+        }else{
+          span.style.visibility = "hidden";
+        }
+      });
+    }
+
     function setupEvents(){
       const bDash = $("btn-dashboard"); if(bDash) bDash.addEventListener("click", ()=>{showDashboard();highlightCard("total");});
       const bRep  = $("btn-report");    if(bRep)  bRep.addEventListener("click", ()=>{const mb=$("modal-backdrop");if(mb)mb.style.display="flex";renderReport();});
@@ -1577,9 +1112,23 @@
           const el = $(id);
           if(el) el.addEventListener("click", ()=>setFilterFromCard(type));
         });
+
+      // click-to-sort headers
+      document.querySelectorAll("th.th-sortable").forEach(th=>{
+        th.addEventListener("click", ()=>{
+          const field = th.dataset.sort;
+          if(currentSortField === field){
+            currentSortDir = currentSortDir === "asc" ? "desc" : "asc";
+          }else{
+            currentSortField = field;
+            currentSortDir   = "asc";
+          }
+          updateSortIndicators();
+          renderDashboard();
+        });
+      });
     }
 
-    // Make functions available for onclick even if something fails
     window.createNewInvoice = createNewInvoice;
     window.editInvoice      = editInvoice;
     window.deleteInvoiceById= deleteInvoiceById;
@@ -1592,6 +1141,7 @@
       highlightCard("total");
       renderDashboard();
       renderReport();
+      updateSortIndicators();
     })();
   </script>
 </body>
