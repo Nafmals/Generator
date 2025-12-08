@@ -1,22 +1,21 @@
-// server.js
-// سكربت كامل:
-// 1) يولّد ملف JSON للفواتير
-// 2) ينشئ قاعدة SQLite ويعمل استيراد للفواتير
-// 3) يحسب مجموع المبالغ المدفوعة وغير المدفوعة
-// 4) يشغّل API بسيط لعرض الفواتير والإحصائيات
+// app.js
+// سكربت واحد كامل:
+// - يحتوي بيانات الفواتير (seedInvoices)
+// - يحفظها في ملف JSON (invoices_data.json)
+// - يحملها عند التشغيل
+// - يوفر API: عرض / إضافة / تعديل / حذف / إحصائيات
+// - يوفر واجهة ويب بسيطة لإدارة الفواتير من المتصفح
 
-const fs = require('fs');
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
 
 // =======================
-// 1) بيانات الفواتير
+// 1) بيانات الفواتير الأولية (من الجدول الذي أرسلته)
 // =======================
-
-const invoices = [
-  // ===== قسم إيجار المولدات PO00023 =====
+const seedInvoices = [
+  // ====== Generator rental PO00023 ======
   {
     po: "PO00023",
     invoice_no: "CP-INV00001",
@@ -239,7 +238,7 @@ const invoices = [
     status: "Unpaid"
   },
 
-  // ===== قسم عقود 4400013837 =====
+  // ====== Contract 4400013837 ======
   {
     po: "4400013837",
     invoice_no: "NA-2025-INV00024",
@@ -306,7 +305,7 @@ const invoices = [
     status: "Unpaid"
   },
 
-  // ===== قسم عقود 4400013503 =====
+  // ====== Contract 4400013503 ======
   {
     po: "4400013503",
     invoice_no: "CP-INV-D-00001",
@@ -412,7 +411,7 @@ const invoices = [
     status: "Unpaid"
   },
 
-  // ===== قسم الديزل =====
+  // ====== Diesel fuel ======
   {
     po: "PO00023",
     invoice_no: "CP-INV00002",
@@ -754,201 +753,453 @@ const invoices = [
 ];
 
 // =======================
-// 2) حفظ JSON
+// 2) تخزين/تحميل البيانات من ملف JSON
 // =======================
 
-const jsonPath = path.join(__dirname, 'invoices_seed.json');
-fs.writeFileSync(jsonPath, JSON.stringify(invoices, null, 2), 'utf8');
-console.log('✓ تم حفظ ملف JSON في:', jsonPath);
+const DATA_FILE = path.join(__dirname, 'invoices_data.json');
 
-// =======================
-// 3) إعداد قاعدة البيانات
-// =======================
-
-const dbPath = path.join(__dirname, 'invoices.db');
-const db = new sqlite3.Database(dbPath);
-
-// تحويل نص المبلغ إلى رقم
-function parseMoney(value) {
-  if (value === null || value === undefined) return 0;
-  if (typeof value === 'number') return value;
-  return (
-    Number(
-      String(value)
-        .replace(/IQD/gi, '')
-        .replace(/,/g, '')
-        .trim()
-    ) || 0
-  );
+function parseMoney(v) {
+  if (v == null) return 0;
+  if (typeof v === 'number') return v;
+  return Number(
+    String(v)
+      .replace(/IQD/gi, '')
+      .replace(/,/g, '')
+      .trim()
+  ) || 0;
 }
 
-// عمل seed للبيانات مرة واحدة عند تشغيل السيرفر
-function seedDatabase(callback) {
-  db.serialize(() => {
-    db.run(
-      `CREATE TABLE IF NOT EXISTS invoices (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        no INTEGER,
-        po TEXT NOT NULL,
-        invoice_no TEXT NOT NULL,
-        date TEXT NOT NULL,
-        description TEXT NOT NULL,
-        duration_from TEXT NOT NULL,
-        duration_to TEXT NOT NULL,
-        unit TEXT NOT NULL,
-        qty REAL NOT NULL,
-        invoice_amount REAL NOT NULL,
-        total REAL NOT NULL,
-        status TEXT NOT NULL
-      )`,
-      function (err) {
-        if (err) {
-          console.error('خطأ في إنشاء الجدول:', err);
-          if (callback) callback(err);
-          return;
-        }
+let invoices = [];
 
-        // لحذف البيانات القديمة حتى لا تتكرر الإدخالات
-        db.run('DELETE FROM invoices', function (delErr) {
-          if (delErr) {
-            console.error('خطأ في حذف البيانات القديمة:', delErr);
-            if (callback) callback(delErr);
-            return;
-          }
+// تحميل البيانات من الملف أو استخدام seed
+function loadInvoices() {
+  if (fs.existsSync(DATA_FILE)) {
+    const raw = fs.readFileSync(DATA_FILE, 'utf8');
+    invoices = JSON.parse(raw);
+  } else {
+    invoices = seedInvoices.map((inv, idx) => ({ id: idx + 1, ...inv }));
+    saveInvoices();
+  }
+}
 
-          const insertSql = `
-            INSERT INTO invoices (
-              no, po, invoice_no, date, description,
-              duration_from, duration_to, unit, qty,
-              invoice_amount, total, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          `;
-          const stmt = db.prepare(insertSql);
+// حفظ البيانات إلى الملف
+function saveInvoices() {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(invoices, null, 2), 'utf8');
+}
 
-          let paidTotal = 0;
-          let unpaidTotal = 0;
-
-          invoices.forEach((row, index) => {
-            const qty = Number(row.qty);
-            const invoiceAmount = parseMoney(row.invoice_amount);
-            const total = parseMoney(row.total);
-
-            if (String(row.status).toLowerCase().startsWith('paid')) {
-              paidTotal += total;
-            } else {
-              unpaidTotal += total;
-            }
-
-            stmt.run(
-              index + 1,
-              row.po,
-              row.invoice_no,
-              row.date,
-              row.description,
-              row.duration_from,
-              row.duration_to,
-              row.unit,
-              qty,
-              invoiceAmount,
-              total,
-              row.status
-            );
-          });
-
-          stmt.finalize(err2 => {
-            if (err2) {
-              console.error('خطأ في إدخال البيانات:', err2);
-              if (callback) callback(err2);
-              return;
-            }
-
-            console.log('✓ تم استيراد جميع الفواتير إلى قاعدة البيانات:', dbPath);
-            console.log('---------------------------------------------');
-            console.log(
-              'إجمالي المبالغ المدفوعة (Paid):',
-              paidTotal.toLocaleString('en-US'),
-              'IQD'
-            );
-            console.log(
-              'إجمالي المبالغ غير المدفوعة (Unpaid + Un-Paid):',
-              unpaidTotal.toLocaleString('en-US'),
-              'IQD'
-            );
-            console.log('---------------------------------------------');
-
-            if (callback) callback(null);
-          });
-        });
-      }
-    );
+// حساب الإحصائيات
+function calculateStats() {
+  let paid = 0;
+  let unpaid = 0;
+  invoices.forEach(inv => {
+    const val = parseMoney(inv.total);
+    const isPaid = String(inv.status).toLowerCase().startsWith('paid');
+    if (isPaid) paid += val;
+    else unpaid += val;
   });
+  return { paid, unpaid };
 }
 
+// تهيئة البيانات
+loadInvoices();
+
 // =======================
-// 4) تشغيل السيرفر بعد الـ seed
+// 3) إعداد سيرفر Express
 // =======================
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
 app.use(cors());
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+// واجهة ويب بسيطة
+app.get('/', (req, res) => {
+  res.send(`
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>منصة الفواتير</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+  />
+  <style>
+    body { background:#f5f5f5; }
+    .status-paid { color:#0a7c3b; font-weight:bold; }
+    .status-unpaid { color:#c0392b; font-weight:bold; }
+    .card { box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    .table-responsive { max-height:60vh; overflow-y:auto; }
+    textarea { font-size:0.85rem; }
+  </style>
+</head>
+<body class="p-3">
+<div class="container-fluid">
+  <h3 class="mb-3">منصة الفواتير</h3>
 
-// عرض كل الفواتير
-app.get('/api/invoices', (req, res) => {
-  db.all('SELECT * FROM invoices ORDER BY id ASC', [], (err, rows) => {
-    if (err) {
-      console.error('خطأ في جلب الفواتير:', err);
-      return res.status(500).json({ error: 'Database error' });
-    }
-    res.json(rows);
-  });
-});
+  <div class="row g-3 mb-3">
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header bg-dark text-white">الملخص المالي</div>
+        <div class="card-body">
+          <p class="mb-1">
+            <strong>إجمالي المدفوع (Paid):</strong>
+            <span id="paid-total">—</span> IQD
+          </p>
+          <p class="mb-1">
+            <strong>إجمالي غير المدفوع (Unpaid):</strong>
+            <span id="unpaid-total">—</span> IQD
+          </p>
+          <button id="reload-btn" class="btn btn-sm btn-secondary mt-2">تحديث البيانات</button>
+        </div>
+      </div>
+    </div>
 
-// إرجاع مجاميع المدفوعة وغير المدفوعة من القاعدة
-app.get('/api/stats', (req, res) => {
-  const sqlPaid = `
-    SELECT COALESCE(SUM(total), 0) AS paid
-    FROM invoices
-    WHERE LOWER(status) LIKE 'paid%'
-  `;
-  const sqlUnpaid = `
-    SELECT COALESCE(SUM(total), 0) AS unpaid
-    FROM invoices
-    WHERE LOWER(status) NOT LIKE 'paid%'
-  `;
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header bg-primary text-white">نموذج إضافة / تعديل فاتورة</div>
+        <div class="card-body">
+          <form id="invoice-form" class="row g-2">
+            <input type="hidden" id="id" />
+            <div class="col-sm-3">
+              <label class="form-label">PO</label>
+              <input id="po" class="form-control form-control-sm" required />
+            </div>
+            <div class="col-sm-3">
+              <label class="form-label">Invoice No.</label>
+              <input id="invoice_no" class="form-control form-control-sm" required />
+            </div>
+            <div class="col-sm-3">
+              <label class="form-label">Date</label>
+              <input id="date" class="form-control form-control-sm" required />
+            </div>
+            <div class="col-sm-3">
+              <label class="form-label">Status</label>
+              <select id="status" class="form-select form-select-sm">
+                <option value="Paid">Paid</option>
+                <option value="Unpaid">Unpaid</option>
+                <option value="Un-Paid">Un-Paid</option>
+              </select>
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Duration From</label>
+              <input id="duration_from" class="form-control form-control-sm" />
+            </div>
+            <div class="col-sm-6">
+              <label class="form-label">Duration To</label>
+              <input id="duration_to" class="form-control form-control-sm" />
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description</label>
+              <textarea id="description" rows="2" class="form-control form-control-sm"></textarea>
+            </div>
+            <div class="col-sm-2">
+              <label class="form-label">Unit</label>
+              <input id="unit" class="form-control form-control-sm" />
+            </div>
+            <div class="col-sm-2">
+              <label class="form-label">Qty</label>
+              <input id="qty" type="number" step="0.01" class="form-control form-control-sm" />
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label">Invoice Amount (نص)</label>
+              <input id="invoice_amount" class="form-control form-control-sm" placeholder="مثال: IQD 6,750,000" />
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label">Total (نص)</label>
+              <input id="total" class="form-control form-control-sm" placeholder="مثال: IQD 6,750,000" />
+            </div>
+            <div class="col-12 d-flex gap-2 mt-2">
+              <button type="submit" class="btn btn-sm btn-success">حفظ</button>
+              <button type="button" id="reset-btn" class="btn btn-sm btn-outline-secondary">تفريغ النموذج</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  db.get(sqlPaid, [], (err1, rowPaid) => {
-    if (err1) {
-      console.error('خطأ في حساب المدفوع:', err1);
-      return res.status(500).json({ error: 'Database error' });
-    }
+  <div class="card">
+    <div class="card-header bg-info text-dark d-flex justify-content-between">
+      <span>قائمة الفواتير</span>
+      <small>انقر على "تعديل" لتحميل الفاتورة في النموذج</small>
+    </div>
+    <div class="card-body table-responsive">
+      <table class="table table-striped table-hover table-sm mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>PO</th>
+            <th>Invoice</th>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Unit</th>
+            <th>Qty</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="tbody-invoices">
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-    db.get(sqlUnpaid, [], (err2, rowUnpaid) => {
-      if (err2) {
-        console.error('خطأ في حساب غير المدفوع:', err2);
-        return res.status(500).json({ error: 'Database error' });
-      }
+<script>
+const tbody = document.getElementById('tbody-invoices');
+const paidSpan = document.getElementById('paid-total');
+const unpaidSpan = document.getElementById('unpaid-total');
+const reloadBtn = document.getElementById('reload-btn');
 
-      res.json({
-        paid: rowPaid.paid,
-        unpaid: rowUnpaid.unpaid
-      });
-    });
-  });
-});
+const form = document.getElementById('invoice-form');
+const resetBtn = document.getElementById('reset-btn');
 
-// نعمل seed ثم نشغّل السيرفر
-seedDatabase(err => {
-  if (err) {
-    console.error('فشل تهيئة قاعدة البيانات، لن يتم تشغيل السيرفر.');
-    process.exit(1);
+function formatIQD(val) {
+  return Number(val || 0).toLocaleString('en-US');
+}
+
+async function loadStats() {
+  paidSpan.textContent = '…';
+  unpaidSpan.textContent = '…';
+  try {
+    const res = await fetch('/api/stats');
+    const data = await res.json();
+    paidSpan.textContent = formatIQD(data.paid);
+    unpaidSpan.textContent = formatIQD(data.unpaid);
+  } catch (e) {
+    console.error(e);
+    paidSpan.textContent = 'خطأ';
+    unpaidSpan.textContent = 'خطأ';
   }
+}
 
-  app.listen(PORT, () => {
-    console.log(`✓ السيرفر يعمل الآن على http://localhost:${PORT}`);
-    console.log('Endpoints:');
-    console.log('  GET /api/invoices  -> كل الفواتير');
-    console.log('  GET /api/stats     -> مجاميع المدفوع وغير المدفوع');
-  });
+async function loadInvoices() {
+  tbody.innerHTML = '<tr><td colspan="10" class="text-center">جاري التحميل...</td></tr>';
+  try {
+    const res = await fetch('/api/invoices');
+    const data = await res.json();
+    if (!Array.isArray(data) || !data.length) {
+      tbody.innerHTML = '<tr><td colspan="10" class="text-center">لا توجد بيانات</td></tr>';
+      return;
+    }
+    tbody.innerHTML = '';
+    data.forEach((inv, idx) => {
+      const tr = document.createElement('tr');
+      const statusClass = String(inv.status).toLowerCase().startsWith('paid')
+        ? 'status-paid'
+        : 'status-unpaid';
+      tr.innerHTML = \`
+        <td>\${idx + 1}</td>
+        <td>\${inv.po}</td>
+        <td>\${inv.invoice_no}</td>
+        <td>\${inv.date}</td>
+        <td style="min-width:220px">\${inv.description}</td>
+        <td>\${inv.unit}</td>
+        <td>\${inv.qty}</td>
+        <td>\${formatIQD(inv.totalNumber)}</td>
+        <td class="\${statusClass}">\${inv.status}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-1" onclick="editInvoice(\${inv.id})">تعديل</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteInvoice(\${inv.id})">حذف</button>
+        </td>
+      \`;
+      tbody.appendChild(tr);
+    });
+  } catch (e) {
+    console.error(e);
+    tbody.innerHTML = '<tr><td colspan="10" class="text-center text-danger">فشل تحميل البيانات</td></tr>';
+  }
+}
+
+async function deleteInvoice(id) {
+  if (!confirm('هل أنت متأكد من حذف الفاتورة؟')) return;
+  try {
+    const res = await fetch('/api/invoices/' + id, { method: 'DELETE' });
+    if (!res.ok) throw new Error('خطأ في الحذف');
+    await loadInvoices();
+    await loadStats();
+  } catch (e) {
+    alert('فشل حذف الفاتورة');
+  }
+}
+
+async function editInvoice(id) {
+  try {
+    const res = await fetch('/api/invoices/' + id);
+    const inv = await res.json();
+    document.getElementById('id').value = inv.id;
+    document.getElementById('po').value = inv.po;
+    document.getElementById('invoice_no').value = inv.invoice_no;
+    document.getElementById('date').value = inv.date;
+    document.getElementById('status').value = inv.status;
+    document.getElementById('duration_from').value = inv.duration_from || '';
+    document.getElementById('duration_to').value = inv.duration_to || '';
+    document.getElementById('description').value = inv.description || '';
+    document.getElementById('unit').value = inv.unit || '';
+    document.getElementById('qty').value = inv.qty || '';
+    document.getElementById('invoice_amount').value = inv.invoice_amount || '';
+    document.getElementById('total').value = inv.total || '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch (e) {
+    alert('فشل تحميل الفاتورة للتعديل');
+  }
+}
+
+resetBtn.addEventListener('click', () => {
+  form.reset();
+  document.getElementById('id').value = '';
+});
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const payload = {
+    po: document.getElementById('po').value,
+    invoice_no: document.getElementById('invoice_no').value,
+    date: document.getElementById('date').value,
+    status: document.getElementById('status').value,
+    duration_from: document.getElementById('duration_from').value,
+    duration_to: document.getElementById('duration_to').value,
+    description: document.getElementById('description').value,
+    unit: document.getElementById('unit').value,
+    qty: Number(document.getElementById('qty').value || 0),
+    invoice_amount: document.getElementById('invoice_amount').value,
+    total: document.getElementById('total').value
+  };
+  const id = document.getElementById('id').value;
+  try {
+    if (id) {
+      await fetch('/api/invoices/' + id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      await fetch('/api/invoices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+    form.reset();
+    document.getElementById('id').value = '';
+    await loadInvoices();
+    await loadStats();
+  } catch (e) {
+    alert('فشل حفظ الفاتورة');
+  }
+});
+
+reloadBtn.addEventListener('click', async () => {
+  await loadInvoices();
+  await loadStats();
+});
+
+loadInvoices();
+loadStats();
+</script>
+</body>
+</html>
+  `);
+});
+
+// =======================
+// 4) REST API للفواتير
+// =======================
+
+// كل الفواتير
+app.get('/api/invoices', (req, res) => {
+  const withNumbers = invoices.map(inv => ({
+    ...inv,
+    totalNumber: parseMoney(inv.total)
+  }));
+  res.json(withNumbers);
+});
+
+// فاتورة واحدة
+app.get('/api/invoices/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const inv = invoices.find(i => i.id === id);
+  if (!inv) return res.status(404).json({ error: 'Not found' });
+  res.json(inv);
+});
+
+// إضافة فاتورة
+app.post('/api/invoices', (req, res) => {
+  const body = req.body || {};
+  const newId = invoices.length ? Math.max(...invoices.map(i => i.id)) + 1 : 1;
+  const inv = {
+    id: newId,
+    po: body.po || '',
+    invoice_no: body.invoice_no || '',
+    date: body.date || '',
+    description: body.description || '',
+    duration_from: body.duration_from || '',
+    duration_to: body.duration_to || '',
+    unit: body.unit || '',
+    qty: Number(body.qty || 0),
+    invoice_amount: body.invoice_amount || '',
+    total: body.total || '',
+    status: body.status || 'Unpaid'
+  };
+  invoices.push(inv);
+  saveInvoices();
+  res.status(201).json(inv);
+});
+
+// تعديل فاتورة
+app.put('/api/invoices/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const idx = invoices.findIndex(i => i.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+
+  const body = req.body || {};
+  invoices[idx] = {
+    ...invoices[idx],
+    po: body.po ?? invoices[idx].po,
+    invoice_no: body.invoice_no ?? invoices[idx].invoice_no,
+    date: body.date ?? invoices[idx].date,
+    description: body.description ?? invoices[idx].description,
+    duration_from: body.duration_from ?? invoices[idx].duration_from,
+    duration_to: body.duration_to ?? invoices[idx].duration_to,
+    unit: body.unit ?? invoices[idx].unit,
+    qty: body.qty != null ? Number(body.qty) : invoices[idx].qty,
+    invoice_amount: body.invoice_amount ?? invoices[idx].invoice_amount,
+    total: body.total ?? invoices[idx].total,
+    status: body.status ?? invoices[idx].status
+  };
+  saveInvoices();
+  res.json(invoices[idx]);
+});
+
+// حذف فاتورة
+app.delete('/api/invoices/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const idx = invoices.findIndex(i => i.id === id);
+  if (idx === -1) return res.status(404).json({ error: 'Not found' });
+  const removed = invoices.splice(idx, 1)[0];
+  saveInvoices();
+  res.json(removed);
+});
+
+// إحصائيات
+app.get('/api/stats', (req, res) => {
+  res.json(calculateStats());
+});
+
+// =======================
+// 5) تشغيل السيرفر
+// =======================
+app.listen(PORT, () => {
+  console.log(`✅ السيرفر يعمل على: http://localhost:${PORT}`);
+  console.log('- واجهة الويب: GET /');
+  console.log('- كل الفواتير: GET /api/invoices');
+  console.log('- فاتورة واحدة: GET /api/invoices/:id');
+  console.log('- إضافة فاتورة: POST /api/invoices');
+  console.log('- تعديل فاتورة: PUT /api/invoices/:id');
+  console.log('- حذف فاتورة: DELETE /api/invoices/:id');
+  console.log('- الإحصائيات: GET /api/stats');
 });
