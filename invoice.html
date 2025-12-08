@@ -1091,7 +1091,7 @@
         }
       });
 
-      // تفويض أحداث جدول الفواتير (تعديل / حذف / فتح من الصف)
+      // تفويض أحداث جدول الفواتير
       var tbody = $("invoice-table-body");
       if(tbody){
         tbody.addEventListener("click", function(e){
@@ -1114,7 +1114,7 @@
         });
       }
 
-      // تفويض أحداث جدول التقرير داخل الـ Modal
+      // تفويض أحداث جدول التقرير داخل المودال
       var reportBody = $("report-body");
       if(reportBody){
         reportBody.addEventListener("click", function(e){
@@ -1190,10 +1190,11 @@
       }
     }
 
-    // (اختياري) إتاحة بعض الدوال في window – ليس ضروريًا الآن لكن لا يضر
+    // توفير بعض الدوال في window (اختياري)
     window.createNewInvoice   = createNewInvoice;
     window.openInvoiceSelector= openInvoiceSelector;
 
+    // تشغيل التهيئة عند تحميل الصفحة + إنشاء فاتورة جديدة إذا لا توجد فواتير
     window.addEventListener("DOMContentLoaded", function(){
       setupEvents();
       loadInvoices();
@@ -1202,6 +1203,11 @@
       highlightCard("total");
       renderDashboard();
       renderReport();
+
+      // إذا لا توجد أي فاتورة مخزنة، أنشئ فاتورة جديدة فورًا
+      if (!invoices.length) {
+        createNewInvoice();
+      }
     });
   </script>
 </body>
