@@ -8,17 +8,15 @@
 
     function normalizeInvoice(inv){
       if(!inv) return inv;
-      // Ensure ID
       if(!inv.id){
         inv.id = generateId ? generateId() : (Date.now().toString());
       }
-      // Normalize status to expected enum
       const raw = (inv.status == null ? "draft" : String(inv.status)).toLowerCase().trim();
       if(raw === "paid" || raw === "unpaid" || raw === "overdue" || raw === "draft"){
         inv.status = raw;
-      } else if(raw === "partially_paid" || raw === "partial"){
+      }else if(raw === "partially_paid" || raw === "partial"){
         inv.status = "unpaid";
-      } else {
+      }else{
         inv.status = "draft";
       }
       return inv;
@@ -346,9 +344,9 @@
         "updatedAt": "2024-08-01T00:00:00.000Z"
       },
 
-      /*  ⚠️ هنا باقي seedInvoices كما كانت في ملفك
-          تركتها بدون تغيير لأن حجمها كبير جداً.
-          فقط تأكد أن البلوك كامل من أول seedInvoices إلى آخر عنصر كما في ملفك الحالي.
+      /*  ⚠️ هنا باقي seedInvoices كما في ملفك الأصلي
+          تأكد فقط أنك تُكمِل نفس البيانات حتى آخر فاتورة،
+          لأنّ حجمها كبير جدًا فلا أكررها كلها هنا.
       */
 
     ];
@@ -512,28 +510,18 @@
       renderReport();
     }
 
-function showDashboard() {
-  const dash = $("dashboard");
-  const editor = $("editor");
-
-  if (dash) dash.style.display = "";
-  if (editor) editor.style.display = "none";
-}
-
-function showEditor() {
-  const dash = $("dashboard");
-  const editor = $("editor");
-
-  if (dash) dash.style.display = "none";
-  if (editor) editor.style.display = "";
-}
-function showEditor() {
-  const dash = $("dashboard");
-  const editor = $("editor");
-
-  if (dash) dash.style.display = "none";
-  if (editor) editor.style.display = "";
-}
+    function showDashboard() {
+      const dash = $("dashboard");
+      const editor = $("editor");
+      if (dash) dash.style.display = "";
+      if (editor) editor.style.display = "none";
+    }
+    function showEditor() {
+      const dash = $("dashboard");
+      const editor = $("editor");
+      if (dash) dash.style.display = "none";
+      if (editor) editor.style.display = "";
+    }
 
     function createNewInvoice(){
       currentId = null;
@@ -760,57 +748,55 @@ function showEditor() {
       invoices = seedInvoices.slice().map(normalizeInvoice);
       currentId = null;
       saveInvoices();
+      showDashboard();
+      alert("System reset ✅");
     }
 
-function setupEvents(){
-  const btnNew = $("btn-new");
-  if (btnNew) btnNew.addEventListener("click", createNewInvoice);
+    function setupEvents(){
+      const bDash = $("btn-dashboard"); if(bDash) bDash.addEventListener("click", ()=>{showDashboard();highlightCard("total");});
+      const bRep  = $("btn-report");    if(bRep)  bRep.addEventListener("click", ()=>{highlightCard("report");const mb=$("modal-backdrop");if(mb)mb.style.display="flex";renderReport();});
+      const bBack = $("btn-back");      if(bBack) bBack.addEventListener("click", showDashboard);
+      const bPr   = $("btn-print");     if(bPr)   bPr.addEventListener("click", ()=>window.print());
+      const bSave = $("btn-save");      if(bSave) bSave.addEventListener("click", saveCurrentInvoice);
+      const bDel  = $("btn-delete");    if(bDel)  bDel.addEventListener("click", deleteInvoiceById);
+      const bDup  = $("btn-duplicate"); if(bDup)  bDup.addEventListener("click", ()=>{ /* duplicate logic لو حاب تضيفه لاحقًا */ });
+      const bExp  = $("btn-export");    if(bExp)  bExp.addEventListener("click", exportCsv);
+      const bSJ   = $("btn-save-json"); if(bSJ)   bSJ.addEventListener("click", exportJson);
+      const bLJ   = $("btn-load-json"); if(bLJ)   bLJ.addEventListener("click", ()=>$("json-file-input")?.click());
+      const bRes  = $("btn-reset");     if(bRes)  bRes.addEventListener("click", resetSystem);
 
-  const btnSave = $("btn-save");
-  if (btnSave) btnSave.addEventListener("click", saveCurrentInvoice);
+      const fileInput = $("json-file-input");
+      if(fileInput) fileInput.addEventListener("change", e=>{
+        const file = e.target.files[0];
+        if(file) importJsonFromFile(file);
+        e.target.value = "";
+      });
 
-  const btnBack = $("btn-back");
-  if (btnBack) btnBack.addEventListener("click", showDashboard);
+      const poSel = $("po-filter");
+      if(poSel) poSel.addEventListener("change", e=>{
+        currentPoFilter = e.target.value;
+        renderDashboard();
+      });
 
-  const btnPrint = $("btn-print");
-  if (btnPrint) btnPrint.addEventListener("click", () => window.print());
+      document.querySelectorAll(".status-pill").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
+          btn.classList.add("active");
+          currentFilter = btn.dataset.filter;
+          specialFilter = "none";
+          renderDashboard();
+        });
+      });
 
-  const bJson = $("btn-save-json");
-  if (bJson) bJson.addEventListener("click", exportJson);
-
-  const bExp  = $("btn-export");
-  if (bExp)  bExp.addEventListener("click", exportCsv);
-
-  const bLJ   = $("btn-load-json");
-  if (bLJ)   bLJ.addEventListener("click", () => $("json-file-input")?.click());
-
-  const bRes  = $("btn-reset");
-  if (bRes)  bRes.addEventListener("click", resetSystem);
-
-  const fileInput = $("json-file-input");
-  if (fileInput) fileInput.addEventListener("change", e => {
-    const file = e.target.files[0];
-    if (file) importJsonFromFile(file);
-    e.target.value = "";
-  });
-
-  const poSel = $("po-filter");
-  if (poSel) poSel.addEventListener("change", e => {
-    currentPoFilter = e.target.value;
-    renderDashboard();
-  });
-
-  document.querySelectorAll(".status-pill").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".status-pill").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      currentFilter = btn.dataset.filter;
-      specialFilter = "none";
-      renderDashboard();
-    });
-  });
-}
-
+      document.querySelectorAll(".stat-card").forEach(card=>{
+        card.addEventListener("click", ()=>{
+          const type = card.dataset.type;
+          specialFilter = type==="due"?"due-soon" : type==="high"?"high-value":"none";
+          highlightCard(type);
+          renderDashboard();
+        });
+      });
+    }
 
     function highlightCard(type){
       document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
@@ -818,25 +804,22 @@ function setupEvents(){
       if(el) el.classList.add("active");
     }
 
-    // Make functions available for onclick even if something fails
     window.createNewInvoice = createNewInvoice;
     window.editInvoice      = editInvoice;
     window.deleteInvoiceById= deleteInvoiceById;
 
-function init() {
-  setupEvents();
-  loadInvoices();
-  renderPoFilterOptions();
-  showDashboard();
-  highlightCard("total");
-  renderDashboard();
-  renderReport();
-}
-
-// تأكد أن الـ DOM جاهز قبل استدعاء init
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", init);
-} else {
-  init();
-}
-  </script>
+    function init(){
+      setupEvents();
+      loadInvoices();
+      renderPoFilterOptions();
+      showDashboard();
+      highlightCard("total");
+      renderDashboard();
+      renderReport();
+    }
+    if(document.readyState === "loading"){
+      document.addEventListener("DOMContentLoaded", init);
+    }else{
+      init();
+    }
+</script>
