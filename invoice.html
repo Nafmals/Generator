@@ -1,22 +1,246 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" data-theme="navy-dark">
 <head>
   <meta charset="UTF-8">
   <title>Nafithat – Advanced Invoice Manager (Local)</title>
   <style>
     * { box-sizing: border-box; }
+
+    /* ========= THEME VARIABLES ========= */
+    :root {
+      /* default values (navy-dark) */
+      --bg: #050816;
+      --text: #f9fafb;
+      --subtext: #9ca3af;
+      --topbar-bg: #050816;
+      --card-bg: radial-gradient(circle at top, #111827 0%, #020617 60%);
+      --card-border: rgba(148,163,184,0.25);
+      --shadow: 0 12px 25px rgba(15,23,42,0.7);
+
+      --surface-soft: rgba(15,23,42,0.7);
+      --surface-alt: rgba(15,23,42,0.9);
+      --border-soft: rgba(148,163,184,0.25);
+      --border-strong: rgba(55,65,81,0.9);
+
+      --input-bg: rgba(15,23,42,0.9);
+      --input-border: rgba(148,163,184,0.7);
+
+      --accent: #4f46e5;
+      --accent-soft: rgba(79,70,229,0.2);
+      --accent-ghost: rgba(249,250,251,0.05);
+
+      --danger: #b91c1c;
+      --danger-soft: #fee2e2;
+
+      --table-header-bg: rgba(15,23,42,0.9);
+      --table-row-hover: rgba(15,23,42,0.7);
+
+      --badge-paid-bg: #dcfce7;
+      --badge-paid-text: #166534;
+      --badge-unpaid-bg: #ffedd5;
+      --badge-unpaid-text: #9a3412;
+      --badge-overdue-bg: #fee2e2;
+      --badge-overdue-text: #b91c1c;
+      --badge-draft-bg: #e5e7eb;
+      --badge-draft-text: #374151;
+    }
+
+    /* Navy Dark (default) */
+    :root[data-theme="navy-dark"] {
+      --bg: #050816;
+      --text: #f9fafb;
+      --subtext: #9ca3af;
+      --topbar-bg: #050816;
+      --card-bg: radial-gradient(circle at top, #111827 0%, #020617 60%);
+      --card-border: rgba(148,163,184,0.25);
+      --shadow: 0 12px 25px rgba(15,23,42,0.7);
+      --surface-soft: rgba(15,23,42,0.7);
+      --surface-alt: rgba(15,23,42,0.9);
+      --border-soft: rgba(148,163,184,0.25);
+      --border-strong: rgba(55,65,81,0.9);
+      --input-bg: rgba(15,23,42,0.9);
+      --input-border: rgba(148,163,184,0.7);
+      --accent: #4f46e5;
+      --accent-soft: rgba(79,70,229,0.2);
+      --accent-ghost: rgba(249,250,251,0.05);
+      --danger: #b91c1c;
+      --danger-soft: #fee2e2;
+      --table-header-bg: rgba(15,23,42,0.9);
+      --table-row-hover: rgba(15,23,42,0.7);
+    }
+
+    /* Midnight Teal */
+    :root[data-theme="midnight-teal"] {
+      --bg: #020617;
+      --text: #e5f9ff;
+      --subtext: #7dd3fc;
+      --topbar-bg: #020617;
+      --card-bg: radial-gradient(circle at top, #022c22 0%, #020617 60%);
+      --card-border: rgba(45,212,191,0.35);
+      --shadow: 0 12px 24px rgba(15,23,42,0.8);
+      --surface-soft: rgba(15,23,42,0.7);
+      --surface-alt: rgba(15,23,42,0.95);
+      --border-soft: rgba(45,212,191,0.35);
+      --border-strong: rgba(15,118,110,0.9);
+      --input-bg: rgba(15,23,42,0.95);
+      --input-border: rgba(45,212,191,0.4);
+      --accent: #06b6d4;
+      --accent-soft: rgba(6,182,212,0.25);
+      --accent-ghost: rgba(8,47,73,0.7);
+      --danger: #f97373;
+      --danger-soft: #fee2e2;
+      --table-header-bg: rgba(8,47,73,0.95);
+      --table-row-hover: rgba(15,23,42,0.75);
+      --badge-paid-bg: #bbf7d0;
+      --badge-paid-text: #166534;
+      --badge-unpaid-bg: #fed7aa;
+      --badge-unpaid-text: #9a3412;
+      --badge-overdue-bg: #fecaca;
+      --badge-overdue-text: #b91c1c;
+      --badge-draft-bg: #e5e7eb;
+      --badge-draft-text: #374151;
+    }
+
+    /* Soft Light */
+    :root[data-theme="soft-light"] {
+      --bg: #f3f4f6;
+      --text: #111827;
+      --subtext: #6b7280;
+      --topbar-bg: #ffffff;
+      --card-bg: linear-gradient(135deg,#ffffff,#f9fafb);
+      --card-border: rgba(209,213,219,0.9);
+      --shadow: 0 6px 16px rgba(15,23,42,0.12);
+      --surface-soft: #f3f4f6;
+      --surface-alt: #ffffff;
+      --border-soft: rgba(209,213,219,0.9);
+      --border-strong: rgba(156,163,175,0.9);
+      --input-bg: #ffffff;
+      --input-border: rgba(209,213,219,0.9);
+      --accent: #2563eb;
+      --accent-soft: rgba(37,99,235,0.12);
+      --accent-ghost: rgba(229,231,235,0.7);
+      --danger: #b91c1c;
+      --danger-soft: #fee2e2;
+      --table-header-bg: #e5e7eb;
+      --table-row-hover: #f3f4f6;
+      --badge-paid-bg: #dcfce7;
+      --badge-paid-text: #166534;
+      --badge-unpaid-bg: #ffedd5;
+      --badge-unpaid-text: #9a3412;
+      --badge-overdue-bg: #fee2e2;
+      --badge-overdue-text: #b91c1c;
+      --badge-draft-bg: #e5e7eb;
+      --badge-draft-text: #374151;
+    }
+
+    /* Warm Sand */
+    :root[data-theme="warm-sand"] {
+      --bg: #fdf6e3;
+      --text: #1f2933;
+      --subtext: #7b6f52;
+      --topbar-bg: #f5e6c8;
+      --card-bg: linear-gradient(135deg,#fff7e6,#f5e6c8);
+      --card-border: rgba(226,191,139,0.9);
+      --shadow: 0 6px 16px rgba(120,53,15,0.2);
+      --surface-soft: #faecd8;
+      --surface-alt: #fffaf0;
+      --border-soft: rgba(226,191,139,0.9);
+      --border-strong: rgba(148,81,33,0.9);
+      --input-bg: #fffaf0;
+      --input-border: rgba(226,191,139,0.9);
+      --accent: #d97706;
+      --accent-soft: rgba(217,119,6,0.12);
+      --accent-ghost: rgba(254,243,199,0.9);
+      --danger: #b91c1c;
+      --danger-soft: #fee2e2;
+      --table-header-bg: #f5e6c8;
+      --table-row-hover: #faecd8;
+      --badge-paid-bg: #bbf7d0;
+      --badge-paid-text: #166534;
+      --badge-unpaid-bg: #fed7aa;
+      --badge-unpaid-text: #9a3412;
+      --badge-overdue-bg: #fecaca;
+      --badge-overdue-text: #b91c1c;
+      --badge-draft-bg: #e5e7eb;
+      --badge-draft-text: #374151;
+    }
+
+    /* Graphite */
+    :root[data-theme="graphite"] {
+      --bg: #0b0f19;
+      --text: #e5e7eb;
+      --subtext: #9ca3af;
+      --topbar-bg: #020617;
+      --card-bg: linear-gradient(135deg,#020617,#111827);
+      --card-border: rgba(55,65,81,0.9);
+      --shadow: 0 10px 24px rgba(0,0,0,0.8);
+      --surface-soft: #111827;
+      --surface-alt: #020617;
+      --border-soft: rgba(55,65,81,0.9);
+      --border-strong: rgba(31,41,55,0.9);
+      --input-bg: #020617;
+      --input-border: rgba(75,85,99,0.9);
+      --accent: #f97316;
+      --accent-soft: rgba(249,115,22,0.25);
+      --accent-ghost: rgba(31,41,55,0.8);
+      --danger: #f87171;
+      --danger-soft: #4b1113;
+      --table-header-bg: #020617;
+      --table-row-hover: #111827;
+      --badge-paid-bg: #bbf7d0;
+      --badge-paid-text: #166534;
+      --badge-unpaid-bg: #fed7aa;
+      --badge-unpaid-text: #9a3412;
+      --badge-overdue-bg: #fecaca;
+      --badge-overdue-text: #fecaca;
+      --badge-draft-bg: #e5e7eb;
+      --badge-draft-text: #374151;
+    }
+
+    /* Forest */
+    :root[data-theme="forest"] {
+      --bg: #02130a;
+      --text: #ecfdf5;
+      --subtext: #6ee7b7;
+      --topbar-bg: #022c22;
+      --card-bg: radial-gradient(circle at top,#064e3b 0%,#02130a 60%);
+      --card-border: rgba(34,197,94,0.35);
+      --shadow: 0 10px 24px rgba(5,46,22,0.9);
+      --surface-soft: rgba(6,78,59,0.8);
+      --surface-alt: rgba(6,78,59,0.95);
+      --border-soft: rgba(34,197,94,0.4);
+      --border-strong: rgba(4,120,87,0.9);
+      --input-bg: rgba(6,78,59,0.95);
+      --input-border: rgba(34,197,94,0.45);
+      --accent: #22c55e;
+      --accent-soft: rgba(34,197,94,0.3);
+      --accent-ghost: rgba(22,101,52,0.8);
+      --danger: #f97373;
+      --danger-soft: #fee2e2;
+      --table-header-bg: rgba(6,95,70,0.95);
+      --table-row-hover: rgba(6,78,59,0.85);
+      --badge-paid-bg: #bbf7d0;
+      --badge-paid-text: #166534;
+      --badge-unpaid-bg: #fed7aa;
+      --badge-unpaid-text: #9a3412;
+      --badge-overdue-bg: #fecaca;
+      --badge-overdue-text: #b91c1c;
+      --badge-draft-bg: #e5e7eb;
+      --badge-draft-text: #374151;
+    }
+
+    /* ========= BASE STYLES USING VARIABLES ========= */
+
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      background: #050816;
-      color: #f5f7fa;
-      direction: ltr;
+      background: var(--bg);
+      color: var(--text);
     }
 
-    /* ===== Top Bar ===== */
     .topbar {
-      background: #050816;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: var(--topbar-bg);
+      border-bottom: 1px solid var(--border-soft);
       padding: 10px 20px;
       display: flex;
       align-items: center;
@@ -37,7 +261,7 @@
     }
     .brand-sub {
       font-size: 11px;
-      color: #c0c4ff;
+      color: var(--subtext);
     }
     .topbar-middle {
       display: flex;
@@ -51,42 +275,42 @@
       padding: 6px 14px;
       font-size: 12px;
       cursor: pointer;
-      background: #111827;
-      color: #e5e7eb;
+      background: var(--surface-alt);
+      color: var(--text);
       display: inline-flex;
       align-items: center;
       gap: 6px;
     }
     .pill-btn.active {
-      background: #4f46e5;
+      background: var(--accent);
       color: #fff;
     }
     .pill-btn.ghost {
-      background: rgba(249,250,251,0.05);
+      background: var(--accent-ghost);
     }
     .topbar-right {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
       justify-content: flex-end;
+      align-items: center;
     }
     .pill-btn.danger {
-      background: #fee2e2;
-      color: #b91c1c;
+      background: var(--danger-soft);
+      color: var(--danger);
     }
 
-    /* ===== Layout ===== */
     main {
       padding: 16px 20px 40px;
       max-width: 1200px;
       margin: 0 auto;
     }
     .card {
-      background: radial-gradient(circle at top, #111827 0%, #020617 60%);
+      background: var(--card-bg);
       border-radius: 16px;
       padding: 16px 18px;
-      border: 1px solid rgba(148,163,184,0.2);
-      box-shadow: 0 12px 25px rgba(15,23,42,0.7);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow);
       margin-bottom: 16px;
     }
     .card-header {
@@ -102,10 +326,9 @@
     }
     .card-sub {
       font-size: 12px;
-      color: #9ca3af;
+      color: var(--subtext);
     }
 
-    /* ===== Filters / Search ===== */
     .filters-row {
       display: flex;
       flex-wrap: wrap;
@@ -123,14 +346,14 @@
     .status-pill {
       border-radius: 999px;
       padding: 4px 10px;
-      border: 1px solid rgba(148,163,184,0.6);
-      background: rgba(15,23,42,0.6);
+      border: 1px solid var(--border-soft);
+      background: var(--surface-soft);
       cursor: pointer;
-      color: #e5e7eb;
+      color: var(--text);
     }
     .status-pill.active {
-      background: #4f46e5;
-      border-color: #6366f1;
+      background: var(--accent);
+      border-color: var(--accent);
     }
     .right-filters {
       display: flex;
@@ -138,11 +361,12 @@
       gap: 8px;
       align-items: center;
     }
+
     select, input[type="text"], input[type="number"], input[type="date"], textarea {
       border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.7);
-      background: rgba(15,23,42,0.9);
-      color: #e5e7eb;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: var(--text);
       padding: 5px 10px;
       font-size: 12px;
     }
@@ -155,8 +379,8 @@
       gap: 6px;
       padding: 4px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.7);
-      background: rgba(15,23,42,0.9);
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
       font-size: 12px;
     }
     .search-input input {
@@ -167,7 +391,6 @@
       width: 180px;
     }
 
-    /* ===== Stats ===== */
     .stats-row {
       display: grid;
       grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
@@ -177,12 +400,12 @@
     .stat-card {
       border-radius: 16px;
       padding: 10px 12px;
-      background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,64,175,0.4));
-      border: 1px solid rgba(148,163,184,0.5);
+      background: linear-gradient(135deg, var(--surface-alt), var(--accent-soft));
+      border: 1px solid var(--border-soft);
       font-size: 12px;
     }
     .stat-label {
-      color: #9ca3af;
+      color: var(--subtext);
       margin-bottom: 4px;
     }
     .stat-main {
@@ -191,35 +414,35 @@
     }
     .stat-sub {
       font-size: 11px;
-      color: #cbd5f5;
+      color: var(--subtext);
     }
 
-    /* ===== Table ===== */
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 12px;
     }
     thead {
-      background: rgba(15,23,42,0.9);
+      background: var(--table-header-bg);
     }
     th, td {
       padding: 6px 8px;
-      border-bottom: 1px solid rgba(31,41,55,0.8);
-      text-align: left;          /* LTR */
+      border-bottom: 1px solid var(--border-strong);
+      text-align: left;
       white-space: nowrap;
     }
     th {
-      color: #9ca3af;
+      color: var(--subtext);
       font-weight: 500;
       font-size: 11px;
     }
     tbody tr:hover {
-      background: rgba(15,23,42,0.7);
+      background: var(--table-row-hover);
     }
     .text-muted {
-      color: #9ca3af;
+      color: var(--subtext);
     }
+
     .badge {
       border-radius: 999px;
       padding: 2px 8px;
@@ -227,21 +450,22 @@
       font-weight: 500;
     }
     .badge-paid {
-      background: #dcfce7;
-      color: #166534;
+      background: var(--badge-paid-bg);
+      color: var(--badge-paid-text);
     }
     .badge-unpaid {
-      background: #ffedd5;
-      color: #9a3412;
+      background: var(--badge-unpaid-bg);
+      color: var(--badge-unpaid-text);
     }
     .badge-overdue {
-      background: #fee2e2;
-      color: #b91c1c;
+      background: var(--badge-overdue-bg);
+      color: var(--badge-overdue-text);
     }
     .badge-draft {
-      background: #e5e7eb;
-      color: #374151;
+      background: var(--badge-draft-bg);
+      color: var(--badge-draft-text);
     }
+
     .table-btn {
       border-radius: 999px;
       border: none;
@@ -254,11 +478,10 @@
       color: #1d4ed8;
     }
     .table-btn.del {
-      background: #fee2e2;
-      color: #b91c1c;
+      background: var(--danger-soft);
+      color: var(--danger);
     }
 
-    /* ===== Editor ===== */
     .hidden { display: none; }
 
     .form-grid {
@@ -274,15 +497,9 @@
       font-size: 12px;
     }
     .form-group label {
-      color: #e5e7eb;
+      color: var(--text);
     }
-    .form-group input,
-    .form-group select,
     .form-group textarea {
-      font-size: 12px;
-      border-radius: 10px;
-    }
-    textarea {
       min-height: 60px;
       resize: vertical;
     }
@@ -291,21 +508,18 @@
       margin-top: 10px;
       border-radius: 12px;
       overflow: hidden;
-      border: 1px solid rgba(55,65,81,0.9);
+      border: 1px solid var(--border-strong);
     }
     .items-table th, .items-table td {
-      background: #020617;
-    }
-    .items-table th {
-      background: #020617;
+      background: var(--surface-alt);
     }
     .items-table textarea,
     .items-table input {
       width: 100%;
       border-radius: 6px;
-      border: 1px solid rgba(55,65,81,0.9);
-      background: #020617;
-      color: #e5e7eb;
+      border: 1px solid var(--border-strong);
+      background: var(--input-bg);
+      color: var(--text);
       font-size: 11px;
       padding: 3px 5px;
     }
@@ -328,16 +542,16 @@
       gap: 6px;
     }
     .btn-primary {
-      background: #4f46e5;
+      background: var(--accent);
       color: #fff;
     }
     .btn-secondary {
-      background: rgba(148,163,184,0.15);
-      color: #e5e7eb;
+      background: var(--accent-ghost);
+      color: var(--text);
     }
     .btn-danger {
-      background: #fee2e2;
-      color: #b91c1c;
+      background: var(--danger-soft);
+      color: var(--danger);
     }
 
     @media (max-width: 640px) {
@@ -363,6 +577,16 @@
     <button class="pill-btn" id="tab-report">Invoices Report</button>
   </div>
   <div class="topbar-right">
+    <!-- Theme selector -->
+    <select id="theme-select">
+      <option value="navy-dark">Navy Dark</option>
+      <option value="midnight-teal">Midnight Teal</option>
+      <option value="soft-light">Soft Light</option>
+      <option value="warm-sand">Warm Sand</option>
+      <option value="graphite">Graphite</option>
+      <option value="forest">Forest</option>
+    </select>
+
     <button class="pill-btn ghost" id="btn-new">+ New Invoice</button>
     <button class="pill-btn ghost" id="btn-export">⬇ Excel Report (CSV)</button>
     <button class="pill-btn ghost" id="btn-save-json">💾 Save JSON</button>
@@ -571,8 +795,9 @@
 <input type="file" id="json-file-input" accept="application/json" style="display:none;">
 
 <script>
-  /* نفس السكربت السابق بالضبط – لم أغيّر شيء في المنطق */
   const STORAGE_KEY = "naf_advanced_invoice_local";
+  const THEME_KEY   = "naf_invoice_theme";
+
   let invoices = [];
   let currentId = null;
   let currentFilter = "all";
@@ -727,7 +952,10 @@
   function getStatusBadge(status,inv){
     let cls="badge-draft",txt="Draft";
     if(status==="paid"){cls="badge-paid";txt="Paid";}
-    else if(status==="unpaid"){ cls=isOverdue(inv)?"badge-overdue":"badge-unpaid"; txt=isOverdue(inv)?"Overdue":"Unpaid"; }
+    else if(status==="unpaid"){
+      cls=isOverdue(inv)?"badge-overdue":"badge-unpaid";
+      txt=isOverdue(inv)?"Overdue":"Unpaid";
+    }
     return `<span class="badge ${cls}">${txt}</span>`;
   }
 
@@ -951,6 +1179,19 @@
     saveInvoices();
   }
 
+  /* ==== THEME HANDLING ==== */
+  function applyTheme(name){
+    document.documentElement.setAttribute("data-theme", name);
+    localStorage.setItem(THEME_KEY, name);
+    const sel = $("theme-select");
+    if(sel) sel.value = name;
+  }
+
+  function initTheme(){
+    const stored = localStorage.getItem(THEME_KEY) || "navy-dark";
+    applyTheme(stored);
+  }
+
   function setupEvents(){
     $("tab-dashboard").addEventListener("click",showDashboard);
     $("tab-report").addEventListener("click",showReport);
@@ -1002,11 +1243,14 @@
     $("f-tax").addEventListener("input",recalcTotals);
     $("f-shipping").addEventListener("input",recalcTotals);
 
+    $("theme-select").addEventListener("change", e => applyTheme(e.target.value));
+
     window.editInvoice=editInvoice;
     window.deleteInvoiceById=deleteInvoiceById;
   }
 
   function init(){
+    initTheme();
     setupEvents();
     loadInvoices();
     renderPoFilterOptions();
