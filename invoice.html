@@ -1,825 +1,735 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>نظام الفواتير (بدون قاعدة بيانات)</title>
+  <style>
+    body {
+      font-family: system-ui, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+    }
+    header {
+      background: #1e88e5;
+      color: #fff;
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+    }
+    header .buttons {
+      display: flex;
+      gap: 8px;
+    }
+    .btn {
+      border: none;
+      padding: 6px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-primary { background: #1565c0; color: #fff; }
+    .btn-secondary { background: #eeeeee; }
+    .btn-danger { background: #e53935; color: #fff; }
+    .btn-sm { font-size: 12px; padding: 4px 8px; }
+
+    main {
+      padding: 15px;
+    }
+
+    .hidden { display: none; }
+
+    .card {
+      background: #fff;
+      border-radius: 6px;
+      padding: 10px 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.1);
+      margin-bottom: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px 8px;
+      text-align: right;
+    }
+    th {
+      background: #f0f0f0;
+    }
+
+    .badge {
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      color: #fff;
+    }
+    .badge-paid { background: #43a047; }
+    .badge-unpaid { background: #fb8c00; }
+    .badge-overdue { background: #e53935; }
+    .badge-draft { background: #757575; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .form-group label {
+      font-size: 12px;
+    }
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      font-size: 13px;
+      padding: 4px 6px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 50px;
+    }
+
+    .items-table textarea {
+      width: 100%;
+      min-height: 40px;
+    }
+    .items-table input {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .footer-buttons {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filters-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .status-pill {
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid #ccc;
+      font-size: 12px;
+      background: #f9f9f9;
+      cursor: pointer;
+    }
+    .status-pill.active {
+      background: #1e88e5;
+      color: #fff;
+      border-color: #1e88e5;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>نظام الفواتير – بدون قاعدة بيانات</h1>
+  <div class="buttons">
+    <button class="btn btn-secondary" id="btn-load-json">تحميل JSON</button>
+    <button class="btn btn-secondary" id="btn-save-json">حفظ JSON</button>
+    <button class="btn btn-secondary" id="btn-export">تصدير CSV</button>
+    <button class="btn btn-primary" id="btn-new">فاتورة جديدة</button>
+  </div>
+</header>
+
+<main>
+  <!-- لوحة التحكم -->
+  <section id="dashboard" class="card">
+    <h2 style="margin-top:0;font-size:16px;">قائمة الفواتير</h2>
+
+    <div class="filters-row">
+      <div>
+        <label for="status-filter">حالة الفاتورة:</label>
+        <select id="status-filter">
+          <option value="all">الكل</option>
+          <option value="paid">مدفوعة</option>
+          <option value="unpaid">غير مدفوعة</option>
+          <option value="draft">مسودة</option>
+          <option value="overdue">متأخرة</option>
+        </select>
+      </div>
+      <div>
+        <label for="po-filter">رقم الـ PO:</label>
+        <select id="po-filter">
+          <option value="all">الكل</option>
+        </select>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+      <tr>
+        <th>تاريخ الإصدار</th>
+        <th>تاريخ الاستحقاق</th>
+        <th>رقم الفاتورة</th>
+        <th>رقم الـ PO</th>
+        <th>الحالة</th>
+        <th>الرصيد</th>
+        <th>إجراءات</th>
+      </tr>
+      </thead>
+      <tbody id="invoice-table-body">
+      <!-- يتم تعبئتها بالـ JS -->
+      </tbody>
+    </table>
+  </section>
+
+  <!-- المحرر -->
+  <section id="editor" class="card hidden">
+    <h2 style="margin-top:0;font-size:16px;">
+      تحرير الفاتورة
+      <span id="editor-subtitle" style="font-size:13px;color:#777;"></span>
+    </h2>
+
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="f-number">رقم الفاتورة</label>
+        <input id="f-number" type="text">
+      </div>
+      <div class="form-group">
+        <label for="f-date">تاريخ الإصدار</label>
+        <input id="f-date" type="date">
+      </div>
+      <div class="form-group">
+        <label for="f-due">تاريخ الاستحقاق</label>
+        <input id="f-due" type="date">
+      </div>
+      <div class="form-group">
+        <label for="f-contract">رقم الـ PO / العقد</label>
+        <input id="f-contract" type="text">
+      </div>
+      <div class="form-group">
+        <label for="status-select">حالة الفاتورة</label>
+        <select id="status-select">
+          <option value="draft">مسودة</option>
+          <option value="unpaid">غير مدفوعة</option>
+          <option value="paid">مدفوعة</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-grid" style="margin-top:10px;">
+      <div class="form-group">
+        <label for="f-billto">إلى (Bill To)</label>
+        <textarea id="f-billto"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="f-scope">نطاق العمل / الوصف العام</label>
+        <textarea id="f-scope"></textarea>
+      </div>
+      <div class="form-group">
+        <label for="f-note">ملاحظات إضافية</label>
+        <textarea id="f-note"></textarea>
+      </div>
+    </div>
+
+    <h3 style="margin-top:15px;font-size:14px;">البنود / التفاصيل</h3>
+    <table class="items-table">
+      <thead>
+      <tr>
+        <th>#</th>
+        <th>الوصف</th>
+        <th>الموقع</th>
+        <th>التاريخ</th>
+        <th>الوحدة</th>
+        <th>الكمية</th>
+        <th>السعر</th>
+        <th>الإجمالي</th>
+        <th>حذف</th>
+      </tr>
+      </thead>
+      <tbody id="items-body">
+      <!-- صفوف البنود -->
+      </tbody>
+    </table>
+    <button class="btn btn-secondary btn-sm" type="button" id="btn-add-row" style="margin-top:5px;">+ إضافة بند</button>
+
+    <div class="form-grid" style="margin-top:15px;">
+      <div class="form-group">
+        <label for="f-subtotal">المجموع (قبل الخصم)</label>
+        <input id="f-subtotal" type="text" readonly>
+      </div>
+      <div class="form-group">
+        <label for="f-discount">الخصم</label>
+        <input id="f-discount" type="number" value="0">
+      </div>
+      <div class="form-group">
+        <label for="f-tax">الضريبة %</label>
+        <input id="f-tax" type="number" value="0">
+      </div>
+      <div class="form-group">
+        <label for="f-shipping">الشحن / رسوم إضافية</label>
+        <input id="f-shipping" type="number" value="0">
+      </div>
+      <div class="form-group">
+        <label for="f-balance">الإجمالي النهائي</label>
+        <input id="f-balance" type="text" readonly>
+      </div>
+    </div>
+
+    <div class="footer-buttons">
+      <button class="btn btn-primary" id="btn-save" type="button">حفظ الفاتورة</button>
+      <button class="btn btn-secondary" id="btn-back" type="button">رجوع للقائمة</button>
+      <button class="btn btn-secondary" id="btn-print" type="button">طباعة</button>
+      <button class="btn btn-danger" id="btn-delete" type="button">حذف الفاتورة</button>
+    </div>
+  </section>
+</main>
+
+<!-- حقل تحميل ملف JSON -->
+<input type="file" id="json-file-input" accept="application/json" class="hidden">
+
 <script>
-    const STORAGE_KEY = "naf_invoice_system_advanced_main";
-    let invoices = [];
-    let currentId = null;
-    let currentFilter = "all";
-    let currentPoFilter = "all";
-    let specialFilter = "none";
+  // ====== متغيرات عامة ======
+  let invoices = [];
+  let currentId = null;
+  const STORAGE_KEY = "naf_invoice_no_db"; // حفظ بسيط في المتصفح (اختياري)
 
-    function normalizeInvoice(inv){
-      if(!inv) return inv;
-      if(!inv.id){
-        inv.id = generateId ? generateId() : (Date.now().toString());
-      }
-      const raw = (inv.status == null ? "draft" : String(inv.status)).toLowerCase().trim();
-      if(raw === "paid" || raw === "unpaid" || raw === "overdue" || raw === "draft"){
-        inv.status = raw;
-      }else if(raw === "partially_paid" || raw === "partial"){
-        inv.status = "unpaid";
-      }else{
-        inv.status = "draft";
-      }
-      return inv;
+  // ====== دوال مساعدة ======
+  function $(id) { return document.getElementById(id); }
+
+  function todayStr(){
+    const d = new Date();
+    return d.toISOString().slice(0,10);
+  }
+
+  function generateId(){
+    return "inv-" + Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
+  }
+
+  function formatIQD(num){
+    if(isNaN(num)) num = 0;
+    return "IQD " + Number(num).toLocaleString("en-US", {maximumFractionDigits:0});
+  }
+
+  function parseNumber(v){
+    if(typeof v !== "string") v = String(v || "");
+    return Number(v.replace(/[^\d.-]/g,"")) || 0;
+  }
+
+  function normalizeInvoice(inv){
+    if(!inv) return inv;
+    if(!inv.id) inv.id = generateId();
+
+    const raw = (inv.status == null ? "draft" : String(inv.status)).toLowerCase().trim();
+    if(["paid","unpaid","overdue","draft"].includes(raw)){
+      inv.status = raw;
+    } else {
+      inv.status = "draft";
     }
+    if(!Array.isArray(inv.items)) inv.items = [];
+    return inv;
+  }
 
-    // Invoices seeded from Excel (Book1.xlsx)
-    const seedInvoices = [
-      {
-        "id": "CP-INV00001",
-        "number": "CP-INV00001",
-        "issueDate": "2024-03-01",
-        "dueDate": "2024-04-30",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-03-01",
-            "unit": "Lot",
-            "qty": 1,
-            "price": 5500000
-          }
-        ],
-        "subtotal": 5500000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 5500000,
-        "status": "paid",
-        "createdAt": "2024-03-01T00:00:00.000Z",
-        "updatedAt": "2024-03-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00001-APR",
-        "number": "CP-INV00001",
-        "issueDate": "2024-04-01",
-        "dueDate": "2024-04-30",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-04-01",
-            "unit": "Lot",
-            "qty": 1,
-            "price": 5500000
-          }
-        ],
-        "subtotal": 5500000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 5500000,
-        "status": "paid",
-        "createdAt": "2024-04-01T00:00:00.000Z",
-        "updatedAt": "2024-04-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00002-1",
-        "number": "CP-INV00002",
-        "issueDate": "2024-03-01",
-        "dueDate": "2024-03-31",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Diesel Fuel for Generators POD 4",
-            "location": "",
-            "date": "2024-03-01",
-            "unit": "Liters",
-            "qty": 2890,
-            "price": 750
-          }
-        ],
-        "subtotal": 2167500,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 2167500,
-        "status": "paid",
-        "createdAt": "2024-03-01T00:00:00.000Z",
-        "updatedAt": "2024-03-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00002-2",
-        "number": "CP-INV00002",
-        "issueDate": "2024-04-01",
-        "dueDate": "2024-04-30",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Diesel Fuel for Generators POD 6",
-            "location": "",
-            "date": "2024-04-01",
-            "unit": "Liters",
-            "qty": 1100,
-            "price": 750
-          }
-        ],
-        "subtotal": 825000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 825000,
-        "status": "paid",
-        "createdAt": "2024-04-01T00:00:00.000Z",
-        "updatedAt": "2024-04-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00002-3",
-        "number": "CP-INV00002",
-        "issueDate": "2024-06-01",
-        "dueDate": "2024-06-15",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Diesel Fuel for Generators POD 7",
-            "location": "",
-            "date": "2024-06-01",
-            "unit": "Liters",
-            "qty": 1000,
-            "price": 750
-          }
-        ],
-        "subtotal": 750000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 750000,
-        "status": "paid",
-        "createdAt": "2024-06-01T00:00:00.000Z",
-        "updatedAt": "2024-06-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00002-4",
-        "number": "CP-INV00002",
-        "issueDate": "2024-06-15",
-        "dueDate": "2024-06-30",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Diesel Fuel for Generators POD 8",
-            "location": "",
-            "date": "2024-06-15",
-            "unit": "Liters",
-            "qty": 2000,
-            "price": 750
-          }
-        ],
-        "subtotal": 1500000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 1500000,
-        "status": "paid",
-        "createdAt": "2024-06-15T00:00:00.000Z",
-        "updatedAt": "2024-06-15T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00002-5",
-        "number": "CP-INV00002",
-        "issueDate": "2024-07-01",
-        "dueDate": "2024-07-18",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Diesel Fuel for Generators POD 9",
-            "location": "",
-            "date": "2024-07-01",
-            "unit": "Liters",
-            "qty": 2100,
-            "price": 750
-          }
-        ],
-        "subtotal": 1575000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 1575000,
-        "status": "paid",
-        "createdAt": "2024-07-01T00:00:00.000Z",
-        "updatedAt": "2024-07-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00003",
-        "number": "CP-INV00003",
-        "issueDate": "2024-05-01",
-        "dueDate": "2024-05-31",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-05-01",
-            "unit": "Lot",
-            "qty": 1,
-            "price": 5500000
-          }
-        ],
-        "subtotal": 5500000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 5500000,
-        "status": "paid",
-        "createdAt": "2024-05-01T00:00:00.000Z",
-        "updatedAt": "2024-05-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00004",
-        "number": "CP-INV00004",
-        "issueDate": "2024-06-01",
-        "dueDate": "2024-06-30",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-06-01",
-            "unit": "Lot",
-            "qty": 1,
-            "price": 5500000
-          }
-        ],
-        "subtotal": 5500000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 5500000,
-        "status": "paid",
-        "createdAt": "2024-06-01T00:00:00.000Z",
-        "updatedAt": "2024-06-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00005",
-        "number": "CP-INV00005",
-        "issueDate": "2024-07-01",
-        "dueDate": "2024-07-31",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-07-01",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          }
-        ],
-        "subtotal": 6750000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 6750000,
-        "status": "paid",
-        "createdAt": "2024-07-01T00:00:00.000Z",
-        "updatedAt": "2024-07-01T00:00:00.000Z"
-      },
-      {
-        "id": "CP-INV00006",
-        "number": "CP-INV00006",
-        "issueDate": "2024-08-01",
-        "dueDate": "2024-08-31",
-        "contract": "PO00023",
-        "billTo": "",
-        "customerName": "",
-        "scope": "",
-        "note": "",
-        "items": [
-          {
-            "desc": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.",
-            "location": "",
-            "date": "2024-08-01",
-            "unit": "Lot",
-            "qty": 2,
-            "price": 3375000
-          }
-        ],
-        "subtotal": 6750000,
-        "discount": 0,
-        "taxPerc": 0,
-        "shipping": 0,
-        "balance": 6750000,
-        "status": "paid",
-        "createdAt": "2024-08-01T00:00:00.000Z",
-        "updatedAt": "2024-08-01T00:00:00.000Z"
-      },
+  // ====== عناصر البنود ======
+  function createItemRow(data = {}){
+    const tr = document.createElement("tr");
+    tr.className = "item-row";
+    tr.innerHTML = `
+      <td class="no-cell"></td>
+      <td><textarea class="cell-desc">${data.desc || ""}</textarea></td>
+      <td><input class="cell-loc" value="${data.location || ""}"></td>
+      <td><input class="cell-date" value="${data.date || ""}"></td>
+      <td><input class="cell-unit" value="${data.unit || ""}"></td>
+      <td><input class="cell-qty" type="number" min="0" step="0.01" value="${data.qty != null ? data.qty : 1}"></td>
+      <td><input class="cell-price" type="number" min="0" step="0.01" value="${data.price != null ? data.price : 0}"></td>
+      <td><input class="cell-total" type="text" readonly></td>
+      <td><button type="button" class="btn btn-sm btn-danger btn-remove-row">✕</button></td>
+    `;
 
-      /*  ⚠️ هنا باقي seedInvoices كما في ملفك الأصلي
-          تأكد فقط أنك تُكمِل نفس البيانات حتى آخر فاتورة،
-          لأنّ حجمها كبير جدًا فلا أكررها كلها هنا.
-      */
+    tr.querySelector(".cell-qty").addEventListener("input", ()=>recalcTotals());
+    tr.querySelector(".cell-price").addEventListener("input", ()=>recalcTotals());
+    tr.querySelector(".btn-remove-row").addEventListener("click", ()=>{
+      tr.remove();
+      updateRowNumbers();
+      recalcTotals();
+    });
 
-    ];
+    return tr;
+  }
 
-    function $(id){ return document.getElementById(id); }
+  function updateRowNumbers(){
+    const rows = document.querySelectorAll("#items-body .item-row");
+    rows.forEach((tr,idx)=>{
+      const cell = tr.querySelector(".no-cell");
+      if(cell) cell.textContent = idx+1;
+    });
+  }
 
-    function todayStr(){
-      const d = new Date();
-      return d.toISOString().slice(0,10);
-    }
-
-    function generateId(){
-      return "inv-" + Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
-    }
-
-    function formatIQD(num){
-      if(isNaN(num)) num = 0;
-      return "IQD " + num.toLocaleString("en-US", {maximumFractionDigits:0});
-    }
-
-    function parseNumber(v){ if(typeof v!=="string") v=String(v||""); return Number(v.replace(/[^\d.-]/g,"")) || 0; }
-
-    function createItemRow(data={}){
-      const tr = document.createElement("tr");
-      tr.className = "item-row";
-      tr.innerHTML = `
-        <td class="no-cell"></td>
-        <td><textarea class="cell-textarea cell-desc">${data.desc || ""}</textarea></td>
-        <td><input class="cell-input cell-loc" value="${data.location || ""}"></td>
-        <td><input class="cell-input cell-date" value="${data.date || ""}"></td>
-        <td><input class="cell-input cell-unit" value="${data.unit || ""}"></td>
-        <td><input class="cell-input cell-qty" type="number" min="0" step="0.01" value="${data.qty != null ? data.qty : 1}"></td>
-        <td><input class="cell-input cell-price" type="number" min="0" step="0.01" value="${data.price != null ? data.price : 0}"></td>
-        <td><input class="cell-input cell-total" type="text" value=""></td>
-        <td><button type="button" class="btn btn-sm btn-danger btn-remove-row">✕</button></td>
-      `;
-      tr.querySelector(".cell-qty").addEventListener("input", ()=>recalcRow(tr));
-      tr.querySelector(".cell-price").addEventListener("input", ()=>recalcRow(tr));
-      tr.querySelector(".btn-remove-row").addEventListener("click", ()=>{
-        tr.remove();
-        updateRowNumbers();
-        recalcTotals();
-      });
-      recalcRow(tr);
-      return tr;
-    }
-
-    function updateRowNumbers(){
-      const rows = document.querySelectorAll("#items-body .item-row");
-      rows.forEach((tr,idx)=>{
-        const cell = tr.querySelector(".no-cell");
-        if(cell) cell.textContent = idx+1;
-      });
-    }
-
-    function recalcRow(tr){
+  function recalcTotals(){
+    const rows = document.querySelectorAll("#items-body .item-row");
+    let subtotal = 0;
+    rows.forEach(tr => {
       const qty = parseNumber(tr.querySelector(".cell-qty").value);
       const price = parseNumber(tr.querySelector(".cell-price").value);
       const total = qty * price;
       tr.querySelector(".cell-total").value = formatIQD(total);
-      return total;
+      subtotal += total;
+    });
+
+    const discount = parseNumber($("f-discount").value);
+    const taxPerc  = parseNumber($("f-tax").value);
+    const shipping = parseNumber($("f-shipping").value);
+
+    const subLess = subtotal - discount;
+    const taxVal  = subLess * (taxPerc/100);
+    const balance = subLess + taxVal + shipping;
+
+    $("f-subtotal").value = formatIQD(subtotal);
+    $("f-balance").value  = formatIQD(balance);
+  }
+
+  // ====== قراءة/تعبئة النموذج ======
+  function readForm(inv){
+    inv.number      = $("f-number").value.trim();
+    inv.issueDate   = $("f-date").value.trim();
+    inv.dueDate     = $("f-due").value.trim();
+    inv.contract    = $("f-contract").value.trim();
+    inv.billTo      = $("f-billto").value.trim();
+    inv.scope       = $("f-scope").value.trim();
+    inv.note        = $("f-note").value.trim();
+    inv.status      = $("status-select").value;
+
+    const firstLine = inv.billTo.split("\n")[0] || "";
+    inv.customerName = firstLine;
+
+    const rows = document.querySelectorAll("#items-body .item-row");
+    inv.items = Array.from(rows).map(tr=>({
+      desc:     tr.querySelector(".cell-desc").value.trim(),
+      location: tr.querySelector(".cell-loc").value.trim(),
+      date:     tr.querySelector(".cell-date").value.trim(),
+      unit:     tr.querySelector(".cell-unit").value.trim(),
+      qty:      parseNumber(tr.querySelector(".cell-qty").value),
+      price:    parseNumber(tr.querySelector(".cell-price").value)
+    }));
+
+    inv.discount = parseNumber($("f-discount").value);
+    inv.taxPerc  = parseNumber($("f-tax").value);
+    inv.shipping = parseNumber($("f-shipping").value);
+
+    inv.subtotal = parseNumber($("f-subtotal").value);
+    inv.balance  = parseNumber($("f-balance").value);
+
+    normalizeInvoice(inv);
+  }
+
+  function fillForm(inv){
+    $("f-number").value   = inv.number || "";
+    $("f-date").value     = inv.issueDate || todayStr();
+    $("f-due").value      = inv.dueDate || "";
+    $("f-contract").value = inv.contract || "";
+    $("f-billto").value   = inv.billTo || "";
+    $("f-scope").value    = inv.scope || "";
+    $("f-note").value     = inv.note || "";
+    $("status-select").value = inv.status || "draft";
+
+    const body = $("items-body");
+    body.innerHTML = "";
+    const items = inv.items && inv.items.length ? inv.items : [ {}, {}, {}, {} ];
+    items.forEach(it => {
+      const row = createItemRow(it);
+      body.appendChild(row);
+    });
+    updateRowNumbers();
+
+    $("f-discount").value = inv.discount != null ? inv.discount : 0;
+    $("f-tax").value      = inv.taxPerc  != null ? inv.taxPerc  : 0;
+    $("f-shipping").value = inv.shipping != null ? inv.shipping : 0;
+
+    recalcTotals();
+    $("editor-subtitle").textContent = inv.number ? `(${inv.number})` : "";
+  }
+
+  // ====== الحفظ/التحميل البسيط (داخل المتصفح فقط) ======
+  function loadFromLocalStorage(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      const arr = JSON.parse(raw);
+      if(Array.isArray(arr)) invoices = arr.map(normalizeInvoice);
+    }catch(e){
+      console.error("Error loading from localStorage:", e);
     }
+  }
 
-    function recalcTotals(){
-      const rows = document.querySelectorAll("#items-body .item-row");
-      let subtotal = 0;
-      rows.forEach(tr => subtotal += recalcRow(tr));
-      const discount = parseNumber($("f-discount").value);
-      const taxPerc  = parseNumber($("f-tax").value);
-      const shipping = parseNumber($("f-shipping").value);
-      const subLess = subtotal - discount;
-      const taxVal  = subLess * (taxPerc/100);
-      const balance = subLess + taxVal + shipping;
-      $("f-subtotal").value = formatIQD(subtotal);
-      $("f-sub-less").value = formatIQD(subLess);
-      $("f-balance").value  = formatIQD(balance);
-    }
-
-    function readForm(inv){
-      inv.number      = $("f-number").value.trim();
-      inv.issueDate   = $("f-date").value.trim();
-      inv.dueDate     = $("f-due").value.trim();
-      inv.contract    = $("f-contract").value.trim();
-      inv.billTo      = $("f-billto").value.trim();
-      inv.scope       = $("f-scope").value.trim();
-      inv.status      = $("status-select").value;
-      inv.note        = $("f-note").value.trim();
-      const firstLine = inv.billTo.split("\n")[0] || "";
-      inv.customerName = firstLine;
-
-      const rows = document.querySelectorAll("#items-body .item-row");
-      inv.items = Array.from(rows).map(tr=>({
-        desc:     tr.querySelector(".cell-desc").value.trim(),
-        location: tr.querySelector(".cell-loc").value.trim(),
-        date:     tr.querySelector(".cell-date").value.trim(),
-        unit:     tr.querySelector(".cell-unit").value.trim(),
-        qty:      parseNumber(tr.querySelector(".cell-qty").value),
-        price:    parseNumber(tr.querySelector(".cell-price").value)
-      }));
-
-      inv.discount = parseNumber($("f-discount").value);
-      inv.taxPerc  = parseNumber($("f-tax").value);
-      inv.shipping = parseNumber($("f-shipping").value);
-
-      const subtotal = parseNumber($("f-subtotal").value);
-      const balance  = parseNumber($("f-balance").value);
-      inv.subtotal = subtotal;
-      inv.balance  = balance;
-      inv.status   = String(inv.status || "draft").toLowerCase();
-      inv = normalizeInvoice(inv);
-    }
-
-    function fillForm(inv){
-      $("f-number").value   = inv.number      || "";
-      $("f-date").value     = inv.issueDate   || todayStr();
-      $("f-due").value      = inv.dueDate     || "";
-      $("f-contract").value = inv.contract    || "";
-      $("f-billto").value   = inv.billTo      || "";
-      $("f-scope").value    = inv.scope       || "";
-      $("f-note").value     = inv.note        || "";
-      $("status-select").value = inv.status || "draft";
-
-      $("items-body").innerHTML = "";
-      const items = inv.items && inv.items.length ? inv.items : [{},{},{},{}];
-      items.forEach(it => $("items-body").appendChild(createItemRow(it)));
-      updateRowNumbers();
-
-      $("f-discount").value = inv.discount != null ? inv.discount : 0;
-      $("f-tax").value      = inv.taxPerc  != null ? inv.taxPerc  : 0;
-      $("f-shipping").value = inv.shipping != null ? inv.shipping : 0;
-
-      recalcTotals();
-      $("editor-subtitle").textContent = inv.number ? `(${inv.number})` : "";
-    }
-
-    function loadInvoices(){
-      try{
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if(raw){
-          const arr = JSON.parse(raw);
-          if(Array.isArray(arr) && arr.length){
-            invoices = arr.map(normalizeInvoice);
-            return;
-          }
-        }
-      }catch(e){
-        console.error("Error loading invoices:", e);
-      }
-
-      // If no stored data in browser, load default Excel-seeded data
-      if (typeof seedInvoices !== "undefined" && Array.isArray(seedInvoices) && seedInvoices.length){
-        invoices = seedInvoices.slice().map(normalizeInvoice);
-        saveInvoices();
-      }
-    }
-
-    function saveInvoices(){
+  function saveToLocalStorage(){
+    try{
       localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
-      renderPoFilterOptions();
-      renderDashboard();
-      renderReport();
+    }catch(e){
+      console.error("Error saving to localStorage:", e);
     }
+  }
 
-    function showDashboard() {
-      const dash = $("dashboard");
-      const editor = $("editor");
-      if (dash) dash.style.display = "";
-      if (editor) editor.style.display = "none";
+  // ====== الفلاتر واللوحة ======
+  function isOverdue(inv){
+    if(inv.status === "paid") return false;
+    if(!inv.dueDate) return false;
+    const d = new Date(inv.dueDate);
+    const today = new Date(todayStr());
+    return d < today;
+  }
+
+  function getStatusBadge(status, inv){
+    let cls = "badge-draft", txt = "مسودة";
+    if(status === "paid"){ cls="badge-paid"; txt="مدفوعة"; }
+    else if(status === "unpaid"){
+      if(isOverdue(inv)){ cls="badge-overdue"; txt="متأخرة"; }
+      else { cls="badge-unpaid"; txt="غير مدفوعة"; }
     }
-    function showEditor() {
-      const dash = $("dashboard");
-      const editor = $("editor");
-      if (dash) dash.style.display = "none";
-      if (editor) editor.style.display = "";
-    }
+    return `<span class="badge ${cls}">${txt}</span>`;
+  }
 
-    function createNewInvoice(){
-      currentId = null;
-      const empty = {
-        id: generateId(),
-        number: "",
-        issueDate: todayStr(),
-        dueDate: "",
-        contract: "",
-        billTo: "",
-        customerName: "",
-        scope: "",
-        note: "",
-        items: [],
-        subtotal: 0,
-        discount: 0,
-        taxPerc: 0,
-        shipping: 0,
-        balance: 0,
-        status: "draft",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      fillForm(empty);
-      showEditor();
-    }
+  function renderPoFilterOptions(){
+    const select = $("po-filter");
+    if(!select) return;
+    const contracts = Array.from(new Set(invoices.map(inv=>inv.contract).filter(Boolean)));
+    select.innerHTML = `<option value="all">الكل</option>` +
+      contracts.map(po => `<option value="${po}">${po}</option>`).join("");
+  }
 
-    function openEditor(id){
-      const inv = invoices.find(i=>i.id===id);
-      if(!inv) return;
-      currentId = id;
-      fillForm(inv);
-      showEditor();
-    }
+  function renderDashboard(){
+    const tbody = $("invoice-table-body");
+    if(!tbody) return;
+    tbody.innerHTML = "";
 
-    function isOverdue(inv){
-      if(inv.status==="paid") return false;
-      if(!inv.dueDate) return false;
-      const d = new Date(inv.dueDate);
-      const today = new Date(todayStr());
-      return d < today;
-    }
+    const statusFilter = $("status-filter").value;
+    const poFilter = $("po-filter").value;
 
-    function isDueSoon(inv){
-      if(inv.status==="paid") return false;
-      if(!inv.dueDate) return false;
-      const d = new Date(inv.dueDate);
-      const today = new Date(todayStr());
-      const diff = (d - today)/(1000*60*60*24);
-      return diff>=0 && diff<=30;
-    }
+    const filtered = invoices.filter(inv => {
+      if(poFilter !== "all" && inv.contract !== poFilter) return false;
 
-    function getStatusBadge(status,inv){
-      let cls="badge-draft",txt="Draft";
-      if(status==="paid"){cls="badge-paid";txt="Paid";}
-      else if(status==="unpaid"){
-        cls = isOverdue(inv)?"badge-overdue":"badge-unpaid";
-        txt = isOverdue(inv)?"Overdue":"Unpaid";
-      }
-      return `<span class="badge ${cls}">${txt}</span>`;
-    }
-
-    function renderPoFilterOptions(){
-      const select = $("po-filter");
-      if(!select) return;
-      const contracts = Array.from(new Set(invoices.map(inv=>inv.contract).filter(Boolean)));
-      select.innerHTML = `<option value="all">All PO Numbers</option>` +
-        contracts.map(po=>`<option value="${po}">${po}</option>`).join("");
-    }
-
-    function matchesFilters(inv){
-      if(currentPoFilter!=="all" && inv.contract!==currentPoFilter) return false;
-      if(currentFilter==="paid"   && inv.status!=="paid")   return false;
-      if(currentFilter==="unpaid" && inv.status!=="unpaid") return false;
-      if(currentFilter==="draft"  && inv.status!=="draft")  return false;
-      if(currentFilter==="overdue" && !isOverdue(inv))      return false;
-
-      if(specialFilter==="due-soon" && !isDueSoon(inv)) return false;
-      if(specialFilter==="high-value" && inv.balance < 10000000) return false;
+      if(statusFilter === "paid" && inv.status !== "paid") return false;
+      if(statusFilter === "unpaid" && inv.status !== "unpaid") return false;
+      if(statusFilter === "draft" && inv.status !== "draft") return false;
+      if(statusFilter === "overdue" && !isOverdue(inv)) return false;
 
       return true;
-    }
+    });
 
-    function renderDashboard(){
-      const tbody = $("invoice-table-body");
-      if(!tbody) return;
-      tbody.innerHTML = "";
-      const filtered = invoices.filter(matchesFilters);
+    filtered.forEach(inv => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${inv.issueDate || ""}</td>
+        <td>${inv.dueDate || ""}</td>
+        <td>${inv.number || ""}</td>
+        <td>${inv.contract || ""}</td>
+        <td>${getStatusBadge(inv.status, inv)}</td>
+        <td>${formatIQD(inv.balance || 0)}</td>
+        <td>
+          <button class="btn btn-sm" type="button" onclick="editInvoice('${inv.id}')">تعديل</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
 
-      filtered.forEach(inv=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${inv.issueDate || ""}</td>
-          <td>${inv.dueDate || ""}</td>
-          <td>${inv.number || ""}</td>
-          <td>${inv.contract || ""}</td>
-          <td>${getStatusBadge(inv.status,inv)}</td>
-          <td>${formatIQD(inv.balance || 0)}</td>
-          <td>
-            <button class="btn btn-sm" onclick="editInvoice('${inv.id}')">Edit</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+  // ====== عرض/إخفاء الأقسام ======
+  function showDashboard(){
+    $("dashboard").classList.remove("hidden");
+    $("editor").classList.add("hidden");
+  }
 
-      $("dash-total").textContent   = invoices.length;
-      $("dash-paid").textContent    = invoices.filter(i=>i.status==="paid").length;
-      $("dash-unpaid").textContent  = invoices.filter(i=>i.status==="unpaid").length;
-      $("dash-draft").textContent   = invoices.filter(i=>i.status==="draft").length;
-      $("dash-overdue").textContent = invoices.filter(i=>isOverdue(i)).length;
-    }
+  function showEditor(){
+    $("dashboard").classList.add("hidden");
+    $("editor").classList.remove("hidden");
+  }
 
-    function renderReport(){
-      const tbody = $("report-body");
-      if(!tbody) return;
-      tbody.innerHTML = "";
+  // ====== وظائف الفاتورة ======
+  function createNewInvoice(){
+    currentId = null;
+    const empty = normalizeInvoice({
+      id: generateId(),
+      number: "",
+      issueDate: todayStr(),
+      dueDate: "",
+      contract: "",
+      billTo: "",
+      customerName: "",
+      scope: "",
+      note: "",
+      items: [],
+      subtotal: 0,
+      discount: 0,
+      taxPerc: 0,
+      shipping: 0,
+      balance: 0,
+      status: "draft",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+    fillForm(empty);
+    showEditor();
+  }
 
-      let paidTotal=0, unpaidTotal=0, draftTotal=0, overdueTotal=0;
+  function editInvoice(id){
+    const inv = invoices.find(i => i.id === id);
+    if(!inv) return;
+    currentId = id;
+    fillForm(inv);
+    showEditor();
+  }
 
-      invoices.forEach(inv=>{
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${inv.number}</td>
-          <td>${inv.contract}</td>
-          <td>${inv.issueDate}</td>
-          <td>${inv.dueDate}</td>
-          <td>${inv.status}</td>
-          <td>${formatIQD(inv.balance || 0)}</td>
-        `;
-        tbody.appendChild(row);
-
-        if(inv.status==="paid") paidTotal += inv.balance || 0;
-        else if(inv.status==="unpaid") unpaidTotal += inv.balance || 0;
-        else if(inv.status==="draft") draftTotal += inv.balance || 0;
-        if(isOverdue(inv)) overdueTotal += inv.balance || 0;
-      });
-
-      $("rep-paid").textContent    = formatIQD(paidTotal);
-      $("rep-unpaid").textContent  = formatIQD(unpaidTotal);
-      $("rep-draft").textContent   = formatIQD(draftTotal);
-      $("rep-overdue").textContent = formatIQD(overdueTotal);
-    }
-
-    function saveCurrentInvoice(){
-      let inv = currentId ? invoices.find(i=>i.id===currentId) : null;
-      if(!inv){
-        inv = {
-          id: generateId(),
-          createdAt: new Date().toISOString()
-        };
-        invoices.push(inv);
-        currentId = inv.id;
-      }
-      readForm(inv);
-      inv.updatedAt = new Date().toISOString();
-      saveInvoices();
-      alert("Invoice saved ✅");
-    }
-
-    function deleteInvoiceById(id){
-      if(!confirm("Are you sure you want to delete this invoice?")) return;
-      invoices = invoices.filter(i=>i.id!==id);
-      if(currentId===id) currentId = null;
-      saveInvoices();
-    }
-
-    function editInvoice(id){
-      openEditor(id);
-    }
-
-    function importJsonFromFile(file){
-      const reader = new FileReader();
-      reader.onload = e=>{
-        try{
-          const data = JSON.parse(e.target.result);
-          if(!Array.isArray(data)){ alert("Invalid JSON file."); return; }
-          if(!confirm("All current invoices will be replaced with data from this file. Are you sure?")) return;
-          invoices = data.map(normalizeInvoice);
-          currentId = null;
-          saveInvoices();
-          showDashboard();
-          alert("JSON data restored successfully ✅");
-        }catch(e){
-          console.error(e);
-          alert("Failed to import JSON file.");
-        }
+  function saveCurrentInvoice(){
+    let inv = currentId ? invoices.find(i => i.id === currentId) : null;
+    if(!inv){
+      inv = {
+        id: generateId(),
+        createdAt: new Date().toISOString()
       };
-      reader.readAsText(file);
+      invoices.push(inv);
+      currentId = inv.id;
     }
+    readForm(inv);
+    inv.updatedAt = new Date().toISOString();
+    saveToLocalStorage();
+    renderPoFilterOptions();
+    renderDashboard();
+    alert("تم حفظ الفاتورة ✅");
+  }
 
-    function exportJson(){
-      const blob = new Blob([JSON.stringify(invoices,null,2)],{type:"application/json"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "invoices-backup.json";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
+  function deleteCurrentInvoice(){
+    if(!currentId){ alert("لا توجد فاتورة محددة."); return; }
+    if(!confirm("هل أنت متأكد من حذف هذه الفاتورة؟")) return;
+    invoices = invoices.filter(i => i.id !== currentId);
+    currentId = null;
+    saveToLocalStorage();
+    renderPoFilterOptions();
+    renderDashboard();
+    showDashboard();
+  }
 
-    function exportCsv(){
-      if(!invoices.length){ alert("No invoices to export."); return; }
-      const headers = ["Number","PO","Issue Date","Due Date","Status","Balance"];
-      const rows = invoices.map(inv=>[
-        inv.number,
-        inv.contract,
-        inv.issueDate,
-        inv.dueDate,
-        inv.status,
-        inv.balance
-      ]);
-      const csv = [headers.join(","), ...rows.map(r=>r.join(","))].join("\n");
-      const blob = new Blob([csv],{type:"text/csv"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "invoices-report.csv";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function resetSystem(){
-      if(!confirm("This will reset all invoices to the default seeded data. Continue?")) return;
-      invoices = seedInvoices.slice().map(normalizeInvoice);
-      currentId = null;
-      saveInvoices();
-      showDashboard();
-      alert("System reset ✅");
-    }
-
-    function setupEvents(){
-      const bDash = $("btn-dashboard"); if(bDash) bDash.addEventListener("click", ()=>{showDashboard();highlightCard("total");});
-      const bRep  = $("btn-report");    if(bRep)  bRep.addEventListener("click", ()=>{highlightCard("report");const mb=$("modal-backdrop");if(mb)mb.style.display="flex";renderReport();});
-      const bBack = $("btn-back");      if(bBack) bBack.addEventListener("click", showDashboard);
-      const bPr   = $("btn-print");     if(bPr)   bPr.addEventListener("click", ()=>window.print());
-      const bSave = $("btn-save");      if(bSave) bSave.addEventListener("click", saveCurrentInvoice);
-      const bDel  = $("btn-delete");    if(bDel)  bDel.addEventListener("click", deleteInvoiceById);
-      const bDup  = $("btn-duplicate"); if(bDup)  bDup.addEventListener("click", ()=>{ /* duplicate logic لو حاب تضيفه لاحقًا */ });
-      const bExp  = $("btn-export");    if(bExp)  bExp.addEventListener("click", exportCsv);
-      const bSJ   = $("btn-save-json"); if(bSJ)   bSJ.addEventListener("click", exportJson);
-      const bLJ   = $("btn-load-json"); if(bLJ)   bLJ.addEventListener("click", ()=>$("json-file-input")?.click());
-      const bRes  = $("btn-reset");     if(bRes)  bRes.addEventListener("click", resetSystem);
-
-      const fileInput = $("json-file-input");
-      if(fileInput) fileInput.addEventListener("change", e=>{
-        const file = e.target.files[0];
-        if(file) importJsonFromFile(file);
-        e.target.value = "";
-      });
-
-      const poSel = $("po-filter");
-      if(poSel) poSel.addEventListener("change", e=>{
-        currentPoFilter = e.target.value;
+  // ====== التعامل مع JSON / CSV ======
+  function importJsonFromFile(file){
+    const reader = new FileReader();
+    reader.onload = e => {
+      try{
+        const data = JSON.parse(e.target.result);
+        if(!Array.isArray(data)){
+          alert("ملف JSON غير صالح. يجب أن يكون مصفوفة فواتير.");
+          return;
+        }
+        invoices = data.map(normalizeInvoice);
+        currentId = null;
+        saveToLocalStorage();
+        renderPoFilterOptions();
         renderDashboard();
-      });
+        showDashboard();
+        alert("تم تحميل بيانات JSON بنجاح ✅");
+      }catch(err){
+        console.error(err);
+        alert("فشل في قراءة ملف JSON.");
+      }
+    };
+    reader.readAsText(file);
+  }
 
-      document.querySelectorAll(".status-pill").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
-          btn.classList.add("active");
-          currentFilter = btn.dataset.filter;
-          specialFilter = "none";
-          renderDashboard();
-        });
-      });
+  function exportJson(){
+    const blob = new Blob([JSON.stringify(invoices, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "invoices-backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
-      document.querySelectorAll(".stat-card").forEach(card=>{
-        card.addEventListener("click", ()=>{
-          const type = card.dataset.type;
-          specialFilter = type==="due"?"due-soon" : type==="high"?"high-value":"none";
-          highlightCard(type);
-          renderDashboard();
-        });
-      });
+  function exportCsv(){
+    if(!invoices.length){
+      alert("لا توجد فواتير للتصدير.");
+      return;
     }
+    const headers = ["Number","PO","Issue Date","Due Date","Status","Balance"];
+    const rows = invoices.map(inv => [
+      inv.number || "",
+      inv.contract || "",
+      inv.issueDate || "",
+      inv.dueDate || "",
+      inv.status || "",
+      inv.balance != null ? inv.balance : ""
+    ]);
+    const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const blob = new Blob([csv], {type:"text/csv"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "invoices-report.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
 
-    function highlightCard(type){
-      document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
-      const el = document.querySelector(`.stat-card[data-type="${type}"]`);
-      if(el) el.classList.add("active");
-    }
+  // ====== تهيئة الأحداث ======
+  function setupEvents(){
+    $("btn-new").addEventListener("click", createNewInvoice);
+    $("btn-save").addEventListener("click", saveCurrentInvoice);
+    $("btn-back").addEventListener("click", showDashboard);
+    $("btn-print").addEventListener("click", () => window.print());
+    $("btn-delete").addEventListener("click", deleteCurrentInvoice);
+    $("btn-add-row").addEventListener("click", () => {
+      const row = createItemRow();
+      $("items-body").appendChild(row);
+      updateRowNumbers();
+      recalcTotals();
+    });
 
-    window.createNewInvoice = createNewInvoice;
-    window.editInvoice      = editInvoice;
-    window.deleteInvoiceById= deleteInvoiceById;
+    $("btn-save-json").addEventListener("click", exportJson);
+    $("btn-export").addEventListener("click", exportCsv);
 
-    function init(){
-      setupEvents();
-      loadInvoices();
-      renderPoFilterOptions();
-      showDashboard();
-      highlightCard("total");
-      renderDashboard();
-      renderReport();
-    }
-    if(document.readyState === "loading"){
-      document.addEventListener("DOMContentLoaded", init);
-    }else{
-      init();
-    }
+    $("btn-load-json").addEventListener("click", () => $("json-file-input").click());
+    $("json-file-input").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if(file) importJsonFromFile(file);
+      e.target.value = "";
+    });
+
+    $("status-filter").addEventListener("change", renderDashboard);
+    $("po-filter").addEventListener("change", renderDashboard);
+
+    // إعادة الحساب عند تغيير الخصم/الضريبة/الشحن
+    $("f-discount").addEventListener("input", recalcTotals);
+    $("f-tax").addEventListener("input", recalcTotals);
+    $("f-shipping").addEventListener("input", recalcTotals);
+
+    // تعيين editInvoice في الـ window لاستخدامه في onclick
+    window.editInvoice = editInvoice;
+  }
+
+  // ====== init ======
+  function init(){
+    setupEvents();
+    loadFromLocalStorage();   // اختياري – لو في بيانات قديمة في المتصفح
+    renderPoFilterOptions();
+    renderDashboard();
+    showDashboard();
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 </script>
+
+</body>
+</html>
