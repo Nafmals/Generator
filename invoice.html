@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8">
   <title>Nafithat – Advanced Invoice Manager (Local)</title>
@@ -10,6 +10,7 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
       background: #050816;
       color: #f5f7fa;
+      direction: ltr;
     }
 
     /* ===== Top Bar ===== */
@@ -42,6 +43,7 @@
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+      justify-content: center;
     }
     .pill-btn {
       border: none;
@@ -66,6 +68,7 @@
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
+      justify-content: flex-end;
     }
     .pill-btn.danger {
       background: #fee2e2;
@@ -203,7 +206,7 @@
     th, td {
       padding: 6px 8px;
       border-bottom: 1px solid rgba(31,41,55,0.8);
-      text-align: right;
+      text-align: left;          /* LTR */
       white-space: nowrap;
     }
     th {
@@ -435,9 +438,7 @@
         <th>Actions</th>
       </tr>
       </thead>
-      <tbody id="invoice-table-body">
-      <!-- rows via JS -->
-      </tbody>
+      <tbody id="invoice-table-body"></tbody>
     </table>
   </section>
 
@@ -461,8 +462,7 @@
         <th>Balance</th>
       </tr>
       </thead>
-      <tbody id="report-body">
-      </tbody>
+      <tbody id="report-body"></tbody>
     </table>
   </section>
 
@@ -532,8 +532,7 @@
         <th>Del</th>
       </tr>
       </thead>
-      <tbody id="items-body">
-      </tbody>
+      <tbody id="items-body"></tbody>
     </table>
     <button class="btn btn-secondary" id="btn-add-row" type="button" style="margin-top:6px;">+ Add row</button>
 
@@ -572,7 +571,7 @@
 <input type="file" id="json-file-input" accept="application/json" style="display:none;">
 
 <script>
-  // ================== Core Data ==================
+  /* نفس السكربت السابق بالضبط – لم أغيّر شيء في المنطق */
   const STORAGE_KEY = "naf_advanced_invoice_local";
   let invoices = [];
   let currentId = null;
@@ -581,303 +580,239 @@
   let searchTerm = "";
 
   function $(id){ return document.getElementById(id); }
-
-  function todayStr(){
-    const d = new Date();
-    return d.toISOString().slice(0,10);
-  }
-
-  function generateId(){
-    return "inv-" + Math.random().toString(36).slice(2) + "-" + Date.now().toString(36);
-  }
-
-  function formatIQD(num){
-    if(isNaN(num)) num = 0;
-    return "IQD " + Number(num).toLocaleString("en-US",{maximumFractionDigits:0});
-  }
-
-  function parseNumber(v){
-    if(typeof v!=="string") v=String(v||"");
-    return Number(v.replace(/[^\d.-]/g,"")) || 0;
-  }
+  function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
+  function generateId(){ return "inv-"+Math.random().toString(36).slice(2)+"-"+Date.now().toString(36); }
+  function formatIQD(num){ if(isNaN(num)) num=0; return "IQD "+Number(num).toLocaleString("en-US",{maximumFractionDigits:0}); }
+  function parseNumber(v){ if(typeof v!=="string") v=String(v||""); return Number(v.replace(/[^\d.-]/g,""))||0; }
 
   function normalizeInvoice(inv){
     if(!inv) return inv;
     if(!inv.id) inv.id = generateId();
-
     let raw = (inv.status==null?"draft":String(inv.status)).toLowerCase().trim();
-    if(!["paid","unpaid","overdue","draft"].includes(raw)) raw = "draft";
+    if(!["paid","unpaid","overdue","draft"].includes(raw)) raw="draft";
     inv.status = raw;
-
     if(!Array.isArray(inv.items)) inv.items = [];
     return inv;
   }
 
-  // ================== Items / Totals ==================
   function createItemRow(data={}){
-    const tr = document.createElement("tr");
-    tr.className = "item-row";
-    tr.innerHTML = `
+    const tr=document.createElement("tr");
+    tr.className="item-row";
+    tr.innerHTML=`
       <td class="no-cell"></td>
       <td><textarea class="cell-desc">${data.desc || ""}</textarea></td>
       <td><input class="cell-loc" value="${data.location || ""}"></td>
       <td><input class="cell-date" value="${data.date || ""}"></td>
       <td><input class="cell-unit" value="${data.unit || ""}"></td>
-      <td><input class="cell-qty" type="number" min="0" step="0.01" value="${data.qty != null ? data.qty : 1}"></td>
-      <td><input class="cell-price" type="number" min="0" step="0.01" value="${data.price != null ? data.price : 0}"></td>
+      <td><input class="cell-qty" type="number" min="0" step="0.01" value="${data.qty!=null?data.qty:1}"></td>
+      <td><input class="cell-price" type="number" min="0" step="0.01" value="${data.price!=null?data.price:0}"></td>
       <td><input class="cell-total" type="text" readonly></td>
-      <td><button type="button" class="table-btn del btn-remove-row">✕</button></td>
-    `;
-    tr.querySelector(".cell-qty").addEventListener("input", recalcTotals);
-    tr.querySelector(".cell-price").addEventListener("input", recalcTotals);
-    tr.querySelector(".btn-remove-row").addEventListener("click", ()=>{
-      tr.remove();
-      updateRowNumbers();
-      recalcTotals();
+      <td><button type="button" class="table-btn del btn-remove-row">✕</button></td>`;
+    tr.querySelector(".cell-qty").addEventListener("input",recalcTotals);
+    tr.querySelector(".cell-price").addEventListener("input",recalcTotals);
+    tr.querySelector(".btn-remove-row").addEventListener("click",()=>{
+      tr.remove(); updateRowNumbers(); recalcTotals();
     });
     return tr;
   }
 
   function updateRowNumbers(){
-    const rows = document.querySelectorAll("#items-body .item-row");
-    rows.forEach((tr,idx)=>{
-      const cell = tr.querySelector(".no-cell");
-      if(cell) cell.textContent = idx+1;
-    });
+    const rows=document.querySelectorAll("#items-body .item-row");
+    rows.forEach((tr,idx)=>{ const cell=tr.querySelector(".no-cell"); if(cell) cell.textContent=idx+1; });
   }
 
   function recalcTotals(){
-    const rows = document.querySelectorAll("#items-body .item-row");
-    let subtotal = 0;
+    const rows=document.querySelectorAll("#items-body .item-row");
+    let subtotal=0;
     rows.forEach(tr=>{
-      const qty = parseNumber(tr.querySelector(".cell-qty").value);
-      const price = parseNumber(tr.querySelector(".cell-price").value);
-      const total = qty * price;
-      tr.querySelector(".cell-total").value = formatIQD(total);
-      subtotal += total;
+      const qty=parseNumber(tr.querySelector(".cell-qty").value);
+      const price=parseNumber(tr.querySelector(".cell-price").value);
+      const total=qty*price;
+      tr.querySelector(".cell-total").value=formatIQD(total);
+      subtotal+=total;
     });
-
-    const discount = parseNumber($("f-discount").value);
-    const taxPerc  = parseNumber($("f-tax").value);
-    const shipping = parseNumber($("f-shipping").value);
-
-    const subLess = subtotal - discount;
-    const taxVal  = subLess * (taxPerc/100);
-    const balance = subLess + taxVal + shipping;
-
-    $("f-subtotal").value = formatIQD(subtotal);
-    $("f-balance").value  = formatIQD(balance);
+    const discount=parseNumber($("f-discount").value);
+    const taxPerc=parseNumber($("f-tax").value);
+    const shipping=parseNumber($("f-shipping").value);
+    const subLess=subtotal-discount;
+    const taxVal=subLess*(taxPerc/100);
+    const balance=subLess+taxVal+shipping;
+    $("f-subtotal").value=formatIQD(subtotal);
+    $("f-balance").value=formatIQD(balance);
   }
 
-  // ================== Form Read/Fill ==================
   function readForm(inv){
-    inv.number      = $("f-number").value.trim();
-    inv.issueDate   = $("f-date").value.trim();
-    inv.dueDate     = $("f-due").value.trim();
-    inv.contract    = $("f-contract").value.trim();
-    inv.billTo      = $("f-billto").value.trim();
-    inv.scope       = $("f-scope").value.trim();
-    inv.note        = $("f-note").value.trim();
-    inv.status      = $("status-select").value;
-
-    inv.customerName = (inv.billTo.split("\n")[0] || "").trim();
-
-    const rows = document.querySelectorAll("#items-body .item-row");
-    inv.items = Array.from(rows).map(tr=>({
-      desc:     tr.querySelector(".cell-desc").value.trim(),
-      location: tr.querySelector(".cell-loc").value.trim(),
-      date:     tr.querySelector(".cell-date").value.trim(),
-      unit:     tr.querySelector(".cell-unit").value.trim(),
-      qty:      parseNumber(tr.querySelector(".cell-qty").value),
-      price:    parseNumber(tr.querySelector(".cell-price").value)
+    inv.number=$("f-number").value.trim();
+    inv.issueDate=$("f-date").value.trim();
+    inv.dueDate=$("f-due").value.trim();
+    inv.contract=$("f-contract").value.trim();
+    inv.billTo=$("f-billto").value.trim();
+    inv.scope=$("f-scope").value.trim();
+    inv.note=$("f-note").value.trim();
+    inv.status=$("status-select").value;
+    inv.customerName=(inv.billTo.split("\n")[0]||"").trim();
+    const rows=document.querySelectorAll("#items-body .item-row");
+    inv.items=Array.from(rows).map(tr=>({
+      desc:tr.querySelector(".cell-desc").value.trim(),
+      location:tr.querySelector(".cell-loc").value.trim(),
+      date:tr.querySelector(".cell-date").value.trim(),
+      unit:tr.querySelector(".cell-unit").value.trim(),
+      qty:parseNumber(tr.querySelector(".cell-qty").value),
+      price:parseNumber(tr.querySelector(".cell-price").value)
     }));
-
-    inv.discount = parseNumber($("f-discount").value);
-    inv.taxPerc  = parseNumber($("f-tax").value);
-    inv.shipping = parseNumber($("f-shipping").value);
-
-    inv.subtotal = parseNumber($("f-subtotal").value);
-    inv.balance  = parseNumber($("f-balance").value);
-
+    inv.discount=parseNumber($("f-discount").value);
+    inv.taxPerc=parseNumber($("f-tax").value);
+    inv.shipping=parseNumber($("f-shipping").value);
+    inv.subtotal=parseNumber($("f-subtotal").value);
+    inv.balance=parseNumber($("f-balance").value);
     normalizeInvoice(inv);
   }
 
   function fillForm(inv){
-    $("f-number").value   = inv.number || "";
-    $("f-date").value     = inv.issueDate || todayStr();
-    $("f-due").value      = inv.dueDate || "";
-    $("f-contract").value = inv.contract || "";
-    $("f-billto").value   = inv.billTo || "";
-    $("f-scope").value    = inv.scope || "";
-    $("f-note").value     = inv.note || "";
-    $("status-select").value = inv.status || "draft";
-
-    const body = $("items-body");
-    body.innerHTML = "";
-    const items = inv.items && inv.items.length ? inv.items : [{},{},{},{}];
-    items.forEach(it=>{
-      const row = createItemRow(it);
-      body.appendChild(row);
-    });
+    $("f-number").value=inv.number||"";
+    $("f-date").value=inv.issueDate||todayStr();
+    $("f-due").value=inv.dueDate||"";
+    $("f-contract").value=inv.contract||"";
+    $("f-billto").value=inv.billTo||"";
+    $("f-scope").value=inv.scope||"";
+    $("f-note").value=inv.note||"";
+    $("status-select").value=inv.status||"draft";
+    const body=$("items-body");
+    body.innerHTML="";
+    const items=inv.items&&inv.items.length?inv.items:[{},{},{},{}];
+    items.forEach(it=>{ const row=createItemRow(it); body.appendChild(row); });
     updateRowNumbers();
-
-    $("f-discount").value = inv.discount != null ? inv.discount : 0;
-    $("f-tax").value      = inv.taxPerc  != null ? inv.taxPerc  : 0;
-    $("f-shipping").value = inv.shipping != null ? inv.shipping : 0;
-
+    $("f-discount").value=inv.discount!=null?inv.discount:0;
+    $("f-tax").value=inv.taxPerc!=null?inv.taxPerc:0;
+    $("f-shipping").value=inv.shipping!=null?inv.shipping:0;
     recalcTotals();
-    $("editor-subtitle").textContent = inv.number ? `Editing ${inv.number}` : "New invoice";
+    $("editor-subtitle").textContent=inv.number?`Editing ${inv.number}`:"New invoice";
   }
 
-  // ================== Storage (local only) ==================
   function loadInvoices(){
     try{
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw=localStorage.getItem(STORAGE_KEY);
       if(raw){
-        const arr = JSON.parse(raw);
-        if(Array.isArray(arr)){
-          invoices = arr.map(normalizeInvoice);
-          return;
-        }
+        const arr=JSON.parse(raw);
+        if(Array.isArray(arr)){ invoices=arr.map(normalizeInvoice); return; }
       }
-    }catch(e){
-      console.error("Error loading invoices:", e);
-    }
-    invoices = []; // start empty; أنت تقدر تحمل من JSON
+    }catch(e){ console.error("Error loading invoices:",e); }
+    invoices=[];
   }
 
   function saveInvoices(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(invoices));
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(invoices));
     renderPoFilterOptions();
     renderDashboard();
     renderReport();
   }
 
-  // ================== Utils / Filters ==================
   function isOverdue(inv){
     if(inv.status==="paid") return false;
     if(!inv.dueDate) return false;
-    const d = new Date(inv.dueDate);
-    const today = new Date(todayStr());
-    return d < today;
+    const d=new Date(inv.dueDate);
+    const today=new Date(todayStr());
+    return d<today;
   }
 
   function isDueSoon(inv){
     if(inv.status==="paid") return false;
     if(!inv.dueDate) return false;
-    const d = new Date(inv.dueDate);
-    const today = new Date(todayStr());
-    const diff = (d - today) / (1000*60*60*24);
+    const d=new Date(inv.dueDate);
+    const today=new Date(todayStr());
+    const diff=(d-today)/(1000*60*60*24);
     return diff>=0 && diff<=30;
   }
 
   function getStatusBadge(status,inv){
-    let cls="badge-draft", txt="Draft";
-    if(status==="paid"){ cls="badge-paid"; txt="Paid"; }
-    else if(status==="unpaid"){
-      if(isOverdue(inv)){ cls="badge-overdue"; txt="Overdue"; }
-      else { cls="badge-unpaid"; txt="Unpaid"; }
-    }
+    let cls="badge-draft",txt="Draft";
+    if(status==="paid"){cls="badge-paid";txt="Paid";}
+    else if(status==="unpaid"){ cls=isOverdue(inv)?"badge-overdue":"badge-unpaid"; txt=isOverdue(inv)?"Overdue":"Unpaid"; }
     return `<span class="badge ${cls}">${txt}</span>`;
   }
 
   function renderPoFilterOptions(){
-    const select = $("po-filter");
+    const select=$("po-filter");
     if(!select) return;
-    const contracts = Array.from(new Set(invoices.map(inv=>inv.contract).filter(Boolean)));
-    select.innerHTML = `<option value="all">All Contracts</option>` +
+    const contracts=Array.from(new Set(invoices.map(inv=>inv.contract).filter(Boolean)));
+    select.innerHTML=`<option value="all">All Contracts</option>`+
       contracts.map(po=>`<option value="${po}">${po}</option>`).join("");
   }
 
   function matchesFilters(inv){
     if(currentPoFilter!=="all" && inv.contract!==currentPoFilter) return false;
-
     if(currentFilter==="paid"   && inv.status!=="paid")   return false;
     if(currentFilter==="unpaid" && inv.status!=="unpaid") return false;
     if(currentFilter==="draft"  && inv.status!=="draft")  return false;
     if(currentFilter==="overdue" && !isOverdue(inv))      return false;
-
     if(searchTerm){
-      const term = searchTerm.toLowerCase();
-      const hay = [
-        inv.number,
-        inv.contract,
-        inv.customerName,
-        inv.billTo,
-        inv.scope
-      ].join(" ").toLowerCase();
+      const term=searchTerm.toLowerCase();
+      const hay=[inv.number,inv.contract,inv.customerName,inv.billTo,inv.scope].join(" ").toLowerCase();
       if(!hay.includes(term)) return false;
     }
-
     return true;
   }
 
-  // ================== Rendering ==================
   function renderDashboard(){
-    const tbody = $("invoice-table-body");
+    const tbody=$("invoice-table-body");
     if(!tbody) return;
-    tbody.innerHTML = "";
-
-    const filtered = invoices.filter(matchesFilters);
-
-    let totalAmount = 0, paidAmount=0, unpaidAmount=0;
-    let totalCount = filtered.length, paidCount=0, unpaidCount=0;
-    let dueSoonAmount=0, dueSoonCount=0;
+    tbody.innerHTML="";
+    const filtered=invoices.filter(matchesFilters);
+    let totalAmount=0,paidAmount=0,unpaidAmount=0;
+    let totalCount=filtered.length,paidCount=0,unpaidCount=0;
+    let dueSoonAmount=0,dueSoonCount=0;
 
     filtered.forEach(inv=>{
-      const balance = inv.balance || 0;
-      totalAmount += balance;
-      if(inv.status==="paid"){ paidAmount+=balance; paidCount++; }
-      if(inv.status==="unpaid"){ unpaidAmount+=balance; unpaidCount++; }
-      if(isDueSoon(inv)){ dueSoonAmount+=balance; dueSoonCount++; }
+      const balance=inv.balance||0;
+      totalAmount+=balance;
+      if(inv.status==="paid"){paidAmount+=balance;paidCount++;}
+      if(inv.status==="unpaid"){unpaidAmount+=balance;unpaidCount++;}
+      if(isDueSoon(inv)){dueSoonAmount+=balance;dueSoonCount++;}
 
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${inv.issueDate || ""}</td>
-        <td>${inv.dueDate || ""}</td>
-        <td>${inv.number || ""}</td>
-        <td>${inv.contract || ""}</td>
-        <td>${inv.customerName || ""}</td>
+      const tr=document.createElement("tr");
+      tr.innerHTML=`
+        <td>${inv.issueDate||""}</td>
+        <td>${inv.dueDate||""}</td>
+        <td>${inv.number||""}</td>
+        <td>${inv.contract||""}</td>
+        <td>${inv.customerName||""}</td>
         <td class="text-muted">${inv.scope ? (inv.scope.length>35 ? inv.scope.slice(0,35)+"..." : inv.scope) : "-"}</td>
         <td>${getStatusBadge(inv.status,inv)}</td>
         <td>${formatIQD(balance)}</td>
         <td>
           <button class="table-btn edit" onclick="editInvoice('${inv.id}')">Edit</button>
           <button class="table-btn del" onclick="deleteInvoiceById('${inv.id}')">Delete</button>
-        </td>
-      `;
+        </td>`;
       tbody.appendChild(tr);
     });
 
-    $("dash-total-amount").textContent   = formatIQD(totalAmount);
-    $("dash-total-count").textContent    = totalCount;
-    $("dash-paid-amount").textContent    = formatIQD(paidAmount);
-    $("dash-paid-count").textContent     = paidCount;
-    $("dash-unpaid-amount").textContent  = formatIQD(unpaidAmount);
-    $("dash-unpaid-count").textContent   = unpaidCount;
-    $("dash-due-amount").textContent     = formatIQD(dueSoonAmount);
-    $("dash-due-count").textContent      = dueSoonCount;
+    $("dash-total-amount").textContent=formatIQD(totalAmount);
+    $("dash-total-count").textContent=totalCount;
+    $("dash-paid-amount").textContent=formatIQD(paidAmount);
+    $("dash-paid-count").textContent=paidCount;
+    $("dash-unpaid-amount").textContent=formatIQD(unpaidAmount);
+    $("dash-unpaid-count").textContent=unpaidCount;
+    $("dash-due-amount").textContent=formatIQD(dueSoonAmount);
+    $("dash-due-count").textContent=dueSoonCount;
   }
 
   function renderReport(){
-    const tbody = $("report-body");
+    const tbody=$("report-body");
     if(!tbody) return;
-    tbody.innerHTML = "";
+    tbody.innerHTML="";
     invoices.forEach(inv=>{
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${inv.number || ""}</td>
-        <td>${inv.contract || ""}</td>
-        <td>${inv.issueDate || ""}</td>
-        <td>${inv.dueDate || ""}</td>
+      const row=document.createElement("tr");
+      row.innerHTML=`
+        <td>${inv.number||""}</td>
+        <td>${inv.contract||""}</td>
+        <td>${inv.issueDate||""}</td>
+        <td>${inv.dueDate||""}</td>
         <td>${inv.status}</td>
-        <td>${formatIQD(inv.balance || 0)}</td>
-      `;
+        <td>${formatIQD(inv.balance||0)}</td>`;
       tbody.appendChild(row);
     });
   }
 
-  // ================== View switching ==================
   function showDashboard(){
     $("dashboard").classList.remove("hidden");
     $("report").classList.add("hidden");
@@ -885,7 +820,6 @@
     $("tab-dashboard").classList.add("active");
     $("tab-report").classList.remove("active");
   }
-
   function showReport(){
     $("dashboard").classList.add("hidden");
     $("report").classList.remove("hidden");
@@ -893,57 +827,55 @@
     $("tab-dashboard").classList.remove("active");
     $("tab-report").classList.add("active");
   }
-
   function showEditor(){
     $("dashboard").classList.add("hidden");
     $("report").classList.add("hidden");
     $("editor").classList.remove("hidden");
   }
 
-  // ================== Invoice actions ==================
   function createNewInvoice(){
-    currentId = null;
-    const empty = normalizeInvoice({
-      id: generateId(),
-      number: "",
-      issueDate: todayStr(),
-      dueDate: "",
-      contract: "",
-      billTo: "",
-      customerName: "",
-      scope: "",
-      note: "",
-      items: [],
-      subtotal: 0,
-      discount: 0,
-      taxPerc: 0,
-      shipping: 0,
-      balance: 0,
-      status: "draft",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+    currentId=null;
+    const empty=normalizeInvoice({
+      id:generateId(),
+      number:"",
+      issueDate:todayStr(),
+      dueDate:"",
+      contract:"",
+      billTo:"",
+      customerName:"",
+      scope:"",
+      note:"",
+      items:[],
+      subtotal:0,
+      discount:0,
+      taxPerc:0,
+      shipping:0,
+      balance:0,
+      status:"draft",
+      createdAt:new Date().toISOString(),
+      updatedAt:new Date().toISOString()
     });
     fillForm(empty);
     showEditor();
   }
 
   function editInvoice(id){
-    const inv = invoices.find(i=>i.id===id);
+    const inv=invoices.find(i=>i.id===id);
     if(!inv) return;
-    currentId = id;
+    currentId=id;
     fillForm(inv);
     showEditor();
   }
 
   function saveCurrentInvoice(){
-    let inv = currentId ? invoices.find(i=>i.id===currentId) : null;
+    let inv=currentId?invoices.find(i=>i.id===currentId):null;
     if(!inv){
-      inv = { id: generateId(), createdAt:new Date().toISOString() };
+      inv={id:generateId(),createdAt:new Date().toISOString()};
       invoices.push(inv);
-      currentId = inv.id;
+      currentId=inv.id;
     }
     readForm(inv);
-    inv.updatedAt = new Date().toISOString();
+    inv.updatedAt=new Date().toISOString();
     saveInvoices();
     alert("Invoice saved ✅");
     showDashboard();
@@ -951,7 +883,7 @@
 
   function deleteInvoiceById(id){
     if(!confirm("Delete this invoice?")) return;
-    invoices = invoices.filter(i=>i.id!==id);
+    invoices=invoices.filter(i=>i.id!==id);
     if(currentId===id) currentId=null;
     saveInvoices();
   }
@@ -962,15 +894,14 @@
     showDashboard();
   }
 
-  // ================== JSON / CSV ==================
   function importJsonFromFile(file){
-    const reader = new FileReader();
-    reader.onload = e=>{
+    const reader=new FileReader();
+    reader.onload=e=>{
       try{
-        const data = JSON.parse(e.target.result);
-        if(!Array.isArray(data)){ alert("Invalid JSON (must be array of invoices)."); return; }
-        invoices = data.map(normalizeInvoice);
-        currentId = null;
+        const data=JSON.parse(e.target.result);
+        if(!Array.isArray(data)){alert("Invalid JSON (must be array of invoices).");return;}
+        invoices=data.map(normalizeInvoice);
+        currentId=null;
         saveInvoices();
         alert("JSON data loaded ✅");
         showDashboard();
@@ -983,97 +914,96 @@
   }
 
   function exportJson(){
-    const blob = new Blob([JSON.stringify(invoices,null,2)],{type:"application/json"});
-    const url  = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "invoices-backup.json";
+    const blob=new Blob([JSON.stringify(invoices,null,2)],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="invoices-backup.json";
     a.click();
     URL.revokeObjectURL(url);
   }
 
   function exportCsv(){
-    if(!invoices.length){ alert("No invoices to export."); return; }
-    const headers = ["Number","PO","IssueDate","DueDate","Status","Balance"];
-    const rows = invoices.map(inv=>[
-      inv.number || "",
-      inv.contract || "",
-      inv.issueDate || "",
-      inv.dueDate || "",
-      inv.status || "",
-      inv.balance != null ? inv.balance : ""
+    if(!invoices.length){alert("No invoices to export.");return;}
+    const headers=["Number","PO","IssueDate","DueDate","Status","Balance"];
+    const rows=invoices.map(inv=>[
+      inv.number||"",
+      inv.contract||"",
+      inv.issueDate||"",
+      inv.dueDate||"",
+      inv.status||"",
+      inv.balance!=null?inv.balance:""
     ]);
-    const csv = [headers.join(","), ...rows.map(r=>r.join(","))].join("\n");
-    const blob = new Blob([csv],{type:"text/csv"});
-    const url  = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "invoices-report.csv";
+    const csv=[headers.join(","),...rows.map(r=>r.join(","))].join("\n");
+    const blob=new Blob([csv],{type:"text/csv"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="invoices-report.csv";
     a.click();
     URL.revokeObjectURL(url);
   }
 
   function resetSystem(){
     if(!confirm("Reset all invoices (local only)?")) return;
-    invoices = [];
-    currentId = null;
+    invoices=[];
+    currentId=null;
     saveInvoices();
   }
 
-  // ================== Events / Init ==================
   function setupEvents(){
-    $("tab-dashboard").addEventListener("click", showDashboard);
-    $("tab-report").addEventListener("click", showReport);
+    $("tab-dashboard").addEventListener("click",showDashboard);
+    $("tab-report").addEventListener("click",showReport);
 
-    $("btn-new").addEventListener("click", createNewInvoice);
-    $("btn-save").addEventListener("click", saveCurrentInvoice);
-    $("btn-back").addEventListener("click", showDashboard);
-    $("btn-print").addEventListener("click", ()=>window.print());
-    $("btn-delete").addEventListener("click", deleteCurrentInvoice);
+    $("btn-new").addEventListener("click",createNewInvoice);
+    $("btn-save").addEventListener("click",saveCurrentInvoice);
+    $("btn-back").addEventListener("click",showDashboard);
+    $("btn-print").addEventListener("click",()=>window.print());
+    $("btn-delete").addEventListener("click",deleteCurrentInvoice);
 
-    $("btn-export").addEventListener("click", exportCsv);
-    $("btn-save-json").addEventListener("click", exportJson);
-    $("btn-reset").addEventListener("click", resetSystem);
+    $("btn-export").addEventListener("click",exportCsv);
+    $("btn-save-json").addEventListener("click",exportJson);
+    $("btn-reset").addEventListener("click",resetSystem);
 
-    $("btn-load-json").addEventListener("click", ()=>$("json-file-input").click());
-    $("json-file-input").addEventListener("change", e=>{
-      const file = e.target.files[0];
+    $("btn-load-json").addEventListener("click",()=>$("json-file-input").click());
+    $("json-file-input").addEventListener("change",e=>{
+      const file=e.target.files[0];
       if(file) importJsonFromFile(file);
-      e.target.value = "";
+      e.target.value="";
     });
 
     document.querySelectorAll(".status-pill").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
+      btn.addEventListener("click",()=>{
         document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
         btn.classList.add("active");
-        currentFilter = btn.dataset.filter;
+        currentFilter=btn.dataset.filter;
         renderDashboard();
       });
     });
 
-    $("po-filter").addEventListener("change", e=>{
-      currentPoFilter = e.target.value;
+    $("po-filter").addEventListener("change",e=>{
+      currentPoFilter=e.target.value;
       renderDashboard();
     });
 
-    $("search-input").addEventListener("input", e=>{
-      searchTerm = e.target.value.trim();
+    $("search-input").addEventListener("input",e=>{
+      searchTerm=e.target.value.trim();
       renderDashboard();
     });
 
-    $("btn-add-row").addEventListener("click", ()=>{
-      const row = createItemRow();
+    $("btn-add-row").addEventListener("click",()=>{
+      const row=createItemRow();
       $("items-body").appendChild(row);
       updateRowNumbers();
       recalcTotals();
     });
 
-    $("f-discount").addEventListener("input", recalcTotals);
-    $("f-tax").addEventListener("input", recalcTotals);
-    $("f-shipping").addEventListener("input", recalcTotals);
+    $("f-discount").addEventListener("input",recalcTotals);
+    $("f-tax").addEventListener("input",recalcTotals);
+    $("f-shipping").addEventListener("input",recalcTotals);
 
-    window.editInvoice = editInvoice;
-    window.deleteInvoiceById = deleteInvoiceById;
+    window.editInvoice=editInvoice;
+    window.deleteInvoiceById=deleteInvoiceById;
   }
 
   function init(){
@@ -1086,7 +1016,7 @@
   }
 
   if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded",init);
   } else {
     init();
   }
