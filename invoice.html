@@ -527,10 +527,21 @@ function showEditor() {
   if (dash) dash.style.display = "none";
   if (editor) editor.style.display = "";
 }
-    function showEditor(){
-      $("dashboard").style.display = "none";
-      $("editor").style.display = "";
-    }
+function showDashboard() {
+  const dash = $("dashboard");
+  const editor = $("editor");
+
+  if (dash) dash.style.display = "";
+  if (editor) editor.style.display = "none";
+}
+
+function showEditor() {
+  const dash = $("dashboard");
+  const editor = $("editor");
+
+  if (dash) dash.style.display = "none";
+  if (editor) editor.style.display = "";
+}
 
     function createNewInvoice(){
       currentId = null;
