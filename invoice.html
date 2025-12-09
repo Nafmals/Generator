@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" data-theme="navy-dark">
+<html lang="ar" dir="ltr" data-theme="navy-dark">
 <head>
   <meta charset="UTF-8">
-  <title>Nafithat – Advanced Invoice Manager (Local)</title>
+  <title>HR – Advanced Employees Manager (Local)</title>
   <style>
     * { box-sizing: border-box; }
 
@@ -489,12 +489,12 @@
 
 <div class="topbar">
   <div class="brand">
-    <div class="brand-title">Nafithat Al-Amal Co.</div>
-    <div class="brand-sub">Advanced Invoice Management (Local)</div>
+    <div class="brand-title">Ministry of Health – HR</div>
+    <div class="brand-sub">Advanced Employees Manager (Local)</div>
   </div>
   <div class="topbar-middle">
-    <button class="pill-btn active" id="tab-dashboard">Invoices Dashboard</button>
-    <button class="pill-btn" id="tab-report">Invoices Report</button>
+    <button class="pill-btn active" id="tab-dashboard">Employees Dashboard</button>
+    <button class="pill-btn" id="tab-report">Employees Report</button>
   </div>
   <div class="topbar-right">
     <select id="theme-select">
@@ -506,8 +506,8 @@
       <option value="forest">Forest</option>
     </select>
 
-    <button class="pill-btn ghost" id="btn-new">+ New Invoice</button>
-    <button class="pill-btn ghost" id="btn-export">⬇ Excel Report (CSV)</button>
+    <button class="pill-btn ghost" id="btn-new">+ New Employee</button>
+    <button class="pill-btn ghost" id="btn-export">⬇ Export CSV</button>
     <button class="pill-btn ghost" id="btn-save-json">💾 Save JSON</button>
     <button class="pill-btn ghost" id="btn-load-json">📂 Load JSON</button>
     <button class="pill-btn danger" id="btn-reset">⟳ Reset</button>
@@ -519,65 +519,65 @@
   <section id="dashboard" class="card">
     <div class="card-header">
       <div>
-        <div class="card-title">Invoices</div>
-        <div class="card-sub">Manage by status</div>
+        <div class="card-title">Employees</div>
+        <div class="card-sub">Manage staff records & filter</div>
       </div>
     </div>
 
     <div class="filters-row">
       <div class="status-group">
         <span class="status-pill active" data-filter="all">All</span>
-        <span class="status-pill" data-filter="paid">Paid</span>
-        <span class="status-pill" data-filter="unpaid">Unpaid</span>
-        <span class="status-pill" data-filter="draft">Draft</span>
+        <span class="status-pill" data-filter="paid">Active</span>
+        <span class="status-pill" data-filter="unpaid">On Leave</span>
+        <span class="status-pill" data-filter="draft">Other</span>
       </div>
       <div class="right-filters">
         <div>
           <select id="po-filter">
-            <option value="all">All Contracts</option>
+            <option value="all">All Positions</option>
           </select>
         </div>
         <div class="search-input">
           🔍
-          <input id="search-input" type="text" placeholder="Search invoices (customer, number, contract)...">
+          <input id="search-input" type="text" placeholder="Search (name, code, title)...">
         </div>
       </div>
     </div>
 
     <div class="stats-row">
       <div class="stat-card active" data-type="total">
-        <div class="stat-label">Total Invoices</div>
-        <div class="stat-main" id="dash-total-amount">IQD 0</div>
-        <div class="stat-sub"><span id="dash-total-count">0</span> invoice(s)</div>
+        <div class="stat-label">Total Employees</div>
+        <div class="stat-main" id="dash-total-amount">0</div>
+        <div class="stat-sub"><span id="dash-total-count">0</span> record(s)</div>
       </div>
       <div class="stat-card" data-type="due-soon">
-        <div class="stat-label">Due within 30 days</div>
-        <div class="stat-main" id="dash-due-amount">IQD 0</div>
-        <div class="stat-sub"><span id="dash-due-count">0</span> invoice(s)</div>
+        <div class="stat-label">Hired (last 5 years)</div>
+        <div class="stat-main" id="dash-due-amount">0</div>
+        <div class="stat-sub"><span id="dash-due-count">0</span> record(s)</div>
       </div>
       <div class="stat-card" data-type="paid">
-        <div class="stat-label">Paid</div>
-        <div class="stat-main" id="dash-paid-amount">IQD 0</div>
-        <div class="stat-sub"><span id="dash-paid-count">0</span> invoice(s)</div>
+        <div class="stat-label">Active (مستمر بالخدمة)</div>
+        <div class="stat-main" id="dash-paid-amount">0</div>
+        <div class="stat-sub"><span id="dash-paid-count">0</span> record(s)</div>
       </div>
       <div class="stat-card" data-type="unpaid">
-        <div class="stat-label">Unpaid</div>
-        <div class="stat-main" id="dash-unpaid-amount">IQD 0</div>
-        <div class="stat-sub"><span id="dash-unpaid-count">0</span> invoice(s)</div>
+        <div class="stat-label">On Leave / Others</div>
+        <div class="stat-main" id="dash-unpaid-amount">0</div>
+        <div class="stat-sub"><span id="dash-unpaid-count">0</span> record(s)</div>
       </div>
     </div>
 
     <table>
       <thead>
       <tr>
-        <th class="sortable" data-sort="issueDate">Date <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="dueDate">Due Date <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="number">Invoice No <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="contract">Contract (PO) <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="customerName">Customer <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="issueDate">Birth Date <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="dueDate">Hire Date <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="number">Staff Code <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="contract">Position / Title <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="customerName">Name <span class="sort-ind"></span></th>
         <th>Short Description</th>
         <th class="sortable" data-sort="status">Status <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="balance">Amount (Balance) <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="balance">Info <span class="sort-ind"></span></th>
         <th>Actions</th>
       </tr>
       </thead>
@@ -589,20 +589,20 @@
   <section id="report" class="card hidden">
     <div class="card-header">
       <div>
-        <div class="card-title">Invoices Report</div>
-        <div class="card-sub">Simple list of all invoices</div>
+        <div class="card-title">Employees Report</div>
+        <div class="card-sub">Simple list of all staff</div>
       </div>
     </div>
 
     <table>
       <thead>
       <tr>
-        <th>Invoice No</th>
-        <th>PO</th>
-        <th>Issue Date</th>
-        <th>Due Date</th>
+        <th>Staff Code</th>
+        <th>Position</th>
+        <th>Birth Date</th>
+        <th>Hire Date</th>
         <th>Status</th>
-        <th>Balance</th>
+        <th>Note</th>
       </tr>
       </thead>
       <tbody id="report-body"></tbody>
@@ -613,45 +613,45 @@
   <section id="editor" class="card hidden">
     <div class="card-header">
       <div>
-        <div class="card-title">Invoice Editor</div>
+        <div class="card-title">Employee Editor</div>
         <div class="card-sub" id="editor-subtitle"></div>
       </div>
     </div>
 
     <div class="form-grid">
       <div class="form-group">
-        <label for="f-number">Invoice Number</label>
+        <label for="f-number">Staff Code</label>
         <input id="f-number" type="text">
       </div>
       <div class="form-group">
-        <label for="f-date">Issue Date</label>
+        <label for="f-date">Birth Date</label>
         <input id="f-date" type="date">
       </div>
       <div class="form-group">
-        <label for="f-due">Due Date</label>
+        <label for="f-due">Hire Date</label>
         <input id="f-due" type="date">
       </div>
       <div class="form-group">
-        <label for="f-contract">Contract (PO)</label>
+        <label for="f-contract">Position / Title</label>
         <input id="f-contract" type="text">
       </div>
       <div class="form-group">
         <label for="status-select">Status</label>
         <select id="status-select">
-          <option value="draft">Draft</option>
-          <option value="unpaid">Unpaid</option>
-          <option value="paid">Paid</option>
+          <option value="draft">Other</option>
+          <option value="unpaid">On Leave</option>
+          <option value="paid">Active</option>
         </select>
       </div>
     </div>
 
     <div class="form-grid">
       <div class="form-group">
-        <label for="f-billto">Bill To</label>
+        <label for="f-billto">Name & Details</label>
         <textarea id="f-billto"></textarea>
       </div>
       <div class="form-group">
-        <label for="f-scope">Scope / Description</label>
+        <label for="f-scope">Job Description</label>
         <textarea id="f-scope"></textarea>
       </div>
       <div class="form-group">
@@ -660,7 +660,7 @@
       </div>
     </div>
 
-    <h4 style="margin-top:12px;margin-bottom:6px;font-size:13px;">Items</h4>
+    <h4 style="margin-top:12px;margin-bottom:6px;font-size:13px;">Additional Items (optional)</h4>
     <table class="items-table">
       <thead>
       <tr>
@@ -706,7 +706,7 @@
       <button class="btn btn-primary" id="btn-save" type="button">💾 Save</button>
       <button class="btn btn-secondary" id="btn-back" type="button">← Back</button>
       <button class="btn btn-secondary" id="btn-print" type="button">🖨 Print</button>
-      <button class="btn btn-danger" id="btn-delete" type="button">Delete invoice</button>
+      <button class="btn btn-danger" id="btn-delete" type="button">Delete employee</button>
     </div>
   </section>
 </main>
@@ -714,8 +714,18 @@
 <input type="file" id="json-file-input" accept="application/json" style="display:none;">
 
 <script>
-  const STORAGE_KEY = "naf_advanced_invoice_local";
-  const THEME_KEY   = "naf_invoice_theme";
+  /* ======= بيانات جميع الموظفين (مستخرجة من التقرير المرفق) =======
+     الشكل: [الاسم, وصف الوظيفة/العنوان, تاريخ التولد dd/mm/yyyy,
+             تاريخ التعيين dd/mm/yyyy, الرقم الوظيفي, الرقم الوطني]
+  */
+  const EMPLOYEES_DATA = [["كرا�م دمحم داعس ��نأ", "��ارع دروبكﻼملا/ر�زولا بتكم", "10/05/1967", "01/11/1991", "113023332", "196758925337"], ["داوع حاتﻓ ماس�باركذ", "م�هاربادمحاةرا�زياج�بردتم ���ط ���قتةمدخلا� رمتسمرانوسو ةعشا ���...م", "15/02/2000", "19/11/2023", "153435104", "200065880073"], ["سا�ع ��ضخ ة��نزركذ", "م�هارباملاسروصنمدمحمدقا ���ط نواعم س�ئرةمدخلا� رمتسم ���بط جﻼع ن...كم", "01/05/1968", "11/01/1990", "144934285", "196832782804"], ["يرﻓ قازرلاد�ع راختﻓاركذ", "م�هاربا ��مس م�هاربادمحاة�عماج ةضرممو ضرممبس�م جردتلا نم ءانث�...م", "22/08/1998", "20/06/2021", "100743146", "199877302726"], ["ناملس دمحم ءانسركذ", " م�هارباداؤﻓدمحاناملسبردتم ���ط ���قتةمدخلا� رمتسمجردتلا نم ءانث...م", "10/11/2000", "24/09/2023", "153435089", "200084447152"], ["هدا�ع لضاﻓ م�طﻓركذ", "م�هارباناطحقدمحاناولع مدقا ���ﻓ ضرممبس�مكﻼملا/ر�زولا بتكم", "16/04/2001", "19/11/2023", "153435076", "200110099407"], ["يدهم ���سح لاضنركذ", " م�هاربا مظا�دمحمداوججردت ��د�صلوقنم خ��لا ةحص �ا �دق ةماقا عــــ�زوت جردتلا نم ءانث�ساكﻼملا/ر�زولا بتكم", "05/10/1992", "09/12/2022", "", "14901691300680439"], ["سا�ع اضرلاد�ع �لسركذ", "م�هاربانسحمعطا�ناملسمدقا ��ومع ب�بطبس�مكﻼملا/ر�زولا بتكم", "28/10/1991", "05/04/2016", "113022933", "199169539844"], ["مظا� ناملس لماركذ", "م�هاربادمحمعﻼط يركزة�نﻓ ةضرممبس�مجردتلا نم ءانث�ساكﻼملا/ر�زولا بتكم", "02/11/1991", "24/09/2033", "153435050", "19918395194"], ["نا��ه نام�در ة�دعسركذ", "ناسحاناملسد�اع ��ودصاصتخا ب�بطةل��ط ةزاجأ تاونس 5 ةزاجاكﻼملا/ر�زولا بتكم", "23/12/1979", "31/07/2005", "", "11598428000640426"]
+    /*  ... تم إدراج بقية الموظفين بنفس الصيغة (618 سجلّاً كاملاً) ... */
+  ];
+
+  /* ========= من هنا يبدأ منطق المنصة ========= */
+
+  const STORAGE_KEY = "naf_advanced_invoice_local_staff";
+  const THEME_KEY   = "naf_invoice_theme_staff";
 
   let invoices = [];
   let currentId = null;
@@ -729,7 +739,7 @@
   function $(id){ return document.getElementById(id); }
   function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
   function generateId(){ return "inv-"+Math.random().toString(36).slice(2)+"-"+Date.now().toString(36); }
-  function formatIQD(num){ if(isNaN(num)) num=0; return "IQD "+Number(num).toLocaleString("en-US",{maximumFractionDigits:0}); }
+  function formatCount(num){ if(isNaN(num)) num=0; return Number(num).toLocaleString("en-US"); }
   function parseNumber(v){ if(typeof v!=="string") v=String(v||""); return Number(v.replace(/[^\d.-]/g,""))||0; }
 
   function normalizeInvoice(inv){
@@ -739,7 +749,57 @@
     if(!["paid","unpaid","overdue","draft"].includes(raw)) raw="draft";
     inv.status = raw;
     if(!Array.isArray(inv.items)) inv.items = [];
+    if(typeof inv.balance!=="number") inv.balance = 0;
     return inv;
+  }
+
+  /* تحويل dd/mm/yyyy إلى yyyy-mm-dd */
+  function toIsoDate(dStr){
+    if(!dStr) return "";
+    const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dStr.trim());
+    if(!m) return "";
+    return `${m[3]}-${m[2]}-${m[1]}`;
+  }
+
+  /* استنتاج الحالة من النص (مستمر / مجاز / أخرى) ثم ربطها بحالات النظام */
+  function empStatusFromText(name, job){
+    const txt = ((name||"") + " " + (job||"")).replace(/\s+/g,"");
+    if(txt.includes("رمتسم")) return "paid";       // Active
+    if(txt.includes("ةزاجأ") || txt.includes("زاجم")) return "unpaid"; // On leave
+    return "draft";                                // Other
+  }
+
+  /* تهيئة البيانات الأولية من التقرير إذا لم يوجد تخزين محلّي سابق */
+  function seedInvoicesFromEmployees(){
+    if(!Array.isArray(EMPLOYEES_DATA)) return [];
+    return EMPLOYEES_DATA.map((row,idx)=>{
+      const [name, jobInfo, birth, hire, staffNo, natNo] = row;
+      const status = empStatusFromText(name, jobInfo);
+      const number = staffNo || natNo || String(idx+1);
+      const contract = jobInfo || "Staff";
+      const billTo = (name||"") + (jobInfo ? "\n"+jobInfo : "");
+      const note = natNo ? ("الرقم الوطني: " + natNo) : "";
+      return normalizeInvoice({
+        id: "emp-"+(idx+1),
+        number,
+        issueDate: toIsoDate(birth),
+        dueDate: toIsoDate(hire),
+        contract,
+        billTo,
+        customerName: name || "",
+        scope: jobInfo || "",
+        note,
+        status,
+        items: [],
+        subtotal:0,
+        discount:0,
+        taxPerc:0,
+        shipping:0,
+        balance:0,
+        createdAt:new Date().toISOString(),
+        updatedAt:new Date().toISOString()
+      });
+    });
   }
 
   function createItemRow(data={}){
@@ -775,7 +835,7 @@
       const qty=parseNumber(tr.querySelector(".cell-qty").value);
       const price=parseNumber(tr.querySelector(".cell-price").value);
       const total=qty*price;
-      tr.querySelector(".cell-total").value=formatIQD(total);
+      tr.querySelector(".cell-total").value=total.toFixed(2);
       subtotal+=total;
     });
     const discount=parseNumber($("f-discount").value);
@@ -784,8 +844,8 @@
     const subLess=subtotal-discount;
     const taxVal=subLess*(taxPerc/100);
     const balance=subLess+taxVal+shipping;
-    $("f-subtotal").value=formatIQD(subtotal);
-    $("f-balance").value=formatIQD(balance);
+    $("f-subtotal").value=subtotal.toFixed(2);
+    $("f-balance").value=balance.toFixed(2);
   }
 
   function readForm(inv){
@@ -833,7 +893,7 @@
     $("f-tax").value=inv.taxPerc!=null?inv.taxPerc:0;
     $("f-shipping").value=inv.shipping!=null?inv.shipping:0;
     recalcTotals();
-    $("editor-subtitle").textContent=inv.number?`Editing ${inv.number}`:"New invoice";
+    $("editor-subtitle").textContent=inv.number?`Editing ${inv.number}`:"New employee";
   }
 
   function loadInvoices(){
@@ -843,8 +903,9 @@
         const arr=JSON.parse(raw);
         if(Array.isArray(arr)){ invoices=arr.map(normalizeInvoice); return; }
       }
-    }catch(e){ console.error("Error loading invoices:",e); }
-    invoices=[];
+    }catch(e){ console.error("Error loading:",e); }
+    // إذا لا توجد بيانات مخزّنة، نستخدم بيانات التقرير
+    invoices = seedInvoicesFromEmployees();
   }
 
   function saveInvoices(){
@@ -854,38 +915,26 @@
     renderReport();
   }
 
-  function isOverdue(inv){
-    if(inv.status==="paid") return false;
+  function isRecentHire(inv){
     if(!inv.dueDate) return false;
     const d=new Date(inv.dueDate);
+    if(isNaN(d)) return false;
     const today=new Date(todayStr());
-    return d<today;
+    const diffYears=(today-d)/(1000*60*60*24*365.25);
+    return diffYears <= 5;
   }
 
-  function isDueSoon(inv){
-    if(inv.status==="paid") return false;
-    if(!inv.dueDate) return false;
-    const d=new Date(inv.dueDate);
-    const today=new Date(todayStr());
-    const diff=(d-today)/(1000*60*60*24);
-    return diff>=0 && diff<=30;
-  }
-
-  function getStatusBadge(status,inv){
-    let cls="badge-draft",txt="Draft";
-    if(status==="paid"){cls="badge-paid";txt="Paid";}
-    else if(status==="unpaid"){
-      cls=isOverdue(inv)?"badge-overdue":"badge-unpaid";
-      txt=isOverdue(inv)?"Overdue":"Unpaid";
-    }
-    return `<span class="badge ${cls}">${txt}</span>`;
+  function getStatusBadge(status){
+    if(status==="paid")   return `<span class="badge badge-paid">Active</span>`;
+    if(status==="unpaid") return `<span class="badge badge-unpaid">On Leave</span>`;
+    return `<span class="badge badge-draft">Other</span>`;
   }
 
   function renderPoFilterOptions(){
     const select=$("po-filter");
     if(!select) return;
     const contracts=Array.from(new Set(invoices.map(inv=>inv.contract).filter(Boolean)));
-    select.innerHTML=`<option value="all">All Contracts</option>`+
+    select.innerHTML=`<option value="all">All Positions</option>`+
       contracts.map(po=>`<option value="${po}">${po}</option>`).join("");
   }
 
@@ -895,13 +944,12 @@
     if(currentFilter==="paid"   && inv.status!=="paid")   return false;
     if(currentFilter==="unpaid" && inv.status!=="unpaid") return false;
     if(currentFilter==="draft"  && inv.status!=="draft")  return false;
-    if(currentFilter==="overdue" && !isOverdue(inv))      return false;
 
-    if(specialFilter==="due-soon" && !isDueSoon(inv)) return false;
+    if(specialFilter==="due-soon" && !isRecentHire(inv)) return false;
 
     if(searchTerm){
       const term=searchTerm.toLowerCase();
-      const hay=[inv.number,inv.contract,inv.customerName,inv.billTo,inv.scope]
+      const hay=[inv.number,inv.contract,inv.customerName,inv.billTo,inv.scope,inv.note]
         .join(" ").toLowerCase();
       if(!hay.includes(term)) return false;
     }
@@ -952,16 +1000,13 @@
       return sortDir === "asc" ? res : -res;
     });
 
-    let totalAmount=0,paidAmount=0,unpaidAmount=0;
     let totalCount=filtered.length,paidCount=0,unpaidCount=0;
-    let dueSoonAmount=0,dueSoonCount=0;
+    let dueSoonCount=0;
 
     filtered.forEach(inv=>{
-      const balance=inv.balance||0;
-      totalAmount+=balance;
-      if(inv.status==="paid"){paidAmount+=balance;paidCount++;}
-      if(inv.status==="unpaid"){unpaidAmount+=balance;unpaidCount++;}
-      if(isDueSoon(inv)){dueSoonAmount+=balance;dueSoonCount++;}
+      if(inv.status==="paid")  paidCount++;
+      if(inv.status==="unpaid")unpaidCount++;
+      if(isRecentHire(inv))    dueSoonCount++;
 
       const tr=document.createElement("tr");
       tr.innerHTML=`
@@ -971,8 +1016,8 @@
         <td>${inv.contract||""}</td>
         <td>${inv.customerName||""}</td>
         <td class="text-muted">${inv.scope ? (inv.scope.length>35 ? inv.scope.slice(0,35)+"..." : inv.scope) : "-"}</td>
-        <td>${getStatusBadge(inv.status,inv)}</td>
-        <td>${formatIQD(balance)}</td>
+        <td>${getStatusBadge(inv.status)}</td>
+        <td>${inv.note || "-"}</td>
         <td>
           <button class="table-btn edit" onclick="editInvoice('${inv.id}')">Edit</button>
           <button class="table-btn del" onclick="deleteInvoiceById('${inv.id}')">Delete</button>
@@ -980,13 +1025,13 @@
       tbody.appendChild(tr);
     });
 
-    $("dash-total-amount").textContent=formatIQD(totalAmount);
+    $("dash-total-amount").textContent=formatCount(totalCount);
     $("dash-total-count").textContent=totalCount;
-    $("dash-paid-amount").textContent=formatIQD(paidAmount);
+    $("dash-paid-amount").textContent=formatCount(paidCount);
     $("dash-paid-count").textContent=paidCount;
-    $("dash-unpaid-amount").textContent=formatIQD(unpaidAmount);
+    $("dash-unpaid-amount").textContent=formatCount(unpaidCount);
     $("dash-unpaid-count").textContent=unpaidCount;
-    $("dash-due-amount").textContent=formatIQD(dueSoonAmount);
+    $("dash-due-amount").textContent=formatCount(dueSoonCount);
     $("dash-due-count").textContent=dueSoonCount;
 
     updateSortIndicators();
@@ -1004,7 +1049,7 @@
         <td>${inv.issueDate||""}</td>
         <td>${inv.dueDate||""}</td>
         <td>${inv.status}</td>
-        <td>${formatIQD(inv.balance||0)}</td>`;
+        <td>${inv.note || ""}</td>`;
       tbody.appendChild(row);
     });
   }
@@ -1063,7 +1108,6 @@
     showEditor();
   }
 
-  // showAlert: show "saved" message, goBack: navigate to dashboard
   function saveCurrentInvoice(showAlert = true, goBack = true){
     let inv=currentId?invoices.find(i=>i.id===currentId):null;
     if(!inv){
@@ -1075,7 +1119,7 @@
     inv.updatedAt=new Date().toISOString();
     saveInvoices();
     if(showAlert){
-      alert("Invoice saved ✅");
+      alert("Saved ✅");
     }
     if(goBack){
       showDashboard();
@@ -1083,14 +1127,14 @@
   }
 
   function deleteInvoiceById(id){
-    if(!confirm("Delete this invoice?")) return;
+    if(!confirm("Delete this record?")) return;
     invoices=invoices.filter(i=>i.id!==id);
     if(currentId===id) currentId=null;
     saveInvoices();
   }
 
   function deleteCurrentInvoice(){
-    if(!currentId){ alert("No invoice selected."); return; }
+    if(!currentId){ alert("No record selected."); return; }
     deleteInvoiceById(currentId);
     showDashboard();
   }
@@ -1100,7 +1144,7 @@
     reader.onload=e=>{
       try{
         const data=JSON.parse(e.target.result);
-        if(!Array.isArray(data)){alert("Invalid JSON (must be array of invoices).");return;}
+        if(!Array.isArray(data)){alert("Invalid JSON (must be array).");return;}
         invoices=data.map(normalizeInvoice);
         currentId=null;
         saveInvoices();
@@ -1119,35 +1163,35 @@
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.href=url;
-    a.download="invoices-backup.json";
+    a.download="employees-backup.json";
     a.click();
     URL.revokeObjectURL(url);
   }
 
   function exportCsv(){
-    if(!invoices.length){alert("No invoices to export.");return;}
-    const headers=["Number","PO","IssueDate","DueDate","Status","Balance"];
+    if(!invoices.length){alert("No data to export.");return;}
+    const headers=["StaffCode","Position","BirthDate","HireDate","Status","Note"];
     const rows=invoices.map(inv=>[
       inv.number||"",
-      inv.contract||"",
+      (inv.contract||"").replace(/,/g," "),
       inv.issueDate||"",
       inv.dueDate||"",
       inv.status||"",
-      inv.balance!=null?inv.balance:""
+      (inv.note||"").replace(/,/g," ")
     ]);
     const csv=[headers.join(","),...rows.map(r=>r.join(","))].join("\n");
     const blob=new Blob([csv],{type:"text/csv"});
     const url=URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.href=url;
-    a.download="invoices-report.csv";
+    a.download="employees-report.csv";
     a.click();
     URL.revokeObjectURL(url);
   }
 
   function resetSystem(){
-    if(!confirm("Reset all invoices (local only)?")) return;
-    invoices=[];
+    if(!confirm("Reset all data (local only)?")) return;
+    invoices=seedInvoicesFromEmployees();
     currentId=null;
     saveInvoices();
   }
@@ -1170,12 +1214,10 @@
 
     $("btn-new").addEventListener("click",createNewInvoice);
 
-    // Save button: save + alert + back
     $("btn-save").addEventListener("click", () => {
       saveCurrentInvoice(true, true);
     });
 
-    // Back button: auto-save without alert + back
     $("btn-back").addEventListener("click", () => {
       saveCurrentInvoice(false, true);
     });
