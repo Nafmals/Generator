@@ -8,7 +8,6 @@
 
     /* ========= THEME VARIABLES ========= */
     :root {
-      /* default values (navy-dark) */
       --bg: #050816;
       --text: #f9fafb;
       --subtext: #9ca3af;
@@ -192,7 +191,7 @@
       --badge-unpaid-bg: #fed7aa;
       --badge-unpaid-text: #9a3412;
       --badge-overdue-bg: #fecaca;
-      --badge-overdue-text: #fecaca;
+      --badge-overdue-text: #b91c1c;
       --badge-draft-bg: #e5e7eb;
       --badge-draft-text: #374151;
     }
@@ -229,8 +228,7 @@
       --badge-draft-text: #374151;
     }
 
-    /* ========= BASE STYLES USING VARIABLES ========= */
-
+    /* ========= BASE STYLES ========= */
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
@@ -250,317 +248,239 @@
       top: 0;
       z-index: 10;
     }
-    .brand {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-    .brand-title {
-      font-weight: 700;
-      font-size: 18px;
-    }
-    .brand-sub {
-      font-size: 11px;
-      color: var(--subtext);
-    }
+    .brand { display:flex; flex-direction:column; gap:3px; }
+    .brand-title { font-weight:700; font-size:18px; }
+    .brand-sub { font-size:11px; color:var(--subtext); }
     .topbar-middle {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: center;
+      display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
     }
     .pill-btn {
-      border: none;
-      border-radius: 999px;
-      padding: 6px 14px;
-      font-size: 12px;
-      cursor: pointer;
-      background: var(--surface-alt);
-      color: var(--text);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      border:none;
+      border-radius:999px;
+      padding:6px 14px;
+      font-size:12px;
+      cursor:pointer;
+      background:var(--surface-alt);
+      color:var(--text);
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
     }
-    .pill-btn.active {
-      background: var(--accent);
-      color: #fff;
-    }
-    .pill-btn.ghost {
-      background: var(--accent-ghost);
-    }
+    .pill-btn.active { background:var(--accent); color:#fff; }
+    .pill-btn.ghost { background:var(--accent-ghost); }
     .topbar-right {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      align-items: center;
+      display:flex; gap:8px; flex-wrap:wrap;
+      justify-content:flex-end; align-items:center;
     }
-    .pill-btn.danger {
-      background: var(--danger-soft);
-      color: var(--danger);
-    }
+    .pill-btn.danger { background:var(--danger-soft); color:var(--danger); }
 
     main {
-      padding: 16px 20px 40px;
-      max-width: 1200px;
-      margin: 0 auto;
+      padding:16px 20px 40px;
+      max-width:1200px;
+      margin:0 auto;
     }
     .card {
-      background: var(--card-bg);
-      border-radius: 16px;
-      padding: 16px 18px;
-      border: 1px solid var(--card-border);
-      box-shadow: var(--shadow);
-      margin-bottom: 16px;
+      background:var(--card-bg);
+      border-radius:16px;
+      padding:16px 18px;
+      border:1px solid var(--card-border);
+      box-shadow:var(--shadow);
+      margin-bottom:16px;
     }
     .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-      gap: 8px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:10px;
+      gap:8px;
     }
-    .card-title {
-      font-size: 18px;
-      font-weight: 600;
-    }
-    .card-sub {
-      font-size: 12px;
-      color: var(--subtext);
-    }
+    .card-title { font-size:18px; font-weight:600; }
+    .card-sub { font-size:12px; color:var(--subtext); }
 
     .filters-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      margin-bottom: 12px;
-      justify-content: space-between;
+      display:flex; flex-wrap:wrap; gap:10px;
+      align-items:center; margin-bottom:12px;
+      justify-content:space-between;
     }
-    .status-group {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      font-size: 12px;
-    }
+    .status-group { display:flex; gap:6px; flex-wrap:wrap; font-size:12px; }
     .status-pill {
-      border-radius: 999px;
-      padding: 4px 10px;
-      border: 1px solid var(--border-soft);
-      background: var(--surface-soft);
-      cursor: pointer;
-      color: var(--text);
+      border-radius:999px;
+      padding:4px 10px;
+      border:1px solid var(--border-soft);
+      background:var(--surface-soft);
+      cursor:pointer;
+      color:var(--text);
     }
     .status-pill.active {
-      background: var(--accent);
-      border-color: var(--accent);
+      background:var(--accent);
+      border-color:var(--accent);
     }
     .right-filters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
+      display:flex; flex-wrap:wrap; gap:8px; align-items:center;
     }
 
     select, input[type="text"], input[type="number"], input[type="date"], textarea {
-      border-radius: 999px;
-      border: 1px solid var(--input-border);
-      background: var(--input-bg);
-      color: var(--text);
-      padding: 5px 10px;
-      font-size: 12px;
+      border-radius:999px;
+      border:1px solid var(--input-border);
+      background:var(--input-bg);
+      color:var(--text);
+      padding:5px 10px;
+      font-size:12px;
     }
-    textarea {
-      border-radius: 12px;
-    }
+    textarea { border-radius:12px; }
     .search-input {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--input-border);
-      background: var(--input-bg);
-      font-size: 12px;
+      display:flex; align-items:center; gap:6px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid var(--input-border);
+      background:var(--input-bg);
+      font-size:12px;
     }
     .search-input input {
-      border: none;
-      outline: none;
-      background: transparent;
-      color: inherit;
-      width: 180px;
+      border:none; outline:none; background:transparent;
+      color:inherit; width:180px;
     }
 
     .stats-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
-      gap: 10px;
-      margin-bottom: 10px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:10px;
+      margin-bottom:10px;
     }
     .stat-card {
-      border-radius: 16px;
-      padding: 10px 12px;
-      background: linear-gradient(135deg, var(--surface-alt), var(--accent-soft));
-      border: 1px solid var(--border-soft);
-      font-size: 12px;
+      border-radius:16px;
+      padding:10px 12px;
+      background:linear-gradient(135deg,var(--surface-alt),var(--accent-soft));
+      border:1px solid var(--border-soft);
+      font-size:12px;
+      cursor:pointer;
+      transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
     }
-    .stat-label {
-      color: var(--subtext);
-      margin-bottom: 4px;
+    .stat-card:hover {
+      transform: translateY(-1px);
     }
-    .stat-main {
-      font-size: 16px;
-      font-weight: 600;
+    .stat-card.active {
+      box-shadow:0 0 0 2px var(--accent-soft);
+      border-color:var(--accent);
     }
-    .stat-sub {
-      font-size: 11px;
-      color: var(--subtext);
-    }
+    .stat-label { color:var(--subtext); margin-bottom:4px; }
+    .stat-main { font-size:16px; font-weight:600; }
+    .stat-sub { font-size:11px; color:var(--subtext); }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-    thead {
-      background: var(--table-header-bg);
-    }
+    table { width:100%; border-collapse:collapse; font-size:12px; }
+    thead { background:var(--table-header-bg); }
     th, td {
-      padding: 6px 8px;
-      border-bottom: 1px solid var(--border-strong);
-      text-align: left;
-      white-space: nowrap;
+      padding:6px 8px;
+      border-bottom:1px solid var(--border-strong);
+      text-align:left;
+      white-space:nowrap;
     }
     th {
-      color: var(--subtext);
-      font-weight: 500;
-      font-size: 11px;
+      color:var(--subtext);
+      font-weight:500;
+      font-size:11px;
     }
-    tbody tr:hover {
-      background: var(--table-row-hover);
-    }
-    .text-muted {
-      color: var(--subtext);
+    tbody tr:hover { background:var(--table-row-hover); }
+    .text-muted { color:var(--subtext); }
+
+    th.sortable { cursor:pointer; }
+    .sort-ind {
+      font-size:10px;
+      margin-left:4px;
+      opacity:0.7;
     }
 
     .badge {
-      border-radius: 999px;
-      padding: 2px 8px;
-      font-size: 11px;
-      font-weight: 500;
+      border-radius:999px;
+      padding:2px 8px;
+      font-size:11px;
+      font-weight:500;
     }
     .badge-paid {
-      background: var(--badge-paid-bg);
-      color: var(--badge-paid-text);
+      background:var(--badge-paid-bg);
+      color:var(--badge-paid-text);
     }
     .badge-unpaid {
-      background: var(--badge-unpaid-bg);
-      color: var(--badge-unpaid-text);
+      background:var(--badge-unpaid-bg);
+      color:var(--badge-unpaid-text);
     }
     .badge-overdue {
-      background: var(--badge-overdue-bg);
-      color: var(--badge-overdue-text);
+      background:var(--badge-overdue-bg);
+      color:var(--badge-overdue-text);
     }
     .badge-draft {
-      background: var(--badge-draft-bg);
-      color: var(--badge-draft-text);
+      background:var(--badge-draft-bg);
+      color:var(--badge-draft-text);
     }
 
     .table-btn {
-      border-radius: 999px;
-      border: none;
-      padding: 2px 8px;
-      font-size: 11px;
-      cursor: pointer;
+      border-radius:999px;
+      border:none;
+      padding:2px 8px;
+      font-size:11px;
+      cursor:pointer;
     }
-    .table-btn.edit {
-      background: #dbeafe;
-      color: #1d4ed8;
-    }
-    .table-btn.del {
-      background: var(--danger-soft);
-      color: var(--danger);
-    }
+    .table-btn.edit { background:#dbeafe; color:#1d4ed8; }
+    .table-btn.del  { background:var(--danger-soft); color:var(--danger); }
 
-    .hidden { display: none; }
+    .hidden { display:none; }
 
     .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
-      gap: 10px;
-      margin-bottom: 10px;
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+      gap:10px;
+      margin-bottom:10px;
     }
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      font-size: 12px;
-    }
-    .form-group label {
-      color: var(--text);
-    }
-    .form-group textarea {
-      min-height: 60px;
-      resize: vertical;
-    }
+    .form-group { display:flex; flex-direction:column; gap:3px; font-size:12px; }
+    .form-group label { color:var(--text); }
+    .form-group textarea { min-height:60px; resize:vertical; }
 
     .items-table {
-      margin-top: 10px;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1px solid var(--border-strong);
+      margin-top:10px;
+      border-radius:12px;
+      overflow:hidden;
+      border:1px solid var(--border-strong);
     }
-    .items-table th, .items-table td {
-      background: var(--surface-alt);
-    }
+    .items-table th, .items-table td { background:var(--surface-alt); }
     .items-table textarea,
     .items-table input {
-      width: 100%;
-      border-radius: 6px;
-      border: 1px solid var(--border-strong);
-      background: var(--input-bg);
-      color: var(--text);
-      font-size: 11px;
-      padding: 3px 5px;
+      width:100%;
+      border-radius:6px;
+      border:1px solid var(--border-strong);
+      background:var(--input-bg);
+      color:var(--text);
+      font-size:11px;
+      padding:3px 5px;
     }
 
     .footer-buttons {
-      margin-top: 14px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+      margin-top:14px;
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
     }
 
     .btn {
-      border-radius: 999px;
-      border: none;
-      padding: 6px 12px;
-      font-size: 12px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
+      border-radius:999px;
+      border:none;
+      padding:6px 12px;
+      font-size:12px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
     }
-    .btn-primary {
-      background: var(--accent);
-      color: #fff;
-    }
-    .btn-secondary {
-      background: var(--accent-ghost);
-      color: var(--text);
-    }
-    .btn-danger {
-      background: var(--danger-soft);
-      color: var(--danger);
-    }
+    .btn-primary { background:var(--accent); color:#fff; }
+    .btn-secondary { background:var(--accent-ghost); color:var(--text); }
+    .btn-danger { background:var(--danger-soft); color:var(--danger); }
 
-    @media (max-width: 640px) {
-      .topbar {
-        flex-direction: column;
-        align-items: flex-start;
+    @media (max-width:640px){
+      .topbar{
+        flex-direction:column;
+        align-items:flex-start;
       }
-      .topbar-middle, .topbar-right {
-        justify-content: flex-start;
+      .topbar-middle,.topbar-right{
+        justify-content:flex-start;
       }
     }
   </style>
@@ -577,7 +497,6 @@
     <button class="pill-btn" id="tab-report">Invoices Report</button>
   </div>
   <div class="topbar-right">
-    <!-- Theme selector -->
     <select id="theme-select">
       <option value="navy-dark">Navy Dark</option>
       <option value="midnight-teal">Midnight Teal</option>
@@ -626,7 +545,7 @@
     </div>
 
     <div class="stats-row">
-      <div class="stat-card" data-type="total">
+      <div class="stat-card active" data-type="total">
         <div class="stat-label">Total Invoices</div>
         <div class="stat-main" id="dash-total-amount">IQD 0</div>
         <div class="stat-sub"><span id="dash-total-count">0</span> invoice(s)</div>
@@ -651,14 +570,14 @@
     <table>
       <thead>
       <tr>
-        <th>Date</th>
-        <th>Due Date</th>
-        <th>Invoice No</th>
-        <th>Contract (PO)</th>
-        <th>Customer</th>
+        <th class="sortable" data-sort="issueDate">Date <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="dueDate">Due Date <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="number">Invoice No <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="contract">Contract (PO) <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="customerName">Customer <span class="sort-ind"></span></th>
         <th>Short Description</th>
-        <th>Status</th>
-        <th>Amount (Balance)</th>
+        <th class="sortable" data-sort="status">Status <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="balance">Amount (Balance) <span class="sort-ind"></span></th>
         <th>Actions</th>
       </tr>
       </thead>
@@ -803,6 +722,9 @@
   let currentFilter = "all";
   let currentPoFilter = "all";
   let searchTerm = "";
+  let specialFilter = "none";   // for cards (due-soon, etc.)
+  let sortField = "issueDate";
+  let sortDir   = "asc";
 
   function $(id){ return document.getElementById(id); }
   function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
@@ -969,23 +891,67 @@
 
   function matchesFilters(inv){
     if(currentPoFilter!=="all" && inv.contract!==currentPoFilter) return false;
+
     if(currentFilter==="paid"   && inv.status!=="paid")   return false;
     if(currentFilter==="unpaid" && inv.status!=="unpaid") return false;
     if(currentFilter==="draft"  && inv.status!=="draft")  return false;
     if(currentFilter==="overdue" && !isOverdue(inv))      return false;
+
+    if(specialFilter==="due-soon" && !isDueSoon(inv)) return false;
+
     if(searchTerm){
       const term=searchTerm.toLowerCase();
-      const hay=[inv.number,inv.contract,inv.customerName,inv.billTo,inv.scope].join(" ").toLowerCase();
+      const hay=[inv.number,inv.contract,inv.customerName,inv.billTo,inv.scope]
+        .join(" ").toLowerCase();
       if(!hay.includes(term)) return false;
     }
     return true;
+  }
+
+  function compareForSort(a, b, field) {
+    let va, vb;
+    switch(field){
+      case "issueDate":  va=a.issueDate||"";  vb=b.issueDate||""; break;
+      case "dueDate":    va=a.dueDate||"";    vb=b.dueDate||"";   break;
+      case "number":     va=a.number||"";     vb=b.number||"";    break;
+      case "contract":   va=a.contract||"";   vb=b.contract||"";  break;
+      case "customerName": va=a.customerName||""; vb=b.customerName||""; break;
+      case "status":     va=a.status||"";     vb=b.status||"";    break;
+      case "balance":
+        va=a.balance||0; vb=b.balance||0; return va - vb;
+      default:
+        va=""; vb="";
+    }
+    if(va>vb) return 1;
+    if(va<vb) return -1;
+    return 0;
+  }
+
+  function updateSortIndicators(){
+    document.querySelectorAll("th.sortable").forEach(th=>{
+      const span=th.querySelector(".sort-ind");
+      if(!span) return;
+      const field=th.dataset.sort;
+      if(field===sortField){
+        span.textContent = sortDir === "asc" ? "▲" : "▼";
+      }else{
+        span.textContent = "";
+      }
+    });
   }
 
   function renderDashboard(){
     const tbody=$("invoice-table-body");
     if(!tbody) return;
     tbody.innerHTML="";
+
     const filtered=invoices.filter(matchesFilters);
+
+    filtered.sort((a,b)=>{
+      const res = compareForSort(a,b,sortField);
+      return sortDir === "asc" ? res : -res;
+    });
+
     let totalAmount=0,paidAmount=0,unpaidAmount=0;
     let totalCount=filtered.length,paidCount=0,unpaidCount=0;
     let dueSoonAmount=0,dueSoonCount=0;
@@ -1022,6 +988,8 @@
     $("dash-unpaid-count").textContent=unpaidCount;
     $("dash-due-amount").textContent=formatIQD(dueSoonAmount);
     $("dash-due-count").textContent=dueSoonCount;
+
+    updateSortIndicators();
   }
 
   function renderReport(){
@@ -1213,11 +1181,45 @@
       e.target.value="";
     });
 
+    // status pills
     document.querySelectorAll(".status-pill").forEach(btn=>{
       btn.addEventListener("click",()=>{
         document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
         btn.classList.add("active");
-        currentFilter=btn.dataset.filter;
+        currentFilter = btn.dataset.filter;
+        specialFilter = "none";
+        document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
+        const totalCard = document.querySelector('.stat-card[data-type="total"]');
+        if(totalCard && currentFilter==="all") totalCard.classList.add("active");
+        renderDashboard();
+      });
+    });
+
+    // stat cards as filters
+    document.querySelectorAll(".stat-card").forEach(card=>{
+      card.addEventListener("click",()=>{
+        document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
+        card.classList.add("active");
+
+        const t = card.dataset.type;
+        specialFilter = "none";
+
+        if(t === "paid"){
+          currentFilter = "paid";
+        } else if(t === "unpaid"){
+          currentFilter = "unpaid";
+        } else if(t === "due-soon"){
+          currentFilter = "all";
+          specialFilter = "due-soon";
+        } else {
+          currentFilter = "all";
+        }
+
+        document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
+        const pill = document.querySelector(`.status-pill[data-filter="${currentFilter}"]`)
+                || document.querySelector(`.status-pill[data-filter="all"]`);
+        if(pill) pill.classList.add("active");
+
         renderDashboard();
       });
     });
@@ -1242,6 +1244,20 @@
     $("f-discount").addEventListener("input",recalcTotals);
     $("f-tax").addEventListener("input",recalcTotals);
     $("f-shipping").addEventListener("input",recalcTotals);
+
+    // sort headers
+    document.querySelectorAll("th.sortable").forEach(th=>{
+      th.addEventListener("click", ()=>{
+        const field = th.dataset.sort;
+        if(sortField === field){
+          sortDir = (sortDir === "asc") ? "desc" : "asc";
+        } else {
+          sortField = field;
+          sortDir = "asc";
+        }
+        renderDashboard();
+      });
+    });
 
     $("theme-select").addEventListener("change", e => applyTheme(e.target.value));
 
