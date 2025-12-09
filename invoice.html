@@ -762,63 +762,55 @@ function showEditor() {
       saveInvoices();
     }
 
-    function setupEvents(){
-      const btnNew = $("btn-new-invoice");
-      if(btnNew) btnNew.addEventListener("click", createNewInvoice);
+function setupEvents(){
+  const btnNew = $("btn-new");
+  if (btnNew) btnNew.addEventListener("click", createNewInvoice);
 
-      const btnSave = $("btn-save-invoice");
-      if(btnSave) btnSave.addEventListener("click", saveCurrentInvoice);
+  const btnSave = $("btn-save");
+  if (btnSave) btnSave.addEventListener("click", saveCurrentInvoice);
 
-      const btnBack = $("btn-back-dashboard");
-      if(btnBack) btnBack.addEventListener("click", showDashboard);
+  const btnBack = $("btn-back");
+  if (btnBack) btnBack.addEventListener("click", showDashboard);
 
-      const btnPrint = $("btn-print");
-      if(btnPrint) btnPrint.addEventListener("click", ()=>window.print());
+  const btnPrint = $("btn-print");
+  if (btnPrint) btnPrint.addEventListener("click", () => window.print());
 
-      const bJson = $("btn-save-json");
-      if(bJson) bJson.addEventListener("click", exportJson);
+  const bJson = $("btn-save-json");
+  if (bJson) bJson.addEventListener("click", exportJson);
 
-      const bExp  = $("btn-export");
-      if(bExp)  bExp.addEventListener("click", exportCsv);
+  const bExp  = $("btn-export");
+  if (bExp)  bExp.addEventListener("click", exportCsv);
 
-      const bLJ   = $("btn-load-json");
-      if(bLJ)   bLJ.addEventListener("click", ()=>$("json-file-input")?.click());
+  const bLJ   = $("btn-load-json");
+  if (bLJ)   bLJ.addEventListener("click", () => $("json-file-input")?.click());
 
-      const bRes  = $("btn-reset");
-      if(bRes)  bRes.addEventListener("click", resetSystem);
+  const bRes  = $("btn-reset");
+  if (bRes)  bRes.addEventListener("click", resetSystem);
 
-      const fileInput = $("json-file-input");
-      if(fileInput) fileInput.addEventListener("change", e=>{
-        const file = e.target.files[0];
-        if(file) importJsonFromFile(file);
-        e.target.value = "";
-      });
+  const fileInput = $("json-file-input");
+  if (fileInput) fileInput.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (file) importJsonFromFile(file);
+    e.target.value = "";
+  });
 
-      const poSel = $("po-filter");
-      if(poSel) poSel.addEventListener("change", e=>{
-        currentPoFilter = e.target.value;
-        renderDashboard();
-      });
+  const poSel = $("po-filter");
+  if (poSel) poSel.addEventListener("change", e => {
+    currentPoFilter = e.target.value;
+    renderDashboard();
+  });
 
-      document.querySelectorAll(".status-pill").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
-          btn.classList.add("active");
-          currentFilter = btn.dataset.filter;
-          specialFilter = "none";
-          renderDashboard();
-        });
-      });
+  document.querySelectorAll(".status-pill").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".status-pill").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentFilter = btn.dataset.filter;
+      specialFilter = "none";
+      renderDashboard();
+    });
+  });
+}
 
-      document.querySelectorAll(".stat-card").forEach(card=>{
-        card.addEventListener("click", ()=>{
-          const type = card.dataset.type;
-          specialFilter = type==="due"?"due-soon" : type==="high"?"high-value":"none";
-          highlightCard(type);
-          renderDashboard();
-        });
-      });
-    }
 
     function highlightCard(type){
       document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
