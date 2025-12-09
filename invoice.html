@@ -512,10 +512,21 @@
       renderReport();
     }
 
-    function showDashboard(){
-      $("dashboard").style.display = "";
-      $("editor").style.display = "none";
-    }
+function showDashboard() {
+  const dash = $("dashboard");
+  const editor = $("editor");
+
+  if (dash) dash.style.display = "";
+  if (editor) editor.style.display = "none";
+}
+
+function showEditor() {
+  const dash = $("dashboard");
+  const editor = $("editor");
+
+  if (dash) dash.style.display = "none";
+  if (editor) editor.style.display = "";
+}
     function showEditor(){
       $("dashboard").style.display = "none";
       $("editor").style.display = "";
@@ -817,13 +828,20 @@
     window.editInvoice      = editInvoice;
     window.deleteInvoiceById= deleteInvoiceById;
 
-    (function init(){
-      setupEvents();
-      loadInvoices();
-      renderPoFilterOptions();
-      showDashboard();
-      highlightCard("total");
-      renderDashboard();
-      renderReport();
-    })();
+function init() {
+  setupEvents();
+  loadInvoices();
+  renderPoFilterOptions();
+  showDashboard();
+  highlightCard("total");
+  renderDashboard();
+  renderReport();
+}
+
+// تأكد أن الـ DOM جاهز قبل استدعاء init
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
+}
   </script>
