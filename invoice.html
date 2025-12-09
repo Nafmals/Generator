@@ -1063,19 +1063,28 @@
     showEditor();
   }
 
-  function saveCurrentInvoice(){
-    let inv=currentId?invoices.find(i=>i.id===currentId):null;
-    if(!inv){
-      inv={id:generateId(),createdAt:new Date().toISOString()};
-      invoices.push(inv);
-      currentId=inv.id;
-    }
-    readForm(inv);
-    inv.updatedAt=new Date().toISOString();
-    saveInvoices();
+// showAlert: هل تظهر رسالة "Saved"
+// goBack   : هل يرجع للدashboard بعد الحفظ
+function saveCurrentInvoice(showAlert = true, goBack = true){
+  let inv = currentId ? invoices.find(i => i.id === currentId) : null;
+
+  if(!inv){
+    inv = { id: generateId(), createdAt: new Date().toISOString() };
+    invoices.push(inv);
+    currentId = inv.id;
+  }
+
+  readForm(inv);
+  inv.updatedAt = new Date().toISOString();
+  saveInvoices();
+
+  if(showAlert){
     alert("Invoice saved ✅");
+  }
+  if(goBack){
     showDashboard();
   }
+}
 
   function deleteInvoiceById(id){
     if(!confirm("Delete this invoice?")) return;
@@ -1165,8 +1174,14 @@
     $("tab-report").addEventListener("click",showReport);
 
     $("btn-new").addEventListener("click",createNewInvoice);
-    $("btn-save").addEventListener("click",saveCurrentInvoice);
-    $("btn-back").addEventListener("click",showDashboard);
+   // زر Save: حفظ + رسالة + رجوع للداشبورد
+$("btn-save").addEventListener("click", () => {
+  saveCurrentInvoice(true, true);
+});
+   // زر Back: حفظ تلقائي بدون رسالة + رجوع للداشبورد
+$("btn-back").addEventListener("click", () => {
+  saveCurrentInvoice(false, true);
+});
     $("btn-print").addEventListener("click",()=>window.print());
     $("btn-delete").addEventListener("click",deleteCurrentInvoice);
 
