@@ -251,9 +251,7 @@
     .brand { display:flex; flex-direction:column; gap:3px; }
     .brand-title { font-weight:700; font-size:18px; }
     .brand-sub { font-size:11px; color:var(--subtext); }
-    .topbar-middle {
-      display:flex; gap:8px; flex-wrap:wrap; justify-content:center;
-    }
+    .topbar-middle { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
     .pill-btn {
       border:none;
       border-radius:999px;
@@ -268,15 +266,11 @@
     }
     .pill-btn.active { background:var(--accent); color:#fff; }
     .pill-btn.ghost { background:var(--accent-ghost); }
-    .topbar-right {
-      display:flex; gap:8px; flex-wrap:wrap;
-      justify-content:flex-end; align-items:center;
-    }
+    .topbar-right { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center; }
     .pill-btn.danger { background:var(--danger-soft); color:var(--danger); }
 
     main {
       padding:16px 20px 40px;
-      /* ✅ widened a bit */
       max-width:1350px;
       margin:0 auto;
     }
@@ -289,21 +283,11 @@
       box-shadow:var(--shadow);
       margin-bottom:16px;
     }
-    .card-header {
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      margin-bottom:10px;
-      gap:8px;
-    }
+    .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; }
     .card-title { font-size:18px; font-weight:600; }
     .card-sub { font-size:12px; color:var(--subtext); }
 
-    .filters-row {
-      display:flex; flex-wrap:wrap; gap:10px;
-      align-items:center; margin-bottom:12px;
-      justify-content:space-between;
-    }
+    .filters-row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; justify-content:space-between; }
     .status-group { display:flex; gap:6px; flex-wrap:wrap; font-size:12px; }
     .status-pill {
       border-radius:999px;
@@ -313,13 +297,8 @@
       cursor:pointer;
       color:var(--text);
     }
-    .status-pill.active {
-      background:var(--accent);
-      border-color:var(--accent);
-    }
-    .right-filters {
-      display:flex; flex-wrap:wrap; gap:8px; align-items:center;
-    }
+    .status-pill.active { background:var(--accent); border-color:var(--accent); }
+    .right-filters { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
 
     select, input[type="text"], input[type="number"], input[type="date"], textarea {
       border-radius:999px;
@@ -338,10 +317,7 @@
       background:var(--input-bg);
       font-size:12px;
     }
-    .search-input input {
-      border:none; outline:none; background:transparent;
-      color:inherit; width:180px;
-    }
+    .search-input input { border:none; outline:none; background:transparent; color:inherit; width:180px; }
 
     .stats-row {
       display:grid;
@@ -359,51 +335,28 @@
       transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
     }
     .stat-card:hover { transform: translateY(-1px); }
-    .stat-card.active {
-      box-shadow:0 0 0 2px var(--accent-soft);
-      border-color:var(--accent);
-    }
+    .stat-card.active { box-shadow:0 0 0 2px var(--accent-soft); border-color:var(--accent); }
     .stat-label { color:var(--subtext); margin-bottom:4px; }
     .stat-main { font-size:16px; font-weight:600; }
     .stat-sub { font-size:11px; color:var(--subtext); }
 
     table { width:100%; border-collapse:collapse; font-size:12px; }
     thead { background:var(--table-header-bg); }
-    th, td {
-      padding:6px 8px;
-      border-bottom:1px solid var(--border-strong);
-      text-align:left;
-      white-space:nowrap;
-    }
-    th {
-      color:var(--subtext);
-      font-weight:500;
-      font-size:11px;
-    }
+    th, td { padding:6px 8px; border-bottom:1px solid var(--border-strong); text-align:left; white-space:nowrap; }
+    th { color:var(--subtext); font-weight:500; font-size:11px; }
     tbody tr:hover { background:var(--table-row-hover); }
     .text-muted { color:var(--subtext); }
 
     th.sortable { cursor:pointer; }
     .sort-ind { font-size:10px; margin-left:4px; opacity:0.7; }
 
-    .badge {
-      border-radius:999px;
-      padding:2px 8px;
-      font-size:11px;
-      font-weight:500;
-    }
+    .badge { border-radius:999px; padding:2px 8px; font-size:11px; font-weight:500; }
     .badge-paid { background:var(--badge-paid-bg); color:var(--badge-paid-text); }
     .badge-unpaid { background:var(--badge-unpaid-bg); color:var(--badge-unpaid-text); }
     .badge-overdue { background:var(--badge-overdue-bg); color:var(--badge-overdue-text); }
     .badge-draft { background:var(--badge-draft-bg); color:var(--badge-draft-text); }
 
-    .table-btn {
-      border-radius:999px;
-      border:none;
-      padding:2px 8px;
-      font-size:11px;
-      cursor:pointer;
-    }
+    .table-btn { border-radius:999px; border:none; padding:2px 8px; font-size:11px; cursor:pointer; }
     .table-btn.edit { background:#dbeafe; color:#1d4ed8; }
     .table-btn.del  { background:var(--danger-soft); color:var(--danger); }
 
@@ -437,12 +390,7 @@
       padding:3px 5px;
     }
 
-    .footer-buttons {
-      margin-top:14px;
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-    }
+    .footer-buttons { margin-top:14px; display:flex; flex-wrap:wrap; gap:8px; }
 
     .btn {
       border-radius:999px;
@@ -486,6 +434,18 @@
     </select>
 
     <button class="pill-btn ghost" id="btn-new">+ New Invoice</button>
+
+    <!-- ✅ NEW: Save data now -->
+    <button class="pill-btn ghost" id="btn-save-data">💾 Save Data</button>
+
+    <!-- ✅ NEW: Clear all filters -->
+    <button class="pill-btn ghost" id="btn-clear-filters">🧹 Clear Filters</button>
+
+    <!-- ✅ NEW: Export Excel + PDF -->
+    <button class="pill-btn ghost" id="btn-export-xls">⬇ Excel Report (XLS)</button>
+    <button class="pill-btn ghost" id="btn-export-pdf">⬇ PDF Report</button>
+
+    <!-- existing -->
     <button class="pill-btn ghost" id="btn-export">⬇ Excel Report (CSV)</button>
     <button class="pill-btn ghost" id="btn-save-json">💾 Save JSON</button>
     <button class="pill-btn ghost" id="btn-load-json">📂 Load JSON</button>
@@ -517,7 +477,6 @@
           </select>
         </div>
 
-        <!-- Status dropdown -->
         <div>
           <select id="status-filter-select">
             <option value="all">All</option>
@@ -527,7 +486,6 @@
           </select>
         </div>
 
-        <!-- ✅ DURATION FROM / TO filters -->
         <div><input id="date-from" type="date" title="DURATION FROM"></div>
         <div><input id="date-to" type="date" title="DURATION TO"></div>
 
@@ -564,7 +522,6 @@
       </div>
     </div>
 
-    <!-- ✅ Updated columns to match the Excel report (ALL sheet) -->
     <table>
       <thead>
       <tr>
@@ -617,7 +574,7 @@
     </table>
   </section>
 
-  <!-- Editor (unchanged UI) -->
+  <!-- Editor -->
   <section id="editor" class="card hidden">
     <div class="card-header">
       <div>
@@ -734,9 +691,8 @@
   let sortField = "serviceDate";
   let sortDir   = "asc";
 
-  // Filters
-  let dateFrom = ""; // DURATION FROM (filter)
-  let dateTo   = ""; // DURATION TO   (filter)
+  let dateFrom = ""; // DURATION FROM
+  let dateTo   = ""; // DURATION TO
   let minIQD   = null;
   let maxIQD   = null;
 
@@ -754,16 +710,13 @@
     inv.status = raw;
     if(!Array.isArray(inv.items)) inv.items = [];
 
-    // Ensure report-style fields exist (fallbacks)
     if(!inv.poNo && inv.contract) inv.poNo = inv.contract;
     if(!inv.invoiceNo && inv.number) inv.invoiceNo = inv.number;
     if(!inv.serviceDate && inv.issueDate) inv.serviceDate = inv.issueDate;
 
-    // Default duration fields
     if(!inv.durationFrom) inv.durationFrom = inv.issueDate || "";
     if(!inv.durationTo)   inv.durationTo   = inv.dueDate   || "";
 
-    // Amount fields
     if(inv.invoiceAmount == null) inv.invoiceAmount = Number(inv.subtotal || 0);
     if(inv.total == null) inv.total = Number(inv.balance || 0);
 
@@ -843,23 +796,19 @@
     inv.subtotal=parseNumber($("f-subtotal").value);
     inv.balance=parseNumber($("f-balance").value);
 
-    // ✅ Map to Excel report fields
     inv.poNo = inv.contract;
     inv.invoiceNo = inv.number;
-    inv.serviceDate = inv.issueDate;          // Service Date = Issue Date
-    inv.description = (inv.scope||"").trim(); // Description
+    inv.serviceDate = inv.issueDate;
+    inv.description = (inv.scope||"").trim();
 
-    // DURATION FROM / TO (default mapping to Issue/Due to match your filter request)
     inv.durationFrom = inv.issueDate || "";
     inv.durationTo   = inv.dueDate   || "";
 
-    // UNIT / QTY
     const firstUnit = (inv.items[0] && inv.items[0].unit) ? inv.items[0].unit : "";
     const qtySum = inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
     inv.unit = firstUnit;
     inv.qty  = qtySum;
 
-    // INVOICE AMOUNT / TOTAL
     inv.invoiceAmount = Number(inv.subtotal || 0);
     inv.total = Number(inv.balance || 0);
 
@@ -940,7 +889,6 @@
       contracts.map(po=>`<option value="${po}">${po}</option>`).join("");
   }
 
-  // ✅ Date filter now based on DURATION FROM / DURATION TO
   function matchesFilters(inv){
     const poVal = inv.poNo || inv.contract || "";
     if(currentPoFilter!=="all" && poVal!==currentPoFilter) return false;
@@ -955,7 +903,6 @@
     const durFrom = (inv.durationFrom || "").trim();
     const durTo   = (inv.durationTo   || "").trim();
 
-    // within range: (durFrom >= filterFrom) AND (durTo <= filterTo)
     if(dateFrom){
       if(!durFrom || durFrom < dateFrom) return false;
     }
@@ -1046,7 +993,6 @@
       return sortDir === "asc" ? res : -res;
     });
 
-    // Dashboard stats based on TOTAL
     let totalAmount=0,paidAmount=0,unpaidAmount=0;
     let totalCount=filtered.length,paidCount=0,unpaidCount=0;
     let dueSoonAmount=0,dueSoonCount=0;
@@ -1249,7 +1195,7 @@
     URL.revokeObjectURL(url);
   }
 
-  // ✅ CSV now matches the Excel report columns
+  // CSV (existing)
   function exportCsv(){
     if(!invoices.length){alert("No invoices to export.");return;}
     const headers=["NO.","PO No.","INVOICE NO.","SERVICE DATE","DESCRIPTION","DURATION FROM","DURATION TO","UNIT","QTY","INVOICE AMOUNT","TOTAL","STATUS"];
@@ -1279,11 +1225,170 @@
     URL.revokeObjectURL(url);
   }
 
+  // ✅ NEW: Excel (XLS) export (works in Excel as HTML workbook)
+  function exportXls(){
+    if(!invoices.length){alert("No invoices to export.");return;}
+    const headers=["NO.","PO No.","INVOICE NO.","SERVICE DATE","DESCRIPTION","DURATION FROM","DURATION TO","UNIT","QTY","INVOICE AMOUNT","TOTAL","STATUS"];
+    const rows=invoices.map((inv, idx)=>{
+      inv = normalizeInvoice(inv);
+      const no = inv.no != null ? inv.no : (idx+1);
+      const poNo = inv.poNo || inv.contract || "";
+      const invoiceNo = inv.invoiceNo || inv.number || "";
+      const serviceDate = inv.serviceDate || inv.issueDate || "";
+      const desc = (inv.description || inv.scope || "");
+      const durFrom = inv.durationFrom || "";
+      const durTo = inv.durationTo || "";
+      const unit = inv.unit || (inv.items[0]?.unit || "");
+      const qty = inv.qty != null ? inv.qty : inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
+      const invoiceAmount = Number(inv.invoiceAmount != null ? inv.invoiceAmount : (inv.subtotal||0));
+      const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
+      const status = inv.status || "";
+      return [no,poNo,invoiceNo,serviceDate,desc,durFrom,durTo,unit,qty,invoiceAmount,totalVal,status];
+    });
+
+    const esc = (s)=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    const html = `
+      <html xmlns:o="urn:schemas-microsoft-com:office:office"
+            xmlns:x="urn:schemas-microsoft-com:office:excel"
+            xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta charset="UTF-8">
+          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Report</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+        </head>
+        <body>
+          <table border="1">
+            <thead>
+              <tr>${headers.map(h=>`<th>${esc(h)}</th>`).join("")}</tr>
+            </thead>
+            <tbody>
+              ${rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `.trim();
+
+    const blob = new Blob([html], {type:"application/vnd.ms-excel"});
+    const url = URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;
+    a.download="invoices-report.xls";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ✅ NEW: PDF report (opens print dialog => Save as PDF)
+  function exportPdf(){
+    const filtered = invoices.filter(matchesFilters).map(normalizeInvoice);
+
+    const headers=["NO.","PO No.","INVOICE NO.","SERVICE DATE","DESCRIPTION","DURATION FROM","DURATION TO","UNIT","QTY","INVOICE AMOUNT","TOTAL","STATUS"];
+    const rows = filtered.map((inv, idx)=>{
+      const no = inv.no != null ? inv.no : (idx+1);
+      const poNo = inv.poNo || inv.contract || "";
+      const invoiceNo = inv.invoiceNo || inv.number || "";
+      const serviceDate = inv.serviceDate || inv.issueDate || "";
+      const desc = (inv.description || inv.scope || "");
+      const durFrom = inv.durationFrom || "";
+      const durTo = inv.durationTo || "";
+      const unit = inv.unit || (inv.items[0]?.unit || "");
+      const qty = inv.qty != null ? inv.qty : inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
+      const invoiceAmount = Number(inv.invoiceAmount != null ? inv.invoiceAmount : (inv.subtotal||0));
+      const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
+      const status = inv.status || "";
+      return [no,poNo,invoiceNo,serviceDate,desc,durFrom,durTo,unit,qty,formatIQD(invoiceAmount),formatIQD(totalVal),status];
+    });
+
+    const esc = (s)=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+    const win = window.open("", "_blank");
+    win.document.open();
+    win.document.write(`
+      <html>
+        <head>
+          <meta charset="UTF-8" />
+          <title>Invoices Report</title>
+          <style>
+            body{font-family: Arial, sans-serif; padding:16px;}
+            h2{margin:0 0 10px;}
+            .meta{font-size:12px; margin-bottom:10px;}
+            table{width:100%; border-collapse:collapse; font-size:11px;}
+            th,td{border:1px solid #999; padding:6px 6px; text-align:left; vertical-align:top;}
+            th{background:#eee;}
+          </style>
+        </head>
+        <body>
+          <h2>Invoices Report</h2>
+          <div class="meta">
+            Filters:
+            Status=${esc(currentFilter)} |
+            PO=${esc(currentPoFilter)} |
+            DurationFrom=${esc(dateFrom||"-")} |
+            DurationTo=${esc(dateTo||"-")} |
+            Min=${esc(minIQD==null?"-":minIQD)} |
+            Max=${esc(maxIQD==null?"-":maxIQD)} |
+            Search=${esc(searchTerm||"-")}
+          </div>
+          <table>
+            <thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join("")}</tr></thead>
+            <tbody>
+              ${rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}
+            </tbody>
+          </table>
+          <script>
+            window.onload = function(){
+              window.print();
+            };
+          <\/script>
+        </body>
+      </html>
+    `);
+    win.document.close();
+  }
+
   function resetSystem(){
     if(!confirm("Reset all invoices (local only)?")) return;
     invoices=[];
     currentId=null;
     saveInvoices();
+  }
+
+  /* ✅ NEW: Save Data button action */
+  function saveDataNow(){
+    saveInvoices();
+    alert("Data saved ✅");
+  }
+
+  /* ✅ NEW: Clear all filters (UI + variables) */
+  function clearAllFilters(){
+    currentFilter = "all";
+    currentPoFilter = "all";
+    searchTerm = "";
+    specialFilter = "none";
+    dateFrom = "";
+    dateTo = "";
+    minIQD = null;
+    maxIQD = null;
+
+    // UI sync
+    const po = $("po-filter"); if(po) po.value = "all";
+    const dd = $("status-filter-select"); if(dd) dd.value = "all";
+    const df = $("date-from"); if(df) df.value = "";
+    const dt = $("date-to"); if(dt) dt.value = "";
+    const min = $("min-iqd"); if(min) min.value = "";
+    const max = $("max-iqd"); if(max) max.value = "";
+    const s = $("search-input"); if(s) s.value = "";
+
+    // pills
+    document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
+    const allPill = document.querySelector('.status-pill[data-filter="all"]');
+    if(allPill) allPill.classList.add("active");
+
+    // stat cards
+    document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
+    const totalCard = document.querySelector('.stat-card[data-type="total"]');
+    if(totalCard) totalCard.classList.add("active");
+
+    renderDashboard();
   }
 
   /* ==== THEME HANDLING ==== */
@@ -1309,6 +1414,7 @@
     $("btn-print").addEventListener("click",()=>window.print());
     $("btn-delete").addEventListener("click",deleteCurrentInvoice);
 
+    // existing
     $("btn-export").addEventListener("click",exportCsv);
     $("btn-save-json").addEventListener("click",exportJson);
     $("btn-reset").addEventListener("click",resetSystem);
@@ -1319,6 +1425,12 @@
       if(file) importJsonFromFile(file);
       e.target.value="";
     });
+
+    // ✅ NEW buttons
+    $("btn-save-data").addEventListener("click",saveDataNow);
+    $("btn-clear-filters").addEventListener("click",clearAllFilters);
+    $("btn-export-xls").addEventListener("click",exportXls);
+    $("btn-export-pdf").addEventListener("click",exportPdf);
 
     // status pills
     document.querySelectorAll(".status-pill").forEach(btn=>{
@@ -1332,7 +1444,6 @@
         const totalCard = document.querySelector('.stat-card[data-type="total"]');
         if(totalCard && currentFilter==="all") totalCard.classList.add("active");
 
-        // keep dropdown synced
         const dd = $("status-filter-select");
         if(dd) dd.value = currentFilter;
 
@@ -1409,7 +1520,6 @@
 
     $("theme-select").addEventListener("change", e => applyTheme(e.target.value));
 
-    // status dropdown
     $("status-filter-select").addEventListener("change", e => {
       currentFilter = e.target.value;
       specialFilter = "none";
@@ -1426,7 +1536,6 @@
       renderDashboard();
     });
 
-    // ✅ DURATION FROM / TO events
     $("date-from").addEventListener("change", e => { dateFrom = e.target.value || ""; renderDashboard(); });
     $("date-to").addEventListener("change", e => { dateTo = e.target.value || ""; renderDashboard(); });
 
