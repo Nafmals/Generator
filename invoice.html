@@ -276,10 +276,11 @@
 
     main {
       padding:16px 20px 40px;
-      /* ✅ widened a bit (only change requested) */
+      /* ✅ widened a bit */
       max-width:1350px;
       margin:0 auto;
     }
+
     .card {
       background:var(--card-bg);
       border-radius:16px;
@@ -357,9 +358,7 @@
       cursor:pointer;
       transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
     }
-    .stat-card:hover {
-      transform: translateY(-1px);
-    }
+    .stat-card:hover { transform: translateY(-1px); }
     .stat-card.active {
       box-shadow:0 0 0 2px var(--accent-soft);
       border-color:var(--accent);
@@ -385,11 +384,7 @@
     .text-muted { color:var(--subtext); }
 
     th.sortable { cursor:pointer; }
-    .sort-ind {
-      font-size:10px;
-      margin-left:4px;
-      opacity:0.7;
-    }
+    .sort-ind { font-size:10px; margin-left:4px; opacity:0.7; }
 
     .badge {
       border-radius:999px;
@@ -397,22 +392,10 @@
       font-size:11px;
       font-weight:500;
     }
-    .badge-paid {
-      background:var(--badge-paid-bg);
-      color:var(--badge-paid-text);
-    }
-    .badge-unpaid {
-      background:var(--badge-unpaid-bg);
-      color:var(--badge-unpaid-text);
-    }
-    .badge-overdue {
-      background:var(--badge-overdue-bg);
-      color:var(--badge-overdue-text);
-    }
-    .badge-draft {
-      background:var(--badge-draft-bg);
-      color:var(--badge-draft-text);
-    }
+    .badge-paid { background:var(--badge-paid-bg); color:var(--badge-paid-text); }
+    .badge-unpaid { background:var(--badge-unpaid-bg); color:var(--badge-unpaid-text); }
+    .badge-overdue { background:var(--badge-overdue-bg); color:var(--badge-overdue-text); }
+    .badge-draft { background:var(--badge-draft-bg); color:var(--badge-draft-text); }
 
     .table-btn {
       border-radius:999px;
@@ -476,13 +459,8 @@
     .btn-danger { background:var(--danger-soft); color:var(--danger); }
 
     @media (max-width:640px){
-      .topbar{
-        flex-direction:column;
-        align-items:flex-start;
-      }
-      .topbar-middle,.topbar-right{
-        justify-content:flex-start;
-      }
+      .topbar{ flex-direction:column; align-items:flex-start; }
+      .topbar-middle,.topbar-right{ justify-content:flex-start; }
     }
   </style>
 </head>
@@ -539,7 +517,7 @@
           </select>
         </div>
 
-        <!-- ✅ Added filters (like the screenshot) -->
+        <!-- Status dropdown -->
         <div>
           <select id="status-filter-select">
             <option value="all">All</option>
@@ -548,19 +526,13 @@
             <option value="draft">Draft</option>
           </select>
         </div>
-        <div>
-          <input id="date-from" type="date" title="From date">
-        </div>
-        <div>
-          <input id="date-to" type="date" title="To date">
-        </div>
-        <div>
-          <input id="min-iqd" type="number" placeholder="Min IQD" min="0" step="1">
-        </div>
-        <div>
-          <input id="max-iqd" type="number" placeholder="Max IQD" min="0" step="1">
-        </div>
-        <!-- ✅ End added filters -->
+
+        <!-- ✅ DURATION FROM / TO filters -->
+        <div><input id="date-from" type="date" title="DURATION FROM"></div>
+        <div><input id="date-to" type="date" title="DURATION TO"></div>
+
+        <div><input id="min-iqd" type="number" placeholder="Min IQD" min="0" step="1"></div>
+        <div><input id="max-iqd" type="number" placeholder="Max IQD" min="0" step="1"></div>
 
         <div class="search-input">
           🔍
@@ -592,17 +564,22 @@
       </div>
     </div>
 
+    <!-- ✅ Updated columns to match the Excel report (ALL sheet) -->
     <table>
       <thead>
       <tr>
-        <th class="sortable" data-sort="issueDate">Date <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="dueDate">Due Date <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="number">Invoice No <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="contract">Contract (PO) <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="customerName">Customer <span class="sort-ind"></span></th>
-        <th>Short Description</th>
-        <th class="sortable" data-sort="status">Status <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="balance">Amount (Balance) <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="no">NO. <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="poNo">PO No. <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="invoiceNo">INVOICE NO. <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="serviceDate">SERVICE DATE <span class="sort-ind"></span></th>
+        <th>DESCRIPTION</th>
+        <th class="sortable" data-sort="durationFrom">DURATION FROM <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="durationTo">DURATION TO <span class="sort-ind"></span></th>
+        <th>UNIT</th>
+        <th class="sortable" data-sort="qty">QTY <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="invoiceAmount">INVOICE AMOUNT <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="total">TOTAL <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="status">STATUS <span class="sort-ind"></span></th>
         <th>Actions</th>
       </tr>
       </thead>
@@ -622,19 +599,25 @@
     <table>
       <thead>
       <tr>
-        <th>Invoice No</th>
-        <th>PO</th>
-        <th>Issue Date</th>
-        <th>Due Date</th>
-        <th>Status</th>
-        <th>Balance</th>
+        <th>NO.</th>
+        <th>PO No.</th>
+        <th>INVOICE NO.</th>
+        <th>SERVICE DATE</th>
+        <th>DESCRIPTION</th>
+        <th>DURATION FROM</th>
+        <th>DURATION TO</th>
+        <th>UNIT</th>
+        <th>QTY</th>
+        <th>INVOICE AMOUNT</th>
+        <th>TOTAL</th>
+        <th>STATUS</th>
       </tr>
       </thead>
       <tbody id="report-body"></tbody>
     </table>
   </section>
 
-  <!-- Editor -->
+  <!-- Editor (unchanged UI) -->
   <section id="editor" class="card hidden">
     <div class="card-header">
       <div>
@@ -747,13 +730,13 @@
   let currentFilter = "all";
   let currentPoFilter = "all";
   let searchTerm = "";
-  let specialFilter = "none";   // for cards (due-soon, etc.)
-  let sortField = "issueDate";
+  let specialFilter = "none";
+  let sortField = "serviceDate";
   let sortDir   = "asc";
 
-  // ✅ New filters
-  let dateFrom = "";
-  let dateTo   = "";
+  // Filters
+  let dateFrom = ""; // DURATION FROM (filter)
+  let dateTo   = ""; // DURATION TO   (filter)
   let minIQD   = null;
   let maxIQD   = null;
 
@@ -770,6 +753,20 @@
     if(!["paid","unpaid","overdue","draft"].includes(raw)) raw="draft";
     inv.status = raw;
     if(!Array.isArray(inv.items)) inv.items = [];
+
+    // Ensure report-style fields exist (fallbacks)
+    if(!inv.poNo && inv.contract) inv.poNo = inv.contract;
+    if(!inv.invoiceNo && inv.number) inv.invoiceNo = inv.number;
+    if(!inv.serviceDate && inv.issueDate) inv.serviceDate = inv.issueDate;
+
+    // Default duration fields
+    if(!inv.durationFrom) inv.durationFrom = inv.issueDate || "";
+    if(!inv.durationTo)   inv.durationTo   = inv.dueDate   || "";
+
+    // Amount fields
+    if(inv.invoiceAmount == null) inv.invoiceAmount = Number(inv.subtotal || 0);
+    if(inv.total == null) inv.total = Number(inv.balance || 0);
+
     return inv;
   }
 
@@ -829,6 +826,7 @@
     inv.note=$("f-note").value.trim();
     inv.status=$("status-select").value;
     inv.customerName=(inv.billTo.split("\n")[0]||"").trim();
+
     const rows=document.querySelectorAll("#items-body .item-row");
     inv.items=Array.from(rows).map(tr=>({
       desc:tr.querySelector(".cell-desc").value.trim(),
@@ -838,11 +836,33 @@
       qty:parseNumber(tr.querySelector(".cell-qty").value),
       price:parseNumber(tr.querySelector(".cell-price").value)
     }));
+
     inv.discount=parseNumber($("f-discount").value);
     inv.taxPerc=parseNumber($("f-tax").value);
     inv.shipping=parseNumber($("f-shipping").value);
     inv.subtotal=parseNumber($("f-subtotal").value);
     inv.balance=parseNumber($("f-balance").value);
+
+    // ✅ Map to Excel report fields
+    inv.poNo = inv.contract;
+    inv.invoiceNo = inv.number;
+    inv.serviceDate = inv.issueDate;          // Service Date = Issue Date
+    inv.description = (inv.scope||"").trim(); // Description
+
+    // DURATION FROM / TO (default mapping to Issue/Due to match your filter request)
+    inv.durationFrom = inv.issueDate || "";
+    inv.durationTo   = inv.dueDate   || "";
+
+    // UNIT / QTY
+    const firstUnit = (inv.items[0] && inv.items[0].unit) ? inv.items[0].unit : "";
+    const qtySum = inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
+    inv.unit = firstUnit;
+    inv.qty  = qtySum;
+
+    // INVOICE AMOUNT / TOTAL
+    inv.invoiceAmount = Number(inv.subtotal || 0);
+    inv.total = Number(inv.balance || 0);
+
     normalizeInvoice(inv);
   }
 
@@ -915,13 +935,15 @@
   function renderPoFilterOptions(){
     const select=$("po-filter");
     if(!select) return;
-    const contracts=Array.from(new Set(invoices.map(inv=>inv.contract).filter(Boolean)));
+    const contracts=Array.from(new Set(invoices.map(inv=>inv.poNo || inv.contract).filter(Boolean)));
     select.innerHTML=`<option value="all">All Contracts</option>`+
       contracts.map(po=>`<option value="${po}">${po}</option>`).join("");
   }
 
+  // ✅ Date filter now based on DURATION FROM / DURATION TO
   function matchesFilters(inv){
-    if(currentPoFilter!=="all" && inv.contract!==currentPoFilter) return false;
+    const poVal = inv.poNo || inv.contract || "";
+    if(currentPoFilter!=="all" && poVal!==currentPoFilter) return false;
 
     if(currentFilter==="paid"   && inv.status!=="paid")   return false;
     if(currentFilter==="unpaid" && inv.status!=="unpaid") return false;
@@ -930,41 +952,67 @@
 
     if(specialFilter==="due-soon" && !isDueSoon(inv)) return false;
 
-    // ✅ Date range filter (NOW on Due Date)
+    const durFrom = (inv.durationFrom || "").trim();
+    const durTo   = (inv.durationTo   || "").trim();
+
+    // within range: (durFrom >= filterFrom) AND (durTo <= filterTo)
     if(dateFrom){
-      const v = inv.dueDate || "";
-      if(!v || v < dateFrom) return false;
+      if(!durFrom || durFrom < dateFrom) return false;
     }
     if(dateTo){
-      const v = inv.dueDate || "";
-      if(!v || v > dateTo) return false;
+      if(!durTo || durTo > dateTo) return false;
     }
 
-    // ✅ Amount range filter (Balance)
-    const bal = Number(inv.balance || 0);
-    if(minIQD != null && bal < minIQD) return false;
-    if(maxIQD != null && bal > maxIQD) return false;
+    const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
+    if(minIQD != null && totalVal < minIQD) return false;
+    if(maxIQD != null && totalVal > maxIQD) return false;
 
     if(searchTerm){
       const term=searchTerm.toLowerCase();
-      const hay=[inv.number,inv.contract,inv.customerName,inv.billTo,inv.scope]
-        .join(" ").toLowerCase();
+      const hay=[
+        inv.invoiceNo, inv.number,
+        inv.poNo, inv.contract,
+        inv.customerName,
+        inv.description, inv.scope,
+        inv.billTo
+      ].join(" ").toLowerCase();
       if(!hay.includes(term)) return false;
     }
     return true;
   }
 
   function compareForSort(a, b, field) {
+    const get = (inv, key) => (inv[key] == null ? "" : inv[key]);
     let va, vb;
+
     switch(field){
-      case "issueDate":  va=a.issueDate||"";  vb=b.issueDate||""; break;
-      case "dueDate":    va=a.dueDate||"";    vb=b.dueDate||"";   break;
-      case "number":     va=a.number||"";     vb=b.number||"";    break;
-      case "contract":   va=a.contract||"";   vb=b.contract||"";  break;
-      case "customerName": va=a.customerName||""; vb=b.customerName||""; break;
-      case "status":     va=a.status||"";     vb=b.status||"";    break;
-      case "balance":
-        va=a.balance||0; vb=b.balance||0; return va - vb;
+      case "no":
+        va = Number(get(a,"no") || 0);
+        vb = Number(get(b,"no") || 0);
+        return va - vb;
+
+      case "poNo":       va=(a.poNo||a.contract||""); vb=(b.poNo||b.contract||""); break;
+      case "invoiceNo":  va=(a.invoiceNo||a.number||""); vb=(b.invoiceNo||b.number||""); break;
+      case "serviceDate": va=(a.serviceDate||a.issueDate||""); vb=(b.serviceDate||b.issueDate||""); break;
+      case "durationFrom": va=(a.durationFrom||""); vb=(b.durationFrom||""); break;
+      case "durationTo":   va=(a.durationTo||""); vb=(b.durationTo||""); break;
+
+      case "qty":
+        va = Number(a.qty || 0);
+        vb = Number(b.qty || 0);
+        return va - vb;
+
+      case "invoiceAmount":
+        va = Number(a.invoiceAmount != null ? a.invoiceAmount : (a.subtotal||0));
+        vb = Number(b.invoiceAmount != null ? b.invoiceAmount : (b.subtotal||0));
+        return va - vb;
+
+      case "total":
+        va = Number(a.total != null ? a.total : (a.balance||0));
+        vb = Number(b.total != null ? b.total : (b.balance||0));
+        return va - vb;
+
+      case "status":     va=(a.status||""); vb=(b.status||""); break;
       default:
         va=""; vb="";
     }
@@ -998,27 +1046,45 @@
       return sortDir === "asc" ? res : -res;
     });
 
+    // Dashboard stats based on TOTAL
     let totalAmount=0,paidAmount=0,unpaidAmount=0;
     let totalCount=filtered.length,paidCount=0,unpaidCount=0;
     let dueSoonAmount=0,dueSoonCount=0;
 
-    filtered.forEach(inv=>{
-      const balance=inv.balance||0;
-      totalAmount+=balance;
-      if(inv.status==="paid"){paidAmount+=balance;paidCount++;}
-      if(inv.status==="unpaid"){unpaidAmount+=balance;unpaidCount++;}
-      if(isDueSoon(inv)){dueSoonAmount+=balance;dueSoonCount++;}
+    filtered.forEach((inv, idx)=>{
+      const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
+      totalAmount += totalVal;
+
+      if(inv.status==="paid"){ paidAmount += totalVal; paidCount++; }
+      if(inv.status==="unpaid"){ unpaidAmount += totalVal; unpaidCount++; }
+      if(isDueSoon(inv)){ dueSoonAmount += totalVal; dueSoonCount++; }
+
+      const no = inv.no != null ? inv.no : (idx+1);
+      const poNo = inv.poNo || inv.contract || "";
+      const invoiceNo = inv.invoiceNo || inv.number || "";
+      const serviceDate = inv.serviceDate || inv.issueDate || "";
+      const desc = inv.description || inv.scope || "-";
+      const durFrom = inv.durationFrom || "";
+      const durTo = inv.durationTo || "";
+      const unit = inv.unit || (inv.items[0]?.unit || "");
+      const qty = inv.qty != null ? inv.qty : inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
+      const invoiceAmount = Number(inv.invoiceAmount != null ? inv.invoiceAmount : (inv.subtotal||0));
+      const statusBadge = getStatusBadge(inv.status, inv);
 
       const tr=document.createElement("tr");
       tr.innerHTML=`
-        <td>${inv.issueDate||""}</td>
-        <td>${inv.dueDate||""}</td>
-        <td>${inv.number||""}</td>
-        <td>${inv.contract||""}</td>
-        <td>${inv.customerName||""}</td>
-        <td class="text-muted">${inv.scope ? (inv.scope.length>35 ? inv.scope.slice(0,35)+"..." : inv.scope) : "-"}</td>
-        <td>${getStatusBadge(inv.status,inv)}</td>
-        <td>${formatIQD(balance)}</td>
+        <td>${no}</td>
+        <td>${poNo}</td>
+        <td>${invoiceNo}</td>
+        <td>${serviceDate}</td>
+        <td class="text-muted">${String(desc).length>45 ? String(desc).slice(0,45)+"..." : (desc||"-")}</td>
+        <td>${durFrom}</td>
+        <td>${durTo}</td>
+        <td>${unit||""}</td>
+        <td>${qty||0}</td>
+        <td>${formatIQD(invoiceAmount)}</td>
+        <td>${formatIQD(totalVal)}</td>
+        <td>${statusBadge}</td>
         <td>
           <button class="table-btn edit" onclick="editInvoice('${inv.id}')">Edit</button>
           <button class="table-btn del" onclick="deleteInvoiceById('${inv.id}')">Delete</button>
@@ -1042,15 +1108,33 @@
     const tbody=$("report-body");
     if(!tbody) return;
     tbody.innerHTML="";
-    invoices.forEach(inv=>{
+    invoices.map(normalizeInvoice).forEach((inv, idx)=>{
+      const no = inv.no != null ? inv.no : (idx+1);
+      const poNo = inv.poNo || inv.contract || "";
+      const invoiceNo = inv.invoiceNo || inv.number || "";
+      const serviceDate = inv.serviceDate || inv.issueDate || "";
+      const desc = inv.description || inv.scope || "-";
+      const durFrom = inv.durationFrom || "";
+      const durTo = inv.durationTo || "";
+      const unit = inv.unit || (inv.items[0]?.unit || "");
+      const qty = inv.qty != null ? inv.qty : inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
+      const invoiceAmount = Number(inv.invoiceAmount != null ? inv.invoiceAmount : (inv.subtotal||0));
+      const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
+
       const row=document.createElement("tr");
       row.innerHTML=`
-        <td>${inv.number||""}</td>
-        <td>${inv.contract||""}</td>
-        <td>${inv.issueDate||""}</td>
-        <td>${inv.dueDate||""}</td>
-        <td>${inv.status}</td>
-        <td>${formatIQD(inv.balance||0)}</td>`;
+        <td>${no}</td>
+        <td>${poNo}</td>
+        <td>${invoiceNo}</td>
+        <td>${serviceDate}</td>
+        <td class="text-muted">${String(desc).length>45 ? String(desc).slice(0,45)+"..." : (desc||"-")}</td>
+        <td>${durFrom}</td>
+        <td>${durTo}</td>
+        <td>${unit||""}</td>
+        <td>${qty||0}</td>
+        <td>${formatIQD(invoiceAmount)}</td>
+        <td>${formatIQD(totalVal)}</td>
+        <td>${inv.status||""}</td>`;
       tbody.appendChild(row);
     });
   }
@@ -1165,17 +1249,26 @@
     URL.revokeObjectURL(url);
   }
 
+  // ✅ CSV now matches the Excel report columns
   function exportCsv(){
     if(!invoices.length){alert("No invoices to export.");return;}
-    const headers=["Number","PO","IssueDate","DueDate","Status","Balance"];
-    const rows=invoices.map(inv=>[
-      inv.number||"",
-      inv.contract||"",
-      inv.issueDate||"",
-      inv.dueDate||"",
-      inv.status||"",
-      inv.balance!=null?inv.balance:""
-    ]);
+    const headers=["NO.","PO No.","INVOICE NO.","SERVICE DATE","DESCRIPTION","DURATION FROM","DURATION TO","UNIT","QTY","INVOICE AMOUNT","TOTAL","STATUS"];
+    const rows=invoices.map((inv, idx)=>{
+      inv = normalizeInvoice(inv);
+      const no = inv.no != null ? inv.no : (idx+1);
+      const poNo = inv.poNo || inv.contract || "";
+      const invoiceNo = inv.invoiceNo || inv.number || "";
+      const serviceDate = inv.serviceDate || inv.issueDate || "";
+      const desc = (inv.description || inv.scope || "").replace(/\n/g," ").replace(/,/g," ");
+      const durFrom = inv.durationFrom || "";
+      const durTo = inv.durationTo || "";
+      const unit = inv.unit || (inv.items[0]?.unit || "");
+      const qty = inv.qty != null ? inv.qty : inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
+      const invoiceAmount = Number(inv.invoiceAmount != null ? inv.invoiceAmount : (inv.subtotal||0));
+      const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
+      const status = inv.status || "";
+      return [no,poNo,invoiceNo,serviceDate,desc,durFrom,durTo,unit,qty,invoiceAmount,totalVal,status];
+    });
     const csv=[headers.join(","),...rows.map(r=>r.join(","))].join("\n");
     const blob=new Blob([csv],{type:"text/csv"});
     const url=URL.createObjectURL(blob);
@@ -1234,11 +1327,12 @@
         btn.classList.add("active");
         currentFilter = btn.dataset.filter;
         specialFilter = "none";
+
         document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
         const totalCard = document.querySelector('.stat-card[data-type="total"]');
         if(totalCard && currentFilter==="all") totalCard.classList.add("active");
 
-        // ✅ keep dropdown synced
+        // keep dropdown synced
         const dd = $("status-filter-select");
         if(dd) dd.value = currentFilter;
 
@@ -1271,7 +1365,6 @@
                 || document.querySelector(`.status-pill[data-filter="all"]`);
         if(pill) pill.classList.add("active");
 
-        // ✅ keep dropdown synced
         const dd = $("status-filter-select");
         if(dd) dd.value = currentFilter;
 
@@ -1316,7 +1409,7 @@
 
     $("theme-select").addEventListener("change", e => applyTheme(e.target.value));
 
-    // ✅ Added filters events
+    // status dropdown
     $("status-filter-select").addEventListener("change", e => {
       currentFilter = e.target.value;
       specialFilter = "none";
@@ -1333,25 +1426,12 @@
       renderDashboard();
     });
 
-    $("date-from").addEventListener("change", e => {
-      dateFrom = e.target.value || "";
-      renderDashboard();
-    });
+    // ✅ DURATION FROM / TO events
+    $("date-from").addEventListener("change", e => { dateFrom = e.target.value || ""; renderDashboard(); });
+    $("date-to").addEventListener("change", e => { dateTo = e.target.value || ""; renderDashboard(); });
 
-    $("date-to").addEventListener("change", e => {
-      dateTo = e.target.value || "";
-      renderDashboard();
-    });
-
-    $("min-iqd").addEventListener("input", e => {
-      minIQD = e.target.value.trim()==="" ? null : parseNumber(e.target.value);
-      renderDashboard();
-    });
-
-    $("max-iqd").addEventListener("input", e => {
-      maxIQD = e.target.value.trim()==="" ? null : parseNumber(e.target.value);
-      renderDashboard();
-    });
+    $("min-iqd").addEventListener("input", e => { minIQD = e.target.value.trim()==="" ? null : parseNumber(e.target.value); renderDashboard(); });
+    $("max-iqd").addEventListener("input", e => { maxIQD = e.target.value.trim()==="" ? null : parseNumber(e.target.value); renderDashboard(); });
 
     window.editInvoice=editInvoice;
     window.deleteInvoiceById=deleteInvoiceById;
