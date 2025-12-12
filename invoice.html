@@ -228,7 +228,6 @@
       --badge-draft-text: #374151;
     }
 
-    /* ========= BASE STYLES ========= */
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
@@ -434,19 +433,11 @@
     </select>
 
     <button class="pill-btn ghost" id="btn-new">+ New Invoice</button>
-
-    <!-- ✅ NEW: Save data now -->
     <button class="pill-btn ghost" id="btn-save-data">💾 Save Data</button>
-
-    <!-- ✅ NEW: Clear all filters -->
     <button class="pill-btn ghost" id="btn-clear-filters">🧹 Clear Filters</button>
-
-    <!-- ✅ NEW: Export Excel + PDF -->
     <button class="pill-btn ghost" id="btn-export-xls">⬇ Excel Report (XLS)</button>
     <button class="pill-btn ghost" id="btn-export-pdf">⬇ PDF Report</button>
 
-    <!-- existing -->
-    <button class="pill-btn ghost" id="btn-export">⬇ Excel Report (CSV)</button>
     <button class="pill-btn ghost" id="btn-save-json">💾 Save JSON</button>
     <button class="pill-btn ghost" id="btn-load-json">📂 Load JSON</button>
     <button class="pill-btn danger" id="btn-reset">⟳ Reset</button>
@@ -959,7 +950,7 @@
         vb = Number(b.total != null ? b.total : (b.balance||0));
         return va - vb;
 
-      case "status":     va=(a.status||""); vb=(b.status||""); break;
+      case "status":     va=(a.status||""); vb=(b.status||"");    break;
       default:
         va=""; vb="";
     }
@@ -1059,7 +1050,7 @@
       const poNo = inv.poNo || inv.contract || "";
       const invoiceNo = inv.invoiceNo || inv.number || "";
       const serviceDate = inv.serviceDate || inv.issueDate || "";
-      const desc = inv.description || inv.scope || "-";
+      const desc = inv.description || inv.scope || "-"; // ✅ show DESCRIPTION in report (full, no truncation)
       const durFrom = inv.durationFrom || "";
       const durTo = inv.durationTo || "";
       const unit = inv.unit || (inv.items[0]?.unit || "");
@@ -1073,7 +1064,7 @@
         <td>${poNo}</td>
         <td>${invoiceNo}</td>
         <td>${serviceDate}</td>
-        <td class="text-muted">${String(desc).length>45 ? String(desc).slice(0,45)+"..." : (desc||"-")}</td>
+        <td class="text-muted">${desc || "-"}</td>
         <td>${durFrom}</td>
         <td>${durTo}</td>
         <td>${unit||""}</td>
@@ -1195,37 +1186,7 @@
     URL.revokeObjectURL(url);
   }
 
-  // CSV (existing)
-  function exportCsv(){
-    if(!invoices.length){alert("No invoices to export.");return;}
-    const headers=["NO.","PO No.","INVOICE NO.","SERVICE DATE","DESCRIPTION","DURATION FROM","DURATION TO","UNIT","QTY","INVOICE AMOUNT","TOTAL","STATUS"];
-    const rows=invoices.map((inv, idx)=>{
-      inv = normalizeInvoice(inv);
-      const no = inv.no != null ? inv.no : (idx+1);
-      const poNo = inv.poNo || inv.contract || "";
-      const invoiceNo = inv.invoiceNo || inv.number || "";
-      const serviceDate = inv.serviceDate || inv.issueDate || "";
-      const desc = (inv.description || inv.scope || "").replace(/\n/g," ").replace(/,/g," ");
-      const durFrom = inv.durationFrom || "";
-      const durTo = inv.durationTo || "";
-      const unit = inv.unit || (inv.items[0]?.unit || "");
-      const qty = inv.qty != null ? inv.qty : inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
-      const invoiceAmount = Number(inv.invoiceAmount != null ? inv.invoiceAmount : (inv.subtotal||0));
-      const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
-      const status = inv.status || "";
-      return [no,poNo,invoiceNo,serviceDate,desc,durFrom,durTo,unit,qty,invoiceAmount,totalVal,status];
-    });
-    const csv=[headers.join(","),...rows.map(r=>r.join(","))].join("\n");
-    const blob=new Blob([csv],{type:"text/csv"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download="invoices-report.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  // ✅ NEW: Excel (XLS) export (works in Excel as HTML workbook)
+  // ✅ Excel (XLS) export
   function exportXls(){
     if(!invoices.length){alert("No invoices to export.");return;}
     const headers=["NO.","PO No.","INVOICE NO.","SERVICE DATE","DESCRIPTION","DURATION FROM","DURATION TO","UNIT","QTY","INVOICE AMOUNT","TOTAL","STATUS"];
@@ -1277,7 +1238,7 @@
     URL.revokeObjectURL(url);
   }
 
-  // ✅ NEW: PDF report (opens print dialog => Save as PDF)
+  // ✅ PDF report
   function exportPdf(){
     const filtered = invoices.filter(matchesFilters).map(normalizeInvoice);
 
@@ -1335,9 +1296,7 @@
             </tbody>
           </table>
           <script>
-            window.onload = function(){
-              window.print();
-            };
+            window.onload = function(){ window.print(); };
           <\/script>
         </body>
       </html>
@@ -1352,13 +1311,11 @@
     saveInvoices();
   }
 
-  /* ✅ NEW: Save Data button action */
   function saveDataNow(){
     saveInvoices();
     alert("Data saved ✅");
   }
 
-  /* ✅ NEW: Clear all filters (UI + variables) */
   function clearAllFilters(){
     currentFilter = "all";
     currentPoFilter = "all";
@@ -1369,7 +1326,6 @@
     minIQD = null;
     maxIQD = null;
 
-    // UI sync
     const po = $("po-filter"); if(po) po.value = "all";
     const dd = $("status-filter-select"); if(dd) dd.value = "all";
     const df = $("date-from"); if(df) df.value = "";
@@ -1378,12 +1334,10 @@
     const max = $("max-iqd"); if(max) max.value = "";
     const s = $("search-input"); if(s) s.value = "";
 
-    // pills
     document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
     const allPill = document.querySelector('.status-pill[data-filter="all"]');
     if(allPill) allPill.classList.add("active");
 
-    // stat cards
     document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
     const totalCard = document.querySelector('.stat-card[data-type="total"]');
     if(totalCard) totalCard.classList.add("active");
@@ -1391,7 +1345,6 @@
     renderDashboard();
   }
 
-  /* ==== THEME HANDLING ==== */
   function applyTheme(name){
     document.documentElement.setAttribute("data-theme", name);
     localStorage.setItem(THEME_KEY, name);
@@ -1414,8 +1367,6 @@
     $("btn-print").addEventListener("click",()=>window.print());
     $("btn-delete").addEventListener("click",deleteCurrentInvoice);
 
-    // existing
-    $("btn-export").addEventListener("click",exportCsv);
     $("btn-save-json").addEventListener("click",exportJson);
     $("btn-reset").addEventListener("click",resetSystem);
 
@@ -1426,13 +1377,11 @@
       e.target.value="";
     });
 
-    // ✅ NEW buttons
     $("btn-save-data").addEventListener("click",saveDataNow);
     $("btn-clear-filters").addEventListener("click",clearAllFilters);
     $("btn-export-xls").addEventListener("click",exportXls);
     $("btn-export-pdf").addEventListener("click",exportPdf);
 
-    // status pills
     document.querySelectorAll(".status-pill").forEach(btn=>{
       btn.addEventListener("click",()=>{
         document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
@@ -1451,7 +1400,6 @@
       });
     });
 
-    // stat cards as filters
     document.querySelectorAll(".stat-card").forEach(card=>{
       card.addEventListener("click",()=>{
         document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
@@ -1504,7 +1452,6 @@
     $("f-tax").addEventListener("input",recalcTotals);
     $("f-shipping").addEventListener("input",recalcTotals);
 
-    // sort headers
     document.querySelectorAll("th.sortable").forEach(th=>{
       th.addEventListener("click", ()=>{
         const field = th.dataset.sort;
