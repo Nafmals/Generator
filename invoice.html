@@ -8,7 +8,7 @@
   let currentPoFilter = "all";
   let searchTerm = "";
 
-  // NEW: date range filter for Issue Date
+  // NEW: Date filter (Issue Date)
   let dateFrom = "";
   let dateTo   = "";
 
@@ -22,11 +22,21 @@
   function formatIQD(num){ if(isNaN(num)) num=0; return "IQD "+Number(num).toLocaleString("en-US",{maximumFractionDigits:0}); }
   function parseNumber(v){ if(typeof v!=="string") v=String(v||""); return Number(v.replace(/[^\d.-]/g,""))||0; }
 
-  // NEW: safe date parser
+  // NEW: safe date parsing
   function toDateOrNull(s){
     if(!s) return null;
     const d = new Date(s);
     return isNaN(d.getTime()) ? null : d;
+  }
+
+  // NEW: safe HTML escape (fixes table breaking if scope contains < or ")
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#39;");
   }
 
   function normalizeInvoice(inv){
@@ -44,10 +54,10 @@
     tr.className="item-row";
     tr.innerHTML=`
       <td class="no-cell"></td>
-      <td><textarea class="cell-desc">${data.desc || ""}</textarea></td>
-      <td><input class="cell-loc" value="${data.location || ""}"></td>
-      <td><input class="cell-date" value="${data.date || ""}"></td>
-      <td><input class="cell-unit" value="${data.unit || ""}"></td>
+      <td><textarea class="cell-desc">${escapeHtml(data.desc || "")}</textarea></td>
+      <td><input class="cell-loc" value="${escapeHtml(data.location || "")}"></td>
+      <td><input class="cell-date" value="${escapeHtml(data.date || "")}"></td>
+      <td><input class="cell-unit" value="${escapeHtml(data.unit || "")}"></td>
       <td><input class="cell-qty" type="number" min="0" step="0.01" value="${data.qty!=null?data.qty:1}"></td>
       <td><input class="cell-price" type="number" min="0" step="0.01" value="${data.price!=null?data.price:0}"></td>
       <td><input class="cell-total" type="text" readonly></td>
@@ -183,7 +193,7 @@
     if(!select) return;
     const contracts=Array.from(new Set(invoices.map(inv=>inv.contract).filter(Boolean)));
     select.innerHTML=`<option value="all">All Contracts</option>`+
-      contracts.map(po=>`<option value="${po}">${po}</option>`).join("");
+      contracts.map(po=>`<option value="${escapeHtml(po)}">${escapeHtml(po)}</option>`).join("");
   }
 
   function matchesFilters(inv){
@@ -279,25 +289,18 @@
       if(inv.status==="unpaid"){unpaidAmount+=balance;unpaidCount++;}
       if(isDueSoon(inv)){dueSoonAmount+=balance;dueSoonCount++;}
 
-      // NEW: better Short Description display (longer + tooltip)
-      const safeScope = (inv.scope || "")
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;");
-
-      const scopeText = inv.scope
-        ? (inv.scope.length>120 ? inv.scope.slice(0,120)+"..." : inv.scope)
-        : "-";
+      // NEW: better Short Description (longer + tooltip) + safe output
+      const rawScope = inv.scope || "";
+      const scopeText = rawScope ? (rawScope.length>120 ? rawScope.slice(0,120)+"..." : rawScope) : "-";
 
       const tr=document.createElement("tr");
       tr.innerHTML=`
-        <td>${inv.issueDate||""}</td>
-        <td>${inv.dueDate||""}</td>
-        <td>${inv.number||""}</td>
-        <td>${inv.contract||""}</td>
-        <td>${inv.customerName||""}</td>
-        <td class="text-muted col-short" title="${safeScope}">${scopeText}</td>
+        <td>${escapeHtml(inv.issueDate||"")}</td>
+        <td>${escapeHtml(inv.dueDate||"")}</td>
+        <td>${escapeHtml(inv.number||"")}</td>
+        <td>${escapeHtml(inv.contract||"")}</td>
+        <td>${escapeHtml(inv.customerName||"")}</td>
+        <td class="text-muted col-short" title="${escapeHtml(rawScope)}">${escapeHtml(scopeText)}</td>
         <td>${getStatusBadge(inv.status,inv)}</td>
         <td>${formatIQD(balance)}</td>
         <td>
@@ -326,11 +329,11 @@
     invoices.forEach(inv=>{
       const row=document.createElement("tr");
       row.innerHTML=`
-        <td>${inv.number||""}</td>
-        <td>${inv.contract||""}</td>
-        <td>${inv.issueDate||""}</td>
-        <td>${inv.dueDate||""}</td>
-        <td>${inv.status}</td>
+        <td>${escapeHtml(inv.number||"")}</td>
+        <td>${escapeHtml(inv.contract||"")}</td>
+        <td>${escapeHtml(inv.issueDate||"")}</td>
+        <td>${escapeHtml(inv.dueDate||"")}</td>
+        <td>${escapeHtml(inv.status||"")}</td>
         <td>${formatIQD(inv.balance||0)}</td>`;
       tbody.appendChild(row);
     });
@@ -561,7 +564,7 @@
       renderDashboard();
     });
 
-    // NEW: date filters (Issue Date)
+    // NEW: Issue Date filters
     const df = $("date-from");
     const dt = $("date-to");
     if(df) df.addEventListener("change", e => { dateFrom = e.target.value || ""; renderDashboard(); });
