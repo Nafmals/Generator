@@ -1,640 +1,206 @@
 <script>
-  const STORAGE_KEY = "naf_advanced_invoice_local";
-  const THEME_KEY   = "naf_invoice_theme";
+/* ================== CONSTANTS ================== */
+const STORAGE_KEY = "naf_advanced_invoice_local";
+const THEME_KEY   = "naf_invoice_theme";
 
-  let invoices = [];
-  let currentId = null;
-  let currentFilter = "all";
-  let currentPoFilter = "all";
-  let searchTerm = "";
+/* ================== STATE ================== */
+let invoices = [];
+let currentId = null;
+let currentFilter = "all";
+let currentPoFilter = "all";
+let searchTerm = "";
+let dateFrom = "";
+let dateTo   = "";
+let specialFilter = "none";
+let sortField = "issueDate";
+let sortDir   = "asc";
 
-  // NEW: Date filter (Issue Date)
-  let dateFrom = "";
-  let dateTo   = "";
+/* ================== HELPERS ================== */
+function $(id){ return document.getElementById(id); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function generateId(){ return "inv-"+Math.random().toString(36).slice(2)+"-"+Date.now().toString(36); }
+function formatIQD(n){ return "IQD "+(Number(n)||0).toLocaleString("en-US",{maximumFractionDigits:0}); }
+function parseNumber(v){ return Number(String(v||"").replace(/[^\d.-]/g,""))||0; }
 
-  let specialFilter = "none";   // for cards (due-soon, etc.)
-  let sortField = "issueDate";
-  let sortDir   = "asc";
+function escapeHtml(s){
+  return String(s ?? "")
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;")
+    .replace(/'/g,"&#39;");
+}
 
-  function $(id){ return document.getElementById(id); }
-  function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
-  function generateId(){ return "inv-"+Math.random().toString(36).slice(2)+"-"+Date.now().toString(36); }
-  function formatIQD(num){ if(isNaN(num)) num=0; return "IQD "+Number(num).toLocaleString("en-US",{maximumFractionDigits:0}); }
-  function parseNumber(v){ if(typeof v!=="string") v=String(v||""); return Number(v.replace(/[^\d.-]/g,""))||0; }
+function toDateOrNull(v){
+  if(!v) return null;
+  const d=new Date(v);
+  return isNaN(d)?null:d;
+}
 
-  // NEW: safe date parsing
-  function toDateOrNull(s){
-    if(!s) return null;
-    const d = new Date(s);
-    return isNaN(d.getTime()) ? null : d;
+/* ================== INVOICE CORE ================== */
+function normalizeInvoice(inv){
+  inv.id ||= generateId();
+  inv.status = ["paid","unpaid","draft"].includes(inv.status) ? inv.status : "draft";
+  inv.items ||= [];
+  return inv;
+}
+
+/* ================== LOAD / SAVE ================== */
+function loadInvoices(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    invoices = raw ? JSON.parse(raw).map(normalizeInvoice) : [];
+  }catch{ invoices=[]; }
+}
+
+function saveInvoices(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(invoices));
+  renderPoFilterOptions();
+  renderDashboard();
+  renderReport();
+}
+
+/* ================== STATUS HELPERS ================== */
+function isOverdue(inv){
+  if(inv.status==="paid"||!inv.dueDate) return false;
+  return new Date(inv.dueDate)<new Date(todayStr());
+}
+function isDueSoon(inv){
+  if(inv.status==="paid"||!inv.dueDate) return false;
+  const d=new Date(inv.dueDate);
+  const diff=(d-new Date(todayStr()))/(86400000);
+  return diff>=0&&diff<=30;
+}
+function badge(inv){
+  if(inv.status==="paid") return `<span class="badge badge-paid">Paid</span>`;
+  if(inv.status==="unpaid"&&isOverdue(inv)) return `<span class="badge badge-overdue">Overdue</span>`;
+  if(inv.status==="unpaid") return `<span class="badge badge-unpaid">Unpaid</span>`;
+  return `<span class="badge badge-draft">Draft</span>`;
+}
+
+/* ================== FILTER ================== */
+function matches(inv){
+  if(currentPoFilter!=="all" && inv.contract!==currentPoFilter) return false;
+  if(currentFilter!=="all" && inv.status!==currentFilter) return false;
+  if(specialFilter==="due-soon" && !isDueSoon(inv)) return false;
+
+  if(searchTerm){
+    const h=(inv.number+inv.contract+inv.customerName+inv.scope).toLowerCase();
+    if(!h.includes(searchTerm)) return false;
   }
 
-  // NEW: safe HTML escape (prevents table break if text includes <, ", etc.)
-  function escapeHtml(str){
-    return String(str ?? "")
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#39;");
-  }
-
-  function normalizeInvoice(inv){
-    if(!inv) return inv;
-    if(!inv.id) inv.id = generateId();
-    let raw = (inv.status==null?"draft":String(inv.status)).toLowerCase().trim();
-    if(!["paid","unpaid","overdue","draft"].includes(raw)) raw="draft";
-    inv.status = raw;
-    if(!Array.isArray(inv.items)) inv.items = [];
-    return inv;
-  }
-
-  function createItemRow(data={}){
-    const tr=document.createElement("tr");
-    tr.className="item-row";
-    tr.innerHTML=`
-      <td class="no-cell"></td>
-      <td><textarea class="cell-desc">${escapeHtml(data.desc || "")}</textarea></td>
-      <td><input class="cell-loc" value="${escapeHtml(data.location || "")}"></td>
-      <td><input class="cell-date" value="${escapeHtml(data.date || "")}"></td>
-      <td><input class="cell-unit" value="${escapeHtml(data.unit || "")}"></td>
-      <td><input class="cell-qty" type="number" min="0" step="0.01" value="${data.qty!=null?data.qty:1}"></td>
-      <td><input class="cell-price" type="number" min="0" step="0.01" value="${data.price!=null?data.price:0}"></td>
-      <td><input class="cell-total" type="text" readonly></td>
-      <td><button type="button" class="table-btn del btn-remove-row">✕</button></td>`;
-    tr.querySelector(".cell-qty").addEventListener("input",recalcTotals);
-    tr.querySelector(".cell-price").addEventListener("input",recalcTotals);
-    tr.querySelector(".btn-remove-row").addEventListener("click",()=>{
-      tr.remove(); updateRowNumbers(); recalcTotals();
-    });
-    return tr;
-  }
-
-  function updateRowNumbers(){
-    const rows=document.querySelectorAll("#items-body .item-row");
-    rows.forEach((tr,idx)=>{ const cell=tr.querySelector(".no-cell"); if(cell) cell.textContent=idx+1; });
-  }
-
-  function recalcTotals(){
-    const rows=document.querySelectorAll("#items-body .item-row");
-    let subtotal=0;
-    rows.forEach(tr=>{
-      const qty=parseNumber(tr.querySelector(".cell-qty").value);
-      const price=parseNumber(tr.querySelector(".cell-price").value);
-      const total=qty*price;
-      tr.querySelector(".cell-total").value=formatIQD(total);
-      subtotal+=total;
-    });
-    const discount=parseNumber($("f-discount").value);
-    const taxPerc=parseNumber($("f-tax").value);
-    const shipping=parseNumber($("f-shipping").value);
-    const subLess=subtotal-discount;
-    const taxVal=subLess*(taxPerc/100);
-    const balance=subLess+taxVal+shipping;
-    $("f-subtotal").value=formatIQD(subtotal);
-    $("f-balance").value=formatIQD(balance);
-  }
-
-  function readForm(inv){
-    inv.number=$("f-number").value.trim();
-    inv.issueDate=$("f-date").value.trim();
-    inv.dueDate=$("f-due").value.trim();
-    inv.contract=$("f-contract").value.trim();
-    inv.billTo=$("f-billto").value.trim();
-    inv.scope=$("f-scope").value.trim();
-    inv.note=$("f-note").value.trim();
-    inv.status=$("status-select").value;
-    inv.customerName=(inv.billTo.split("\n")[0]||"").trim();
-    const rows=document.querySelectorAll("#items-body .item-row");
-    inv.items=Array.from(rows).map(tr=>({
-      desc:tr.querySelector(".cell-desc").value.trim(),
-      location:tr.querySelector(".cell-loc").value.trim(),
-      date:tr.querySelector(".cell-date").value.trim(),
-      unit:tr.querySelector(".cell-unit").value.trim(),
-      qty:parseNumber(tr.querySelector(".cell-qty").value),
-      price:parseNumber(tr.querySelector(".cell-price").value)
-    }));
-    inv.discount=parseNumber($("f-discount").value);
-    inv.taxPerc=parseNumber($("f-tax").value);
-    inv.shipping=parseNumber($("f-shipping").value);
-    inv.subtotal=parseNumber($("f-subtotal").value);
-    inv.balance=parseNumber($("f-balance").value);
-    normalizeInvoice(inv);
-  }
-
-  function fillForm(inv){
-    $("f-number").value=inv.number||"";
-    $("f-date").value=inv.issueDate||todayStr();
-    $("f-due").value=inv.dueDate||"";
-    $("f-contract").value=inv.contract||"";
-    $("f-billto").value=inv.billTo||"";
-    $("f-scope").value=inv.scope||"";
-    $("f-note").value=inv.note||"";
-    $("status-select").value=inv.status||"draft";
-    const body=$("items-body");
-    body.innerHTML="";
-    const items=inv.items&&inv.items.length?inv.items:[{},{},{},{}];
-    items.forEach(it=>{ const row=createItemRow(it); body.appendChild(row); });
-    updateRowNumbers();
-    $("f-discount").value=inv.discount!=null?inv.discount:0;
-    $("f-tax").value=inv.taxPerc!=null?inv.taxPerc:0;
-    $("f-shipping").value=inv.shipping!=null?inv.shipping:0;
-    recalcTotals();
-    $("editor-subtitle").textContent=inv.number?`Editing ${inv.number}`:"New invoice";
-  }
-
-  function loadInvoices(){
-    try{
-      const raw=localStorage.getItem(STORAGE_KEY);
-      if(raw){
-        const arr=JSON.parse(raw);
-        if(Array.isArray(arr)){ invoices=arr.map(normalizeInvoice); return; }
-      }
-    }catch(e){ console.error("Error loading invoices:",e); }
-    invoices=[];
-  }
-
-  function saveInvoices(){
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(invoices));
-    renderPoFilterOptions();
-    renderDashboard();
-    renderReport();
-  }
-
-  function isOverdue(inv){
-    if(inv.status==="paid") return false;
-    if(!inv.dueDate) return false;
-    const d=new Date(inv.dueDate);
-    const today=new Date(todayStr());
-    return d<today;
-  }
-
-  function isDueSoon(inv){
-    if(inv.status==="paid") return false;
-    if(!inv.dueDate) return false;
-    const d=new Date(inv.dueDate);
-    const today=new Date(todayStr());
-    const diff=(d-today)/(1000*60*60*24);
-    return diff>=0 && diff<=30;
-  }
-
-  function getStatusBadge(status,inv){
-    let cls="badge-draft",txt="Draft";
-    if(status==="paid"){cls="badge-paid";txt="Paid";}
-    else if(status==="unpaid"){
-      cls=isOverdue(inv)?"badge-overdue":"badge-unpaid";
-      txt=isOverdue(inv)?"Overdue":"Unpaid";
+  if(dateFrom||dateTo){
+    const d=toDateOrNull(inv.issueDate);
+    if(!d) return false;
+    if(dateFrom && d<toDateOrNull(dateFrom)) return false;
+    if(dateTo){
+      const t=toDateOrNull(dateTo); t.setHours(23,59,59,999);
+      if(d>t) return false;
     }
-    return `<span class="badge ${cls}">${txt}</span>`;
   }
+  return true;
+}
 
-  function renderPoFilterOptions(){
-    const select=$("po-filter");
-    if(!select) return;
-    const contracts=Array.from(new Set(invoices.map(inv=>inv.contract).filter(Boolean)));
-    select.innerHTML=`<option value="all">All Contracts</option>`+
-      contracts.map(po=>`<option value="${escapeHtml(po)}">${escapeHtml(po)}</option>`).join("");
-  }
+/* ================== RENDER DASHBOARD ================== */
+function renderDashboard(){
+  const body=$("invoice-table-body");
+  if(!body) return;
+  body.innerHTML="";
 
-  function matchesFilters(inv){
-    if(currentPoFilter!=="all" && inv.contract!==currentPoFilter) return false;
+  const list=invoices.filter(matches).sort((a,b)=>{
+    return sortDir==="asc"
+      ? (a[sortField]||"").localeCompare(b[sortField]||"")
+      : (b[sortField]||"").localeCompare(a[sortField]||"");
+  });
 
-    if(currentFilter==="paid"   && inv.status!=="paid")   return false;
-    if(currentFilter==="unpaid" && inv.status!=="unpaid") return false;
-    if(currentFilter==="draft"  && inv.status!=="draft")  return false;
-    if(currentFilter==="overdue" && !isOverdue(inv))      return false;
+  let total=0,paid=0,unpaid=0,due=0;
 
-    if(specialFilter==="due-soon" && !isDueSoon(inv)) return false;
+  list.forEach(inv=>{
+    const bal=inv.balance||0;
+    total+=bal;
+    if(inv.status==="paid") paid+=bal;
+    if(inv.status==="unpaid") unpaid+=bal;
+    if(isDueSoon(inv)) due+=bal;
 
-    if(searchTerm){
-      const term=searchTerm.toLowerCase();
-      const hay=[inv.number,inv.contract,inv.customerName,inv.billTo,inv.scope]
-        .join(" ").toLowerCase();
-      if(!hay.includes(term)) return false;
-    }
-
-    // NEW: Issue Date range filter
-    if(dateFrom || dateTo){
-      const invD = toDateOrNull(inv.issueDate);
-      if(!invD) return false;
-
-      if(dateFrom){
-        const fromD = toDateOrNull(dateFrom);
-        if(fromD && invD < fromD) return false;
-      }
-      if(dateTo){
-        const toD = toDateOrNull(dateTo);
-        if(toD){
-          toD.setHours(23,59,59,999);
-          if(invD > toD) return false;
-        }
-      }
-    }
-
-    return true;
-  }
-
-  function compareForSort(a, b, field) {
-    let va, vb;
-    switch(field){
-      case "issueDate":  va=a.issueDate||"";  vb=b.issueDate||""; break;
-      case "dueDate":    va=a.dueDate||"";    vb=b.dueDate||"";   break;
-      case "number":     va=a.number||"";     vb=b.number||"";    break;
-      case "contract":   va=a.contract||"";   vb=b.contract||"";  break;
-      case "customerName": va=a.customerName||""; vb=b.customerName||""; break;
-      case "status":     va=a.status||"";     vb=b.status||"";    break;
-      case "balance":
-        va=a.balance||0; vb=b.balance||0; return va - vb;
-      default:
-        va=""; vb="";
-    }
-    if(va>vb) return 1;
-    if(va<vb) return -1;
-    return 0;
-  }
-
-  function updateSortIndicators(){
-    document.querySelectorAll("th.sortable").forEach(th=>{
-      const span=th.querySelector(".sort-ind");
-      if(!span) return;
-      const field=th.dataset.sort;
-      if(field===sortField){
-        span.textContent = sortDir === "asc" ? "▲" : "▼";
-      }else{
-        span.textContent = "";
-      }
-    });
-  }
-
-  function renderDashboard(){
-    const tbody=$("invoice-table-body");
-    if(!tbody) return;
-    tbody.innerHTML="";
-
-    const filtered=invoices.filter(matchesFilters);
-
-    filtered.sort((a,b)=>{
-      const res = compareForSort(a,b,sortField);
-      return sortDir === "asc" ? res : -res;
-    });
-
-    let totalAmount=0,paidAmount=0,unpaidAmount=0;
-    let totalCount=filtered.length,paidCount=0,unpaidCount=0;
-    let dueSoonAmount=0,dueSoonCount=0;
-
-    filtered.forEach(inv=>{
-      const balance=inv.balance||0;
-      totalAmount+=balance;
-      if(inv.status==="paid"){paidAmount+=balance;paidCount++;}
-      if(inv.status==="unpaid"){unpaidAmount+=balance;unpaidCount++;}
-      if(isDueSoon(inv)){dueSoonAmount+=balance;dueSoonCount++;}
-
-      // NEW: better Short Description (longer + tooltip) + safe output
-      const rawScope = inv.scope || "";
-      const scopeText = rawScope ? (rawScope.length>120 ? rawScope.slice(0,120)+"..." : rawScope) : "-";
-
-      const tr=document.createElement("tr");
-      tr.innerHTML=`
+    const scope=inv.scope||"-";
+    body.insertAdjacentHTML("beforeend",`
+      <tr>
         <td>${escapeHtml(inv.issueDate||"")}</td>
         <td>${escapeHtml(inv.dueDate||"")}</td>
         <td>${escapeHtml(inv.number||"")}</td>
         <td>${escapeHtml(inv.contract||"")}</td>
         <td>${escapeHtml(inv.customerName||"")}</td>
-        <td class="text-muted col-short" title="${escapeHtml(rawScope)}">${escapeHtml(scopeText)}</td>
-        <td>${getStatusBadge(inv.status,inv)}</td>
-        <td>${formatIQD(balance)}</td>
+        <td class="col-short" title="${escapeHtml(scope)}">
+          ${escapeHtml(scope.length>120?scope.slice(0,120)+"…":scope)}
+        </td>
+        <td>${badge(inv)}</td>
+        <td>${formatIQD(bal)}</td>
         <td>
           <button class="table-btn edit" onclick="editInvoice('${inv.id}')">Edit</button>
           <button class="table-btn del" onclick="deleteInvoiceById('${inv.id}')">Delete</button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
+        </td>
+      </tr>
+    `);
+  });
 
-    $("dash-total-amount").textContent=formatIQD(totalAmount);
-    $("dash-total-count").textContent=totalCount;
-    $("dash-paid-amount").textContent=formatIQD(paidAmount);
-    $("dash-paid-count").textContent=paidCount;
-    $("dash-unpaid-amount").textContent=formatIQD(unpaidAmount);
-    $("dash-unpaid-count").textContent=unpaidCount;
-    $("dash-due-amount").textContent=formatIQD(dueSoonAmount);
-    $("dash-due-count").textContent=dueSoonCount;
+  $("dash-total-amount").textContent=formatIQD(total);
+  $("dash-paid-amount").textContent=formatIQD(paid);
+  $("dash-unpaid-amount").textContent=formatIQD(unpaid);
+  $("dash-due-amount").textContent=formatIQD(due);
+}
 
-    updateSortIndicators();
-  }
+/* ================== REPORT ================== */
+function renderReport(){
+  const body=$("report-body");
+  if(!body) return;
+  body.innerHTML="";
+  invoices.forEach(i=>{
+    body.insertAdjacentHTML("beforeend",`
+      <tr>
+        <td>${escapeHtml(i.number||"")}</td>
+        <td>${escapeHtml(i.contract||"")}</td>
+        <td>${escapeHtml(i.issueDate||"")}</td>
+        <td>${escapeHtml(i.dueDate||"")}</td>
+        <td>${escapeHtml(i.status||"")}</td>
+        <td>${formatIQD(i.balance||0)}</td>
+      </tr>
+    `);
+  });
+}
 
-  function renderReport(){
-    const tbody=$("report-body");
-    if(!tbody) return;
-    tbody.innerHTML="";
-    invoices.forEach(inv=>{
-      const row=document.createElement("tr");
-      row.innerHTML=`
-        <td>${escapeHtml(inv.number||"")}</td>
-        <td>${escapeHtml(inv.contract||"")}</td>
-        <td>${escapeHtml(inv.issueDate||"")}</td>
-        <td>${escapeHtml(inv.dueDate||"")}</td>
-        <td>${escapeHtml(inv.status||"")}</td>
-        <td>${formatIQD(inv.balance||0)}</td>`;
-      tbody.appendChild(row);
-    });
-  }
+/* ================== EVENTS (SAFE) ================== */
+function setupEvents(){
+  const on=(id,ev,fn)=>{ const el=$(id); if(el) el.addEventListener(ev,fn); };
 
-  function showDashboard(){
-    $("dashboard").classList.remove("hidden");
-    $("report").classList.add("hidden");
-    $("editor").classList.add("hidden");
-    $("tab-dashboard").classList.add("active");
-    $("tab-report").classList.remove("active");
-  }
-  function showReport(){
-    $("dashboard").classList.add("hidden");
-    $("report").classList.remove("hidden");
-    $("editor").classList.add("hidden");
-    $("tab-dashboard").classList.remove("active");
-    $("tab-report").classList.add("active");
-  }
-  function showEditor(){
-    $("dashboard").classList.add("hidden");
-    $("report").classList.add("hidden");
-    $("editor").classList.remove("hidden");
-  }
+  on("search-input","input",e=>{searchTerm=e.target.value.toLowerCase();renderDashboard();});
+  on("po-filter","change",e=>{currentPoFilter=e.target.value;renderDashboard();});
+  on("date-from","change",e=>{dateFrom=e.target.value;renderDashboard();});
+  on("date-to","change",e=>{dateTo=e.target.value;renderDashboard();});
 
-  function createNewInvoice(){
-    currentId=null;
-    const empty=normalizeInvoice({
-      id:generateId(),
-      number:"",
-      issueDate:todayStr(),
-      dueDate:"",
-      contract:"",
-      billTo:"",
-      customerName:"",
-      scope:"",
-      note:"",
-      items:[],
-      subtotal:0,
-      discount:0,
-      taxPerc:0,
-      shipping:0,
-      balance:0,
-      status:"draft",
-      createdAt:new Date().toISOString(),
-      updatedAt:new Date().toISOString()
-    });
-    fillForm(empty);
-    showEditor();
-  }
-
-  function editInvoice(id){
-    const inv=invoices.find(i=>i.id===id);
-    if(!inv) return;
-    currentId=id;
-    fillForm(inv);
-    showEditor();
-  }
-
-  function saveCurrentInvoice(){
-    let inv=currentId?invoices.find(i=>i.id===currentId):null;
-    if(!inv){
-      inv={id:generateId(),createdAt:new Date().toISOString()};
-      invoices.push(inv);
-      currentId=inv.id;
-    }
-    readForm(inv);
-    inv.updatedAt=new Date().toISOString();
-    saveInvoices();
-    alert("Invoice saved ✅");
-    showDashboard();
-  }
-
-  function deleteInvoiceById(id){
-    if(!confirm("Delete this invoice?")) return;
-    invoices=invoices.filter(i=>i.id!==id);
-    if(currentId===id) currentId=null;
-    saveInvoices();
-  }
-
-  function deleteCurrentInvoice(){
-    if(!currentId){ alert("No invoice selected."); return; }
-    deleteInvoiceById(currentId);
-    showDashboard();
-  }
-
-  function importJsonFromFile(file){
-    const reader=new FileReader();
-    reader.onload=e=>{
-      try{
-        const data=JSON.parse(e.target.result);
-        if(!Array.isArray(data)){alert("Invalid JSON (must be array of invoices).");return;}
-        invoices=data.map(normalizeInvoice);
-        currentId=null;
-        saveInvoices();
-        alert("JSON data loaded ✅");
-        showDashboard();
-      }catch(err){
-        console.error(err);
-        alert("Failed to read JSON file.");
-      }
-    };
-    reader.readAsText(file);
-  }
-
-  function exportJson(){
-    const blob=new Blob([JSON.stringify(invoices,null,2)],{type:"application/json"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download="invoices-backup.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function exportCsv(){
-    if(!invoices.length){alert("No invoices to export.");return;}
-    const headers=["Number","PO","IssueDate","DueDate","Status","Balance"];
-    const rows=invoices.map(inv=>[
-      inv.number||"",
-      inv.contract||"",
-      inv.issueDate||"",
-      inv.dueDate||"",
-      inv.status||"",
-      inv.balance!=null?inv.balance:""
-    ]);
-    const csv=[headers.join(","),...rows.map(r=>r.join(","))].join("\n");
-    const blob=new Blob([csv],{type:"text/csv"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download="invoices-report.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function resetSystem(){
-    if(!confirm("Reset all invoices (local only)?")) return;
-    invoices=[];
-    currentId=null;
-    saveInvoices();
-  }
-
-  /* ==== THEME HANDLING ==== */
-  function applyTheme(name){
-    document.documentElement.setAttribute("data-theme", name);
-    localStorage.setItem(THEME_KEY, name);
-    const sel = $("theme-select");
-    if(sel) sel.value = name;
-  }
-
-  function initTheme(){
-    const stored = localStorage.getItem(THEME_KEY) || "navy-dark";
-    applyTheme(stored);
-  }
-
-  // IMPORTANT FIX: do not crash if any element is missing
-  function setupEvents(){
-
-    function on(id, evt, handler){
-      const el = $(id);
-      if(el) el.addEventListener(evt, handler);
-    }
-
-    on("tab-dashboard","click",showDashboard);
-    on("tab-report","click",showReport);
-
-    on("btn-new","click",createNewInvoice);
-    on("btn-save","click",saveCurrentInvoice);
-    on("btn-back","click",showDashboard);
-    on("btn-print","click",()=>window.print());
-    on("btn-delete","click",deleteCurrentInvoice);
-
-    on("btn-export","click",exportCsv);
-    on("btn-save-json","click",exportJson);
-    on("btn-reset","click",resetSystem);
-
-    on("btn-load-json","click",()=>{
-      const fi = $("json-file-input");
-      if(fi) fi.click();
-    });
-
-    const fileInput = $("json-file-input");
-    if(fileInput){
-      fileInput.addEventListener("change",e=>{
-        const file=e.target.files[0];
-        if(file) importJsonFromFile(file);
-        e.target.value="";
-      });
-    }
-
-    // status pills
-    document.querySelectorAll(".status-pill").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
-        btn.classList.add("active");
-        currentFilter = btn.dataset.filter;
-        specialFilter = "none";
-        document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
-        const totalCard = document.querySelector('.stat-card[data-type="total"]');
-        if(totalCard && currentFilter==="all") totalCard.classList.add("active");
-        renderDashboard();
-      });
-    });
-
-    // stat cards as filters
-    document.querySelectorAll(".stat-card").forEach(card=>{
-      card.addEventListener("click",()=>{
-        document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
-        card.classList.add("active");
-
-        const t = card.dataset.type;
-        specialFilter = "none";
-
-        if(t === "paid"){
-          currentFilter = "paid";
-        } else if(t === "unpaid"){
-          currentFilter = "unpaid";
-        } else if(t === "due-soon"){
-          currentFilter = "all";
-          specialFilter = "due-soon";
-        } else {
-          currentFilter = "all";
-        }
-
-        document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
-        const pill = document.querySelector(`.status-pill[data-filter="${currentFilter}"]`)
-                || document.querySelector(`.status-pill[data-filter="all"]`);
-        if(pill) pill.classList.add("active");
-
-        renderDashboard();
-      });
-    });
-
-    on("po-filter","change",e=>{
-      currentPoFilter=e.target.value;
+  document.querySelectorAll(".status-pill").forEach(b=>{
+    b.addEventListener("click",()=>{
+      currentFilter=b.dataset.filter;
+      specialFilter="none";
       renderDashboard();
     });
+  });
 
-    on("search-input","input",e=>{
-      searchTerm=e.target.value.trim();
+  document.querySelectorAll(".stat-card").forEach(c=>{
+    c.addEventListener("click",()=>{
+      specialFilter=c.dataset.type==="due-soon"?"due-soon":"none";
+      currentFilter=c.dataset.type==="paid"?"paid":c.dataset.type==="unpaid"?"unpaid":"all";
       renderDashboard();
     });
+  });
+}
 
-    // NEW: Issue Date filters (won't crash if missing)
-    on("date-from","change",e=>{
-      dateFrom = e.target.value || "";
-      renderDashboard();
-    });
-    on("date-to","change",e=>{
-      dateTo = e.target.value || "";
-      renderDashboard();
-    });
+/* ================== INIT ================== */
+function init(){
+  loadInvoices();
+  setupEvents();
+  renderDashboard();
+  renderReport();
+}
 
-    on("btn-add-row","click",()=>{
-      const row=createItemRow();
-      const body = $("items-body");
-      if(body){
-        body.appendChild(row);
-        updateRowNumbers();
-        recalcTotals();
-      }
-    });
-
-    on("f-discount","input",recalcTotals);
-    on("f-tax","input",recalcTotals);
-    on("f-shipping","input",recalcTotals);
-
-    // sort headers
-    document.querySelectorAll("th.sortable").forEach(th=>{
-      th.addEventListener("click", ()=>{
-        const field = th.dataset.sort;
-        if(sortField === field){
-          sortDir = (sortDir === "asc") ? "desc" : "asc";
-        } else {
-          sortField = field;
-          sortDir = "asc";
-        }
-        renderDashboard();
-      });
-    });
-
-    on("theme-select","change", e => applyTheme(e.target.value));
-
-    window.editInvoice=editInvoice;
-    window.deleteInvoiceById=deleteInvoiceById;
-  }
-
-  function init(){
-    initTheme();
-    setupEvents();
-    loadInvoices();
-    renderPoFilterOptions();
-    renderDashboard();
-    renderReport();
-    showDashboard();
-  }
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",init);
-  } else {
-    init();
-  }
+document.readyState==="loading"
+  ? document.addEventListener("DOMContentLoaded",init)
+  : init();
 </script>
