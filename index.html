@@ -158,7 +158,7 @@
     }
     .panel-center-log .table-wrap{
       flex:1;
-      max-height:none; /* يلغي الحد 360px داخل هذا الكرت فقط */
+      max-height:none;
     }
 
     .card h2{
@@ -469,7 +469,7 @@
       }
     }
 
-    /* ===== مودال إدارة المستخدمين ===== */
+    /* ===== مودال إدارة المستخدمين / التقرير ===== */
     .modal-backdrop{
       position:fixed;
       inset:0;
@@ -574,13 +574,15 @@
         <!-- ✅ زر إنشاء فاتورة جديدة -->
         <button id="open-invoice">إنشاء فاتورة</button>
 
+        <!-- ✅ زر التقرير الشامل (آخر تعديل) -->
+        <button id="open-full-report">تقرير شامل</button>
+
         <!-- زر إدارة المستخدمين (يظهر للأدمن فقط) -->
         <button id="manage-users-btn" style="display:none;">إدارة المستخدمين</button>
 
         <span class="muted">المستخدم: <strong id="current-user-label">-</strong></span>
         <button id="logout-btn" class="logout-btn">تسجيل خروج</button>
       </div>
-
     </header>
 
     <main>
@@ -890,6 +892,48 @@
     </div>
   </div>
 
+  <!-- ✅ مودال التقرير الشامل (آخر تعديل) -->
+  <div id="full-report-modal" class="modal-backdrop" style="display:none;">
+    <div class="modal" style="max-width:1100px;">
+      <div class="modal-header">
+        <h3>التقرير الشامل لجميع المولدات</h3>
+        <button id="full-report-close" class="modal-close" title="إغلاق">×</button>
+      </div>
+
+      <div class="row" style="justify-content:flex-start;gap:8px;margin-bottom:10px;">
+        <button id="full-report-export-csv">تصدير CSV</button>
+        <button id="full-report-print">طباعة</button>
+        <span class="muted" id="full-report-meta"></span>
+      </div>
+
+      <div class="table-wrap" style="max-height:520px;">
+        <table>
+          <thead>
+            <tr>
+              <th>المولد</th>
+              <th>آخر قراءة</th>
+              <th>ساعات منذ آخر خدمة</th>
+              <th>الاستحقاق التالي</th>
+              <th>الحالة</th>
+              <th>ساعات التشغيل (إجمالي)</th>
+              <th>عدد خدمات الصيانة</th>
+              <th>مصاريف الخدمات IQD</th>
+              <th>مصاريف الخدمات USD</th>
+              <th>الطارئة (إجمالي)</th>
+              <th>الطارئة (مدفوع)</th>
+              <th>الطارئة (غير مدفوع)</th>
+            </tr>
+          </thead>
+          <tbody id="full-report-body"></tbody>
+        </table>
+      </div>
+
+      <p class="muted" style="margin:8px 0 0;">
+        ملاحظة: ساعات التشغيل تُحسب من أول قراءة إلى آخر قراءة لكل مولد.
+      </p>
+    </div>
+  </div>
+
   <script>
     // ====== الحالة العامة ======
     let state = { generators: [] };
@@ -909,11 +953,8 @@
     let users = [];
 
     function saveUsers(){
-      try{
-        localStorage.setItem(USERS_KEY, JSON.stringify(users));
-      }catch(e){
-        console.error("خطأ حفظ المستخدمين", e);
-      }
+      try{ localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+      catch(e){ console.error("خطأ حفظ المستخدمين", e); }
     }
 
     function loadUsers(){
@@ -1010,6 +1051,18 @@
     const newUserPassInput = $("new-user-password");
     const newUserRoleSelect = $("new-user-role");
     const addUserBtn = $("add-user-btn");
+
+    // ✅ زر الفاتورة
+    const openInvoiceBtn = $("open-invoice");
+
+    // ✅ عناصر التقرير الشامل (آخر تعديل)
+    const openFullReportBtn = $("open-full-report");
+    const fullReportModal = $("full-report-modal");
+    const fullReportClose = $("full-report-close");
+    const fullReportBody = $("full-report-body");
+    const fullReportMeta = $("full-report-meta");
+    const fullReportExportCSV = $("full-report-export-csv");
+    const fullReportPrint = $("full-report-print");
 
     // صلاحيات
     function isAdmin(){
@@ -1233,12 +1286,12 @@
       return base + 200;
     }
 
-    // ✅ تعديل: status عربي + إنجليزي (لـ CSV السريع)
+    // ✅ STATUS عربي للواجهة + إنكليزي للتقارير/CSV (آخر تعديل مهم)
     function statusObj(gen){
       const since = hoursSinceService(gen);
-      if(since >= 200) return {labelAr:"متأخرة", labelEn:"OVERDUE", class:"status-due"};
+      if(since >= 200) return {labelAr:"متأخرة", labelEn:"DUE", class:"status-due"};
       if(since >= 160) return {labelAr:"قرب الاستحقاق", labelEn:"DUE SOON", class:"status-soon"};
-      return {labelAr:"آمنة", labelEn:"OK", class:"status-safe"};
+      return {labelAr:"آمنة", labelEn:"SAFE", class:"status-safe"};
     }
 
     // الصيانة الطارئة
@@ -1365,7 +1418,6 @@
         logBody.innerHTML = "";
         return;
       }
-
       detailNamePill.textContent = gen.name;
       dName.value = gen.name || "";
       dSmr.value  = gen.lastServiceMeter != null ? gen.lastServiceMeter : "";
@@ -1455,6 +1507,208 @@
       el.textContent = "";
     }
 
+    // ====== التقرير الشامل (آخر تعديل) ======
+    function totalHoursForGen(gen){
+      const readings = (gen.readings||[]).slice().sort(byDateAsc);
+      if(readings.length < 2) return 0;
+      return Number(readings[readings.length-1].meter) - Number(readings[0].meter);
+    }
+
+    function serviceTotals(gen){
+      let iq = 0, us = 0;
+      const services = (gen.serviceHistory||[]);
+      services.forEach(s=>{
+        if(s.cost == null) return;
+        const cur = (s.currency||"IQD").toUpperCase();
+        if(cur === "USD") us += Number(s.cost) || 0;
+        else iq += Number(s.cost) || 0;
+      });
+      return {iqd: iq, usd: us, count: services.length};
+    }
+
+    function emergencyTotalsByGenId(genId){
+      let total=0, paid=0, unpaid=0;
+      emergencyMaintenances.forEach(e=>{
+        if(e.genId !== genId) return;
+        const c = Number(e.cost) || 0;
+        total += c;
+        if(e.paid) paid += c;
+        else unpaid += c;
+      });
+      return {total, paid, unpaid};
+    }
+
+    function buildFullReportRows(){
+      const rows = [];
+      state.generators.forEach(gen=>{
+        const cm = currentMeter(gen);
+        const since = hoursSinceService(gen);
+        const next = nextDueAt(gen);
+        const st = statusObj(gen);
+
+        const hoursTotal = totalHoursForGen(gen);
+        const svc = serviceTotals(gen);
+        const em = emergencyTotalsByGenId(gen.id);
+
+        rows.push({
+          name: gen.name || "-",
+          currentMeter: cm ?? "-",
+          since,
+          next,
+          statusAr: st.labelAr,
+          statusEn: st.labelEn,
+          hoursTotal,
+          svcCount: svc.count,
+          svcIQD: svc.iqd,
+          svcUSD: svc.usd,
+          emTotal: em.total,
+          emPaid: em.paid,
+          emUnpaid: em.unpaid
+        });
+      });
+
+      const order = { "متأخرة": 0, "قرب الاستحقاق": 1, "آمنة": 2 };
+      rows.sort((a,b)=>
+        (order[a.statusAr] ?? 9) - (order[b.statusAr] ?? 9) ||
+        String(a.name).localeCompare(String(b.name))
+      );
+
+      return rows;
+    }
+
+    function renderFullReport(){
+      if(!fullReportBody) return;
+      fullReportBody.innerHTML = "";
+
+      const rows = buildFullReportRows();
+      if(!rows.length){
+        fullReportBody.innerHTML = "<tr><td colspan='12' class='muted'>لا توجد مولدات مسجّلة.</td></tr>";
+        if(fullReportMeta) fullReportMeta.textContent = "";
+        return;
+      }
+
+      let gHours=0, gSvc=0, gIQD=0, gUSD=0, gEm=0, gEmPaid=0, gEmUnpaid=0;
+
+      rows.forEach(r=>{
+        gHours += Number(r.hoursTotal)||0;
+        gSvc   += Number(r.svcCount)||0;
+        gIQD   += Number(r.svcIQD)||0;
+        gUSD   += Number(r.svcUSD)||0;
+        gEm    += Number(r.emTotal)||0;
+        gEmPaid += Number(r.emPaid)||0;
+        gEmUnpaid += Number(r.emUnpaid)||0;
+
+        const tr = document.createElement("tr");
+        if(r.statusAr === "متأخرة") tr.classList.add("due-row");
+        else if(r.statusAr === "قرب الاستحقاق") tr.classList.add("soon-row");
+
+        tr.innerHTML = `
+          <td>${r.name}</td>
+          <td>${r.currentMeter}</td>
+          <td>${r.since}</td>
+          <td>${r.next}</td>
+          <td>${r.statusAr}</td>
+          <td>${r.hoursTotal}</td>
+          <td>${r.svcCount}</td>
+          <td>${r.svcIQD}</td>
+          <td>${r.svcUSD}</td>
+          <td>${r.emTotal}</td>
+          <td>${r.emPaid}</td>
+          <td>${r.emUnpaid}</td>
+        `;
+        fullReportBody.appendChild(tr);
+      });
+
+      const totalTr = document.createElement("tr");
+      totalTr.style.background = "#f9fafb";
+      totalTr.style.fontWeight = "700";
+      totalTr.innerHTML = `
+        <td>الإجمالي</td>
+        <td></td><td></td><td></td><td></td>
+        <td>${gHours}</td>
+        <td>${gSvc}</td>
+        <td>${gIQD}</td>
+        <td>${gUSD}</td>
+        <td>${gEm}</td>
+        <td>${gEmPaid}</td>
+        <td>${gEmUnpaid}</td>
+      `;
+      fullReportBody.appendChild(totalTr);
+
+      if(fullReportMeta){
+        fullReportMeta.textContent = `عدد المولدات: ${rows.length} | مجموع ساعات التشغيل: ${gHours} | خدمات: ${gSvc}`;
+      }
+    }
+
+    function exportFullReportCSV(){
+      const rows = buildFullReportRows();
+      const header = [
+        "Generator","Current Meter","Hours Since Service","Next Due Meter","Status",
+        "Total Run Hours","Service Count","Service Cost IQD","Service Cost USD",
+        "Emergency Total IQD","Emergency Paid IQD","Emergency Unpaid IQD"
+      ];
+      const lines = [header.join(",")];
+
+      rows.forEach(r=>{
+        lines.push([
+          `"${String(r.name||"").replace(/"/g,'""')}"`,
+          r.currentMeter,
+          r.since,
+          r.next,
+          `"${String(r.statusEn||"").replace(/"/g,'""')}"`,
+          r.hoursTotal,
+          r.svcCount,
+          r.svcIQD,
+          r.svcUSD,
+          r.emTotal,
+          r.emPaid,
+          r.emUnpaid
+        ].join(","));
+      });
+
+      const csvContent = "\ufeff" + lines.join("\n");
+      const blob = new Blob([csvContent],{type:"text/csv;charset=utf-8"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "generators-full-report.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function openFullReport(){
+      renderFullReport();
+      fullReportModal.style.display = "flex";
+    }
+
+    function closeFullReport(){
+      fullReportModal.style.display = "none";
+    }
+
+    function refreshFullReportIfOpen(){
+      if(fullReportModal && fullReportModal.style.display === "flex"){
+        renderFullReport();
+      }
+    }
+
+    if(openFullReportBtn){
+      openFullReportBtn.addEventListener("click", openFullReport);
+    }
+    if(fullReportClose){
+      fullReportClose.addEventListener("click", closeFullReport);
+    }
+    if(fullReportModal){
+      fullReportModal.addEventListener("click", (e)=>{
+        if(e.target === fullReportModal) closeFullReport();
+      });
+    }
+    if(fullReportExportCSV){
+      fullReportExportCSV.addEventListener("click", exportFullReportCSV);
+    }
+    if(fullReportPrint){
+      fullReportPrint.addEventListener("click", ()=> window.print());
+    }
+
     // إضافة مولد
     addGenBtn.addEventListener("click", ()=>{
       if(!isAdmin()){
@@ -1484,6 +1738,7 @@
       renderDetail();
       buildReports();
       renderEmergencyTable();
+      refreshFullReportIfOpen();
     });
 
     genList.addEventListener("click",(e)=>{
@@ -1493,6 +1748,7 @@
       renderGenList();
       renderDetail();
       buildReports();
+      refreshFullReportIfOpen();
     });
 
     deleteGenBtn.addEventListener("click", ()=>{
@@ -1506,13 +1762,16 @@
         return;
       }
       if(!confirm("هل تريد حذف هذا المولد بكل بياناته بالتأكيد؟")) return;
+
       state.generators = state.generators.filter(g=>g.id!==selectedId);
       emergencyMaintenances = emergencyMaintenances.filter(e=>e.genId !== gen.id);
       selectedId = state.generators[0]?.id || null;
+
       renderGenList();
       renderDetail();
       buildReports();
       renderEmergencyTable();
+      refreshFullReportIfOpen();
     });
 
     dName.addEventListener("change", ()=>{
@@ -1523,6 +1782,7 @@
       renderDetail();
       buildReports();
       renderEmergencyTable();
+      refreshFullReportIfOpen();
     });
     dSmr.addEventListener("change", ()=>{
       const gen = state.generators.find(g=>g.id===selectedId);
@@ -1531,6 +1791,7 @@
       renderGenList();
       renderDetail();
       buildReports();
+      refreshFullReportIfOpen();
     });
     dDate.addEventListener("change", ()=>{
       const gen = state.generators.find(g=>g.id===selectedId);
@@ -1539,6 +1800,7 @@
       renderGenList();
       renderDetail();
       buildReports();
+      refreshFullReportIfOpen();
     });
 
     addReadingBtn.addEventListener("click", ()=>{
@@ -1554,17 +1816,21 @@
         return;
       }
       hideError(rErr);
+
       const exists = (gen.readings||[]).some(x=>x.date===d && Number(x.meter)===m);
       if(exists){
         showError(rErr,"هذه القراءة موجودة بالفعل.");
         return;
       }
       gen.readings = (gen.readings||[]).concat([{date:d, meter:m}]).sort(byDateAsc);
+
       rDate.value = "";
       rMeter.value = "";
+
       renderGenList();
       renderDetail();
       buildReports();
+      refreshFullReportIfOpen();
     });
 
     emAdd.addEventListener("click", ()=>{
@@ -1602,6 +1868,7 @@
       emPaid.checked = false;
 
       renderEmergencyTable();
+      refreshFullReportIfOpen();
     });
 
     emBody.addEventListener("click",(e)=>{
@@ -1652,6 +1919,7 @@
       }
 
       renderEmergencyTable();
+      refreshFullReportIfOpen();
     });
 
     logBody.addEventListener("click", (e)=>{
@@ -1678,10 +1946,10 @@
           return;
         }
         if(!gen.serviceHistory) gen.serviceHistory = [];
-        let svc = gen.serviceHistory.find(h=>h.date===d && Number(h.meter)===m);
+        let svc = gen.serviceHistory.find(h=>h.date===d && Number(h.meter)===Number(m));
         if(svc){
           if(confirm("هذه القراءة مسجلة كخدمة. هل تريد إلغاء إشارة الخدمة؟")){
-            gen.serviceHistory = gen.serviceHistory.filter(h=>!(h.date===d && Number(h.meter)===m));
+            gen.serviceHistory = gen.serviceHistory.filter(h=>!(h.date===d && Number(h.meter)===Number(m)));
           }
         } else {
           if(confirm("تعيين هذه القراءة كخدمة مكتملة؟")){
@@ -1692,7 +1960,7 @@
 
       if(action === "expense"){
         if(!gen.serviceHistory) gen.serviceHistory = [];
-        let svc = gen.serviceHistory.find(h=>h.date===d && Number(h.meter)===m);
+        let svc = gen.serviceHistory.find(h=>h.date===d && Number(h.meter)===Number(m));
         if(!svc){
           if(!isAdmin()){
             alert("لا يمكنك إنشاء خدمة جديدة، اطلب من الأدمن تسجيل الخدمة أولاً.");
@@ -1719,8 +1987,10 @@
         svc.costNote = valNote.trim();
       }
 
+      renderGenList();
       renderDetail();
       buildReports();
+      refreshFullReportIfOpen();
     });
 
     // تقارير
@@ -1729,7 +1999,6 @@
       let to   = repTo.value || "9999-12-31";
       return {from, to};
     }
-
     function buildSummaryReport(){
       const {from, to} = parseRange();
       const rows = [];
@@ -1754,8 +2023,6 @@
       });
       return rows;
     }
-
-    // ✅ تعديل: آخر تاريخ صيانة يكون الحقيقي (حتى لو خارج الفترة)
     function buildOverviewReport(){
       const {from, to} = parseRange();
       const rows = [];
@@ -1767,29 +2034,26 @@
           const last  = readings[readings.length-1];
           hours = Number(last.meter) - Number(first.meter);
         }
-
         let costIQD = 0;
-        const servicesInRange = (gen.serviceHistory||[]).filter(s=>s.date>=from && s.date<=to);
-        servicesInRange.forEach(s=>{
+        const services = (gen.serviceHistory||[]).filter(s=>s.date>=from && s.date<=to);
+        let lastServiceDate = "";
+        services.forEach(s=>{
           if(s.cost != null){
             if((s.currency||"").toUpperCase()==="USD") return;
             costIQD += Number(s.cost);
           }
+          if(!lastServiceDate || s.date>lastServiceDate){
+            lastServiceDate = s.date;
+          }
         });
-
         let avgPerHour = 0;
         if(hours>0){
           avgPerHour = costIQD / hours;
         }
-
-        const trueLast = lastServiceInfo(gen);
-        const lastServiceDate = trueLast.date || "";
-
-        rows.push({name:gen.name, hours, costIQD, svcCount:servicesInRange.length, avgPerHour, lastServiceDate});
+        rows.push({name:gen.name, hours, costIQD, svcCount:services.length, avgPerHour, lastServiceDate});
       });
       return rows;
     }
-
     function buildExpensesReport(){
       const {from, to} = parseRange();
       const rows = [];
@@ -1938,12 +2202,7 @@
             r.svcCount
           ].join(","));
         });
-        lines.push([
-          `"الإجمالي الكلي"`,
-          totalHours,
-          totalIQD,
-          totalSvc
-        ].join(","));
+        lines.push([`"الإجمالي الكلي"`, totalHours, totalIQD, totalSvc].join(","));
       } else if(activeTab === "overview"){
         const rows = buildOverviewReport();
         const header = ["المولد","إجمالي ساعات التشغيل","إجمالي المصاريف (IQD)","عدد خدمات الصيانة","معدل الكلفة لكل ساعة","آخر تاريخ صيانة"];
@@ -1963,14 +2222,7 @@
           ].join(","));
         });
         const globalAvg = totalHours>0 ? (totalIQD/totalHours).toFixed(2) : 0;
-        lines.push([
-          `"الإجمالي الكلي"`,
-          totalHours,
-          totalIQD,
-          totalSvc,
-          globalAvg,
-          ""
-        ].join(","));
+        lines.push([`"الإجمالي الكلي"`, totalHours, totalIQD, totalSvc, globalAvg, ""].join(","));
       } else {
         const rows = buildExpensesReport();
         const header = ["المولد","تاريخ الخدمة","قراءة العداد","المبلغ","العملة","ملاحظة"];
@@ -2058,10 +2310,12 @@
           state = { generators:mappedGenerators };
           emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
           selectedId = state.generators[0]?.id || null;
+
           renderGenList();
           renderDetail();
           buildReports();
           renderEmergencyTable();
+          refreshFullReportIfOpen();
         }catch(err){
           alert("تعذر استيراد الملف: " + (err.message||err));
         }
@@ -2080,29 +2334,25 @@
       }
     });
 
-    // ✅ تعديل: ملخص CSV السريع يأخذ آخر خدمة الحقيقي + STATUS إنجليزي
+    // ✅ ملخص CSV من الهيدر (بالإنكليزي + Status بالإنكليزي)
     expCSV.addEventListener("click", ()=>{
       const header = ["Generator","Last Service Meter","Last Service Date","Current Meter","Hours Since Service","Next Due Meter","Status"];
       const lines = [header.join(",")];
-
       state.generators.forEach(gen=>{
         const cm = currentMeter(gen) ?? "";
-        const svc = lastServiceInfo(gen); // ✅ الحقيقي
         const since = hoursSinceService(gen);
         const next  = nextDueAt(gen);
         const st = statusObj(gen);
-
         lines.push([
           `"${(gen.name||"").replace(/"/g,'""')}"`,
-          svc.meter ?? "",
-          svc.date ?? "",
+          gen.lastServiceMeter ?? "",
+          gen.lastServiceDate ?? "",
           cm,
           since,
           next,
-          st.labelEn // ✅ English
+          st.labelEn
         ].join(","));
       });
-
       const blob = new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8"});
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -2140,10 +2390,12 @@
               };
               emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
               selectedId = state.generators[0]?.id || null;
+
               renderGenList();
               renderDetail();
               buildReports();
               renderEmergencyTable();
+              refreshFullReportIfOpen();
               return;
             }
           } catch(e){
@@ -2182,10 +2434,12 @@
         };
         emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
         selectedId = state.generators[0]?.id || null;
+
         renderGenList();
         renderDetail();
         buildReports();
         renderEmergencyTable();
+        refreshFullReportIfOpen();
       } catch (err) {
         console.error("خطأ أثناء تحميل البيانات", err);
       }
@@ -2219,8 +2473,7 @@
       }
     })();
 
-    // ====== فتح صفحة إنشاء فاتورة جديدة ======
-    const openInvoiceBtn = $("open-invoice");
+    // فتح صفحة إنشاء فاتورة جديدة
     if(openInvoiceBtn){
       openInvoiceBtn.addEventListener("click", ()=>{
         window.open("invoice.html", "_blank");
