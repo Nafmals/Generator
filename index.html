@@ -561,25 +561,25 @@
         <span>Nafithat Al-Amal</span>
       </h1>
       <div class="header-actions">
-  <button id="export-json">تصدير JSON</button>
+        <button id="export-json">تصدير JSON</button>
 
-  <label id="import-json-wrapper" style="font-size:12px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
-    استيراد JSON
-    <input type="file" id="import-json" accept="application/json" style="display:none">
-  </label>
+        <label id="import-json-wrapper" style="font-size:12px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+          استيراد JSON
+          <input type="file" id="import-json" accept="application/json" style="display:none">
+        </label>
 
-  <button id="save-local">حفظ البيانات</button>
-  <button id="export-csv" title="ملخص CSV بسيط لجميع المولدات">ملخص CSV</button>
+        <button id="save-local">حفظ البيانات</button>
+        <button id="export-csv" title="ملخص CSV بسيط لجميع المولدات">ملخص CSV</button>
 
-  <!-- ✅ زر إنشاء فاتورة جديدة -->
-  <button id="open-invoice">إنشاء فاتورة</button>
+        <!-- ✅ زر إنشاء فاتورة جديدة -->
+        <button id="open-invoice">إنشاء فاتورة</button>
 
-  <!-- زر إدارة المستخدمين (يظهر للأدمن فقط) -->
-  <button id="manage-users-btn" style="display:none;">إدارة المستخدمين</button>
+        <!-- زر إدارة المستخدمين (يظهر للأدمن فقط) -->
+        <button id="manage-users-btn" style="display:none;">إدارة المستخدمين</button>
 
-  <span class="muted">المستخدم: <strong id="current-user-label">-</strong></span>
-  <button id="logout-btn" class="logout-btn">تسجيل خروج</button>
-</div>
+        <span class="muted">المستخدم: <strong id="current-user-label">-</strong></span>
+        <button id="logout-btn" class="logout-btn">تسجيل خروج</button>
+      </div>
 
     </header>
 
@@ -1232,11 +1232,13 @@
       const base = svc.meter || 0;
       return base + 200;
     }
+
+    // ✅ تعديل: status عربي + إنجليزي (لـ CSV السريع)
     function statusObj(gen){
       const since = hoursSinceService(gen);
-      if(since >= 200) return {label:"متأخرة", class:"status-due"};
-      if(since >= 160) return {label:"قرب الاستحقاق", class:"status-soon"};
-      return {label:"آمنة", class:"status-safe"};
+      if(since >= 200) return {labelAr:"متأخرة", labelEn:"OVERDUE", class:"status-due"};
+      if(since >= 160) return {labelAr:"قرب الاستحقاق", labelEn:"DUE SOON", class:"status-soon"};
+      return {labelAr:"آمنة", labelEn:"OK", class:"status-safe"};
     }
 
     // الصيانة الطارئة
@@ -1321,15 +1323,17 @@
         const li = document.createElement("li");
         li.className = "gen-item" + (gen.id===selectedId ? " active" : "");
         li.dataset.id = gen.id;
+
         const st = statusObj(gen);
         const cm = currentMeter(gen);
         const since = hoursSinceService(gen);
+
         li.innerHTML = `
           <div class="gen-item-header">
             <div class="gen-name" title="${gen.name}">${gen.name}</div>
             <span class="status-pill ${st.class}">
               <span style="width:8px;height:8px;border-radius:999px;background:currentColor;"></span>
-              ${st.label}
+              ${st.labelAr}
             </span>
           </div>
           <div class="gen-meta">
@@ -1361,6 +1365,7 @@
         logBody.innerHTML = "";
         return;
       }
+
       detailNamePill.textContent = gen.name;
       dName.value = gen.name || "";
       dSmr.value  = gen.lastServiceMeter != null ? gen.lastServiceMeter : "";
@@ -1413,8 +1418,8 @@
         const weekly = prev ? (Number(r.meter) - Number(prev.meter)) : "";
 
         const tr = document.createElement("tr");
-        const st = since >= 200 ? "due-row" : (since>=160 ? "soon-row" : "");
-        if(st) tr.classList.add(st);
+        const stRow = since >= 200 ? "due-row" : (since>=160 ? "soon-row" : "");
+        if(stRow) tr.classList.add(stRow);
 
         const costTxt = svc && svc.cost != null ? `${svc.cost} ${svc.currency || ""}` : "-";
         const noteTxt = svc && svc.costNote ? svc.costNote : "";
@@ -1724,6 +1729,7 @@
       let to   = repTo.value || "9999-12-31";
       return {from, to};
     }
+
     function buildSummaryReport(){
       const {from, to} = parseRange();
       const rows = [];
@@ -1748,6 +1754,8 @@
       });
       return rows;
     }
+
+    // ✅ تعديل: آخر تاريخ صيانة يكون الحقيقي (حتى لو خارج الفترة)
     function buildOverviewReport(){
       const {from, to} = parseRange();
       const rows = [];
@@ -1759,26 +1767,29 @@
           const last  = readings[readings.length-1];
           hours = Number(last.meter) - Number(first.meter);
         }
+
         let costIQD = 0;
-        const services = (gen.serviceHistory||[]).filter(s=>s.date>=from && s.date<=to);
-        let lastServiceDate = "";
-        services.forEach(s=>{
+        const servicesInRange = (gen.serviceHistory||[]).filter(s=>s.date>=from && s.date<=to);
+        servicesInRange.forEach(s=>{
           if(s.cost != null){
             if((s.currency||"").toUpperCase()==="USD") return;
             costIQD += Number(s.cost);
           }
-          if(!lastServiceDate || s.date>lastServiceDate){
-            lastServiceDate = s.date;
-          }
         });
+
         let avgPerHour = 0;
         if(hours>0){
           avgPerHour = costIQD / hours;
         }
-        rows.push({name:gen.name, hours, costIQD, svcCount:services.length, avgPerHour, lastServiceDate});
+
+        const trueLast = lastServiceInfo(gen);
+        const lastServiceDate = trueLast.date || "";
+
+        rows.push({name:gen.name, hours, costIQD, svcCount:servicesInRange.length, avgPerHour, lastServiceDate});
       });
       return rows;
     }
+
     function buildExpensesReport(){
       const {from, to} = parseRange();
       const rows = [];
@@ -2069,24 +2080,29 @@
       }
     });
 
+    // ✅ تعديل: ملخص CSV السريع يأخذ آخر خدمة الحقيقي + STATUS إنجليزي
     expCSV.addEventListener("click", ()=>{
       const header = ["Generator","Last Service Meter","Last Service Date","Current Meter","Hours Since Service","Next Due Meter","Status"];
       const lines = [header.join(",")];
+
       state.generators.forEach(gen=>{
         const cm = currentMeter(gen) ?? "";
+        const svc = lastServiceInfo(gen); // ✅ الحقيقي
         const since = hoursSinceService(gen);
         const next  = nextDueAt(gen);
         const st = statusObj(gen);
+
         lines.push([
           `"${(gen.name||"").replace(/"/g,'""')}"`,
-          gen.lastServiceMeter ?? "",
-          gen.lastServiceDate ?? "",
+          svc.meter ?? "",
+          svc.date ?? "",
           cm,
           since,
           next,
-          st.label
+          st.labelEn // ✅ English
         ].join(","));
       });
+
       const blob = new Blob([lines.join("\n")],{type:"text/csv;charset=utf-8"});
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -2202,11 +2218,11 @@
         console.error("خطأ في استرجاع جلسة المستخدم", e);
       }
     })();
-        // ====== فتح صفحة إنشاء فاتورة جديدة ======
+
+    // ====== فتح صفحة إنشاء فاتورة جديدة ======
     const openInvoiceBtn = $("open-invoice");
     if(openInvoiceBtn){
       openInvoiceBtn.addEventListener("click", ()=>{
-        // يفتح تبويب جديد باسم invoice.html
         window.open("invoice.html", "_blank");
       });
     }
