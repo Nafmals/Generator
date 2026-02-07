@@ -1196,13 +1196,53 @@
       return new Date().toISOString().slice(0,10);
     }
     function byDateAsc(a,b){
-      return a.date.localeCompare(b.date);
+      const da = a?.date ? new Date(a.date).getTime() : NaN;
+      const db = b?.date ? new Date(b.date).getTime() : NaN;
+      if(!Number.isNaN(da) && !Number.isNaN(db)){
+        if(da !== db) return da - db;
+        // نفس اليوم: رتّب حسب العداد (الأقل أولاً)
+        const ma = Number(a?.meter ?? 0);
+        const mb = Number(b?.meter ?? 0);
+        return ma - mb;
+      }
+      // fallback: مقارنة نصية
+      return String(a?.date||"").localeCompare(String(b?.date||""));
     }
     function currentMeter(gen){
       const sorted = (gen.readings||[]).slice().sort(byDateAsc);
       if(!sorted.length) return null;
       return Number(sorted[sorted.length-1].meter);
     }
+
+    // ✅ آخر تاريخ قراءة فعلي (Last Reading Date)
+    function lastReadingDate(gen){
+      const r = (gen.readings || []).slice().sort((a,b)=>{
+        const da = new Date((a.date||"") + "T00:00:00");
+        const db = new Date((b.date||"") + "T00:00:00");
+        const diff = da - db;
+        if(diff !== 0) return diff;
+        return Number(a.meter||0) - Number(b.meter||0);
+      });
+      return r.length ? (r[r.length-1].date || "") : "";
+    }
+
+    // ✅ عدد القراءات المسجلة
+    function readingCount(gen){
+      return (gen.readings || []).length;
+    }
+
+    // ✅ عدد الأيام منذ آخر قراءة
+    function daysSinceLastReading(gen){
+      const d = lastReadingDate(gen);
+      if(!d) return "";
+      const last = new Date(d + "T00:00:00");
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const diffMs = today - last;
+      const days = Math.floor(diffMs / (1000*60*60*24));
+      return (isFinite(days) && days >= 0) ? days : "";
+    }
+
     function lastWeeklyHours(gen){
       const sorted = (gen.readings||[]).slice().sort(byDateAsc);
       if(sorted.length < 2) return null;
@@ -2082,7 +2122,7 @@
 
     // ✅ تعديل: ملخص CSV السريع يأخذ آخر خدمة الحقيقي + STATUS إنجليزي
     expCSV.addEventListener("click", ()=>{
-      const header = ["Generator","Last Service Meter","Last Service Date","Current Meter","Hours Since Service","Next Due Meter","Status"];
+      const header = ["Generator","Last Service Meter","Last Service Date","Last Reading Date","Reading Count","Days Since Last Reading","Current Meter","Hours Since Service","Next Due Meter","Status"];
       const lines = [header.join(",")];
 
       state.generators.forEach(gen=>{
@@ -2096,6 +2136,9 @@
           `"${(gen.name||"").replace(/"/g,'""')}"`,
           svc.meter ?? "",
           svc.date ?? "",
+          lastReadingDate(gen) || "",
+          readingCount(gen),
+          daysSinceLastReading(gen),
           cm,
           since,
           next,
