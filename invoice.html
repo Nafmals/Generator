@@ -522,7 +522,7 @@ main {
         <th class="sortable" data-sort="no">NO. <span class="sort-ind"></span></th>
         <th class="sortable" data-sort="poNo">PO No. <span class="sort-ind"></span></th>
         <th class="sortable" data-sort="invoiceNo">INVOICE NO. <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="serviceDate">SERVICE DATE <span class="sort-ind"></span></th>
+        <th class="sortable" data-sort="issueDate">INVOICE DATE <span class="sort-ind"></span></th>
         <th>DESCRIPTION</th>
         <th class="sortable" data-sort="durationFrom">DURATION FROM <span class="sort-ind"></span></th>
         <th class="sortable" data-sort="durationTo">DURATION TO <span class="sort-ind"></span></th>
@@ -586,23 +586,7 @@ main {
         <label for="f-date">Issue Date</label>
         <input id="f-date" type="date">
       </div>
-      <div class="form-group">
-        <label for="f-due">Due Date</label>
-        <input id="f-due" type="date">
-      </div>
-      <div class="form-group">
-        <label for="f-service">Service Date</label>
-        <input id="f-service" type="date">
-      </div>
-      <div class="form-group">
-        <label for="f-dur-from">Duration From</label>
-        <input id="f-dur-from" type="date">
-      </div>
-      <div class="form-group">
-        <label for="f-dur-to">Duration To</label>
-        <input id="f-dur-to" type="date">
-      </div>
-      <div class="form-group">
+<div class="form-group">
         <label for="f-contract">Contract (PO)</label>
         <input id="f-contract" type="text">
       </div>
@@ -613,7 +597,8 @@ main {
           <option value="unpaid">Unpaid</option>
           <option value="paid">Paid</option>
         </select>
-      </div></div>
+      </div>
+    </div>
 
     <div class="form-grid">
       <div class="form-group">
@@ -630,6 +615,9 @@ main {
       </div>
     </div>
 
+    <div class="form-grid">
+</div>
+
     <h4 style="margin-top:12px;margin-bottom:6px;font-size:13px;">Items</h4>
     <table class="items-table">
       <thead>
@@ -637,8 +625,9 @@ main {
         <th>#</th>
         <th>Description</th>
         <th>Location</th>
-        <th>Date</th>
-        <th>Unit</th>
+        <th>Duration From</th>
+              <th>Duration To</th>
+              <th>Unit</th>
         <th>Qty</th>
         <th>Price</th>
         <th>Total</th>
@@ -723,6 +712,15 @@ main {
 
     return "-";
   }
+  // ✅ Service label for reports (e.g., "Mar-24") derived from a date (Duration From preferred)
+  function serviceLabelFromDate(dateStr){
+    if(!dateStr) return "";
+    const d = new Date(dateStr + "T00:00:00");
+    if(Number.isNaN(d.getTime())) return "";
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return months[d.getMonth()] + "-" + String(d.getFullYear()).slice(-2);
+  }
+
 
   function normalizeInvoice(inv){
     if(!inv) return inv;
@@ -734,10 +732,9 @@ main {
 
     if(!inv.poNo && inv.contract) inv.poNo = inv.contract;
     if(!inv.invoiceNo && inv.number) inv.invoiceNo = inv.number;
-    if(!inv.issueDate && inv.serviceDate) inv.issueDate = inv.serviceDate;
     if(!inv.serviceDate && inv.issueDate) inv.serviceDate = inv.issueDate;
 
-    if(!inv.durationFrom) inv.durationFrom = inv.serviceDate || inv.issueDate || "";
+    if(!inv.durationFrom) inv.durationFrom = inv.issueDate || "";
     if(!inv.durationTo)   inv.durationTo   = inv.dueDate   || "";
 
     if(inv.invoiceAmount == null) inv.invoiceAmount = Number(inv.subtotal || 0);
@@ -752,15 +749,64 @@ main {
     return inv;
   }
 
+  // ✅ تحديث الـ Items لكل فاتورة حسب معلومات الفاتورة (للتقارير)
+  // - يجعل لكل فاتورة Item واحد على الأقل
+  // - ويملأ الحقول الناقصة/ويحدثها لتطابق (الوصف/الوحدة/الكمية/السعر/التاريخ)
+  function syncInvoiceItems(inv, force=true){
+    if(!inv) return inv;
+    inv = normalizeInvoice(inv);
+
+    const desc = String((inv.scope || inv.description || "")).trim();
+    const unit = String(inv.unit || (inv.items && inv.items[0] && inv.items[0].unit) || "").trim();
+    const qty  = Number(inv.qty || 0) || (inv.items||[]).reduce((s,it)=>s+(Number(it.qty)||0),0) || 1;
+
+    // price per unit (INVOICE AMOUNT)
+    const invTotal = Number(inv.total || inv.balance || inv.subtotal || 0);
+    const pricePer = Number(inv.invoiceAmount || 0) || (qty ? (invTotal/qty) : invTotal);
+
+    const itemDate = (inv.durationFrom || inv.issueDate || "");
+
+    if(!Array.isArray(inv.items) || inv.items.length===0){
+      inv.items = [{desc:"", location:"", date:"", unit:"", qty:0, price:0}];
+    }
+
+    inv.items = inv.items.map((it, idx)=>{
+      it = it || {};
+      if(force || !it.desc) it.desc = desc;
+      if(force || !it.unit) it.unit = unit;
+      if(force || !it.qty)  it.qty  = qty;
+      if(force || !it.price) it.price = pricePer;
+      if(force || !it.date) it.date = itemDate;
+      if(it.location == null) it.location = "";
+      return it;
+    });
+
+    // keep invoice-level summary in sync too
+    inv.description = desc;
+    inv.serviceDate = serviceLabelFromDate(inv.issueDate || inv.durationFrom || "");
+    inv.invoiceAmount = pricePer;
+    inv.qty = qty;
+    inv.unit = unit;
+    inv.total = invTotal || (qty*pricePer);
+
+    return inv;
+  }
+
+  function syncAllInvoices(force=true){
+    invoices = invoices.map(inv => syncInvoiceItems(inv, force));
+  }
+
+
   function createItemRow(data={}){
     const tr=document.createElement("tr");
     tr.className="item-row";
     tr.innerHTML=`
       <td class="no-cell"></td>
-      <td><textarea class="cell-desc" placeholder="Description...">${data.desc || ""}</textarea></td>
-      <td><input class="cell-loc" placeholder="Location" value="${data.location || ""}"></td>
-      <td><input class="cell-date" type="date" value="${data.date || ""}"></td>
-      <td><input class="cell-unit" placeholder="Unit" value="${data.unit || ""}"></td>
+      <td><textarea class="cell-desc">${data.desc || ""}</textarea></td>
+      <td><input class="cell-loc" value="${data.location || ""}"></td>
+      <td><input class="cell-dfrom" type="date" value="${data.durationFrom || ""}"></td>
+      <td><input class="cell-dto" type="date" value="${data.durationTo || ""}"></td>
+      <td><input class="cell-unit" value="${data.unit || ""}"></td>
       <td><input class="cell-qty" type="number" min="0" step="0.01" value="${data.qty!=null?data.qty:1}"></td>
       <td><input class="cell-price" type="number" min="0" step="0.01" value="${data.price!=null?data.price:0}"></td>
       <td><input class="cell-total" type="text" readonly></td>
@@ -798,98 +844,87 @@ main {
     $("f-balance").value=formatIQD(balance);
   }
 
-    function readForm(inv){
-    // Basic header fields
-    inv.number = $("f-number").value.trim();
-    inv.invoiceNo = inv.number;
+  function readForm(inv){
+    inv.number=$("f-number").value.trim();
+    inv.issueDate=$("f-date").value.trim();
+inv.contract=$("f-contract").value.trim();
+    inv.billTo=$("f-billto").value.trim();
+    inv.scope=$("f-scope").value.trim();
+    inv.note=$("f-note").value.trim();
+    inv.status=$("status-select").value;
+    inv.customerName=(inv.billTo.split("\n")[0]||"").trim();
 
-    inv.issueDate = $("f-date").value.trim();   // Issue/Created date
-    inv.dueDate   = $("f-due").value.trim();    // Payment due date
-
-    // Service & period fields (for reports/filters)
-    inv.serviceDate  = $("f-service").value.trim();
-    inv.durationFrom = $("f-dur-from").value.trim();
-    inv.durationTo   = $("f-dur-to").value.trim();
-
-    inv.contract = $("f-contract").value.trim();
-    inv.poNo = inv.contract;
-
-    inv.billTo = $("f-billto").value.trim();
-    inv.scope  = $("f-scope").value.trim();
-    inv.note   = $("f-note").value.trim();
-    inv.status = $("status-select").value;
-
-    inv.customerName = (inv.billTo.split("\n")[0]||"").trim();
-
-    // Items
     const rows=document.querySelectorAll("#items-body .item-row");
     inv.items=Array.from(rows).map(tr=>({
       desc:tr.querySelector(".cell-desc").value.trim(),
       location:tr.querySelector(".cell-loc").value.trim(),
-      date:tr.querySelector(".cell-date").value.trim(),
+      durationFrom:tr.querySelector(".cell-dfrom").value.trim(),
+      durationTo:tr.querySelector(".cell-dto").value.trim(),
       unit:tr.querySelector(".cell-unit").value.trim(),
       qty:parseNumber(tr.querySelector(".cell-qty").value),
       price:parseNumber(tr.querySelector(".cell-price").value)
     }));
 
-    // Totals
+    // ✅ propagate invoice header into items so report is always updated
+    inv.items = (inv.items || []).map(it=>{
+      const out = {...it};
+      // default description from scope/description
+      if(!out.desc) out.desc = inv.scope || inv.description || "";
+      // default unit/qty/price (use invoice-level unit/qty/invoiceAmount if available)
+      if(!out.unit) out.unit = inv.unit || "";
+      if((out.qty==null || out.qty==="") && inv.qty!=null) out.qty = inv.qty;
+      if((out.price==null || out.price==="") && inv.invoiceAmount!=null) out.price = inv.invoiceAmount;
+      // default item date from Duration From
+      if(!out.date) out.date = inv.durationFrom || inv.issueDate || "";
+      return out;
+    });
+
     inv.discount=parseNumber($("f-discount").value);
     inv.taxPerc=parseNumber($("f-tax").value);
     inv.shipping=parseNumber($("f-shipping").value);
     inv.subtotal=parseNumber($("f-subtotal").value);
     inv.balance=parseNumber($("f-balance").value);
 
-    // Backward-compatible fallbacks (if user left empty)
-    if(!inv.serviceDate)  inv.serviceDate  = inv.issueDate || "";
-    if(!inv.durationFrom) inv.durationFrom = inv.serviceDate || inv.issueDate || "";
-    if(!inv.durationTo)   inv.durationTo   = inv.dueDate || "";
+    inv.poNo = inv.contract;
+    inv.invoiceNo = inv.number;
+    inv.serviceDate = inv.issueDate;
 
-    // DESCRIPTION (shown in dashboard/report/export)
+    /* ✅✅✅ (التعديل الأخير فقط) : نخزن DESCRIPTION أيضاً */
     inv.description = getInvoiceDescription(inv);
     if(inv.description === "-") inv.description = "";
 
-    // Unit/QTY summary
+    inv.durationFrom = inv.issueDate || "";
+    inv.durationTo   = inv.dueDate   || "";
+
     const firstUnit = (inv.items[0] && inv.items[0].unit) ? inv.items[0].unit : "";
     const qtySum = inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
     inv.unit = firstUnit;
     inv.qty  = qtySum;
 
-    // Amounts
     inv.invoiceAmount = Number(inv.subtotal || 0);
     inv.total = Number(inv.balance || 0);
 
     normalizeInvoice(inv);
   }
 
-    function fillForm(inv){
-    inv = normalizeInvoice(inv);
-
-    $("f-number").value = inv.number || inv.invoiceNo || "";
-    $("f-date").value   = inv.issueDate || todayStr();
-    $("f-due").value    = inv.dueDate || "";
-
-    $("f-service").value   = inv.serviceDate || inv.issueDate || "";
-    $("f-dur-from").value  = inv.durationFrom || inv.serviceDate || inv.issueDate || "";
-    $("f-dur-to").value    = inv.durationTo || inv.dueDate || "";
-
-    $("f-contract").value = inv.contract || inv.poNo || "";
-    $("f-billto").value   = inv.billTo || "";
-    $("f-scope").value    = inv.scope || "";
-    $("f-note").value     = inv.note || "";
-    $("status-select").value = inv.status || "draft";
-
+  function fillForm(inv){
+    $("f-number").value=inv.number||"";
+    $("f-date").value=inv.issueDate||todayStr();
+$("f-contract").value=inv.contract||"";
+    $("f-billto").value=inv.billTo||"";
+    $("f-scope").value=inv.scope||"";
+    $("f-note").value=inv.note||"";
+    $("status-select").value=inv.status||"draft";
     const body=$("items-body");
     body.innerHTML="";
-    const items=inv.items&&inv.items.length?inv.items:[{},{},{},{}];
+    const items=inv.items && inv.items.length ? inv.items : [{}];
     items.forEach(it=>{ const row=createItemRow(it); body.appendChild(row); });
     updateRowNumbers();
-
-    $("f-discount").value = inv.discount!=null?inv.discount:0;
-    $("f-tax").value      = inv.taxPerc!=null?inv.taxPerc:0;
-    $("f-shipping").value = inv.shipping!=null?inv.shipping:0;
-
+    $("f-discount").value=inv.discount!=null?inv.discount:0;
+    $("f-tax").value=inv.taxPerc!=null?inv.taxPerc:0;
+    $("f-shipping").value=inv.shipping!=null?inv.shipping:0;
     recalcTotals();
-    $("editor-subtitle").textContent = (inv.number||inv.invoiceNo) ? `Editing ${(inv.number||inv.invoiceNo)}` : "New invoice";
+    $("editor-subtitle").textContent=inv.number?`Editing ${inv.number}`:"New invoice";
   }
 
   function loadInvoices(){
@@ -901,6 +936,7 @@ main {
       }
     }catch(e){ console.error("Error loading invoices:",e); }
     invoices=[];
+  syncAllInvoices(true);
   }
 
   function saveInvoices(){
@@ -1064,7 +1100,7 @@ main {
       const no = inv.no != null ? inv.no : (idx+1);
       const poNo = inv.poNo || inv.contract || "";
       const invoiceNo = inv.invoiceNo || inv.number || "";
-      const serviceDate = inv.serviceDate || inv.issueDate || "";
+      const invoiceDate = serviceLabelFromDate(inv.issueDate || inv.durationFrom || "");
 
       /* ✅✅✅ (التعديل الأخير فقط) : استخدم الوصف الصحيح */
       const desc = getInvoiceDescription(inv);
@@ -1081,7 +1117,7 @@ main {
         <td>${no}</td>
         <td>${poNo}</td>
         <td>${invoiceNo}</td>
-        <td>${serviceDate}</td>
+        <td>${invoiceDate}</td>
         <td class="text-muted">${String(desc).length>45 ? String(desc).slice(0,45)+"..." : (desc||"-")}</td>
         <td>${durFrom}</td>
         <td>${durTo}</td>
@@ -1209,6 +1245,7 @@ main {
       currentId=inv.id;
     }
     readForm(inv);
+    inv = syncInvoiceItems(inv, true);
     inv.updatedAt=new Date().toISOString();
     saveInvoices();
     alert("Invoice saved ✅");
@@ -1257,16 +1294,101 @@ main {
     URL.revokeObjectURL(url);
   }
 
-  function exportXls(){
+  
+  // ✅ Update Items for ALL invoices based on invoice header fields
+  // Rules:
+  // - If item.desc empty => use invoice.scope (Description)
+  // - If item.date empty => use invoice.durationFrom
+  // - If item.unit empty => use invoice.unit (or first existing unit)
+  // - If item.qty empty/0 => use invoice.qty if available (otherwise keep)
+  // - If item.price empty/0 => use invoice.invoiceAmount if available (otherwise keep)
+  function updateItemsForInvoice(inv){
+    inv = normalizeInvoice(inv);
+
+    const fallbackDesc = (inv.scope || inv.description || "").trim();
+    const fallbackFrom = (inv.issueDate || "").trim();
+    const fallbackTo = "";
+
+    // try to derive default unit/qty/price from existing items if header not present
+    let headerUnit = (inv.unit || "").trim();
+    let headerQty  = Number(inv.qty || 0);
+    let headerPrice = Number(inv.invoiceAmount || 0);
+
+    const items = Array.isArray(inv.items) ? inv.items : [];
+    if(!headerUnit){
+      const firstUnit = items.find(it => (it.unit||"").trim())?.unit;
+      if(firstUnit) headerUnit = String(firstUnit).trim();
+    }
+    if(!headerQty){
+      const qsum = items.reduce((s,it)=> s + (Number(it.qty)||0), 0);
+      if(qsum) headerQty = qsum;
+    }
+    if(!headerPrice){
+      const firstPrice = items.find(it => Number(it.price)||0)?.price;
+      if(firstPrice) headerPrice = Number(firstPrice);
+    }
+
+    // Apply defaults where fields are empty
+    if(!items.length){
+      // if no items, create one row from invoice header fields
+      inv.items = [{
+        desc: fallbackDesc,
+        location: "",
+        durationFrom: fallbackFrom,
+        durationTo: fallbackTo,
+        unit: headerUnit,
+        qty: headerQty || 1,
+        price: headerPrice || 0
+      }];
+    } else {
+      inv.items = items.map(it=>{
+        const out = {...it};
+        if(!(out.desc||"").trim() && fallbackDesc) out.desc = fallbackDesc;
+        if(!(out.durationFrom||"").trim() && fallbackFrom) out.durationFrom = fallbackFrom;
+        if(!(out.durationTo||"").trim() && fallbackTo) out.durationTo = fallbackTo;
+        if(!(out.unit||"").trim() && headerUnit) out.unit = headerUnit;
+
+        const q = Number(out.qty||0);
+        if((!q || q===0) && headerQty) out.qty = headerQty;
+
+        const p = Number(out.price||0);
+        if((!p || p===0) && headerPrice) out.price = headerPrice;
+
+        return out;
+      });
+    }
+
+    // Recalculate totals
+    inv.subtotal = inv.items.reduce((s,it)=> s + (Number(it.qty)||0)*(Number(it.price)||0), 0);
+    inv.balance = inv.subtotal - Number(inv.discount||0);
+    const taxPerc = Number(inv.taxPerc||0);
+    if(taxPerc){
+      inv.balance += inv.balance * (taxPerc/100);
+    }
+    inv.balance += Number(inv.shipping||0);
+
+    // Keep header summaries aligned
+    inv.total = inv.balance;
+    inv.invoiceAmount = headerPrice || inv.invoiceAmount || 0;
+
+    return normalizeInvoice(inv);
+  }
+
+  function updateItemsForAllInvoices(){
+    invoices = invoices.map(updateItemsForInvoice);
+    saveInvoices();
+    renderDashboard();
+    renderReport();
+  }
+
+function exportXls(){
     if(!invoices.length){alert("No invoices to export.");return;}
 
-    // ✅ Detailed export: one row per ITEM (so Qty/Price/Date/Location are always correct)
-    const headers=[
-      "NO.","PO No.","INVOICE NO.","ISSUE DATE","DUE DATE",
-      "SERVICE DATE","DURATION FROM","DURATION TO","STATUS",
-      "ITEM #","ITEM DESCRIPTION","ITEM LOCATION","ITEM DATE","UNIT","QTY","PRICE","ITEM TOTAL",
-      "INVOICE SUBTOTAL","DISCOUNT","TAX %","SHIPPING","INVOICE TOTAL"
-    ];
+    // Ensure items are updated before export
+    syncAllInvoices(true);
+
+    // ✅ Requested layout (one row per Item, with invoice info)
+    const headers=["NO.","PO No.","INVOICE NO.","INVOICE DATE","DESCRIPTION","UNIT","QTY","INVOICE AMOUNT","TOTAL","DURATION FROM","DURATION TO"];
 
     const rows=[];
     invoices.forEach((inv, idx)=>{
@@ -1274,46 +1396,30 @@ main {
       const no = inv.no != null ? inv.no : (idx+1);
       const poNo = inv.poNo || inv.contract || "";
       const invoiceNo = inv.invoiceNo || inv.number || "";
-      const issueDate = inv.issueDate || "";
-      const dueDate   = inv.dueDate || "";
 
-      const serviceDate = inv.serviceDate || "";
+      const invoiceDate = serviceLabelFromDate(inv.issueDate || inv.durationFrom || "");
       const durFrom = inv.durationFrom || "";
       const durTo   = inv.durationTo || "";
-      const status  = inv.status || "";
-
-      const subtotal = Number(inv.subtotal || 0);
-      const discount = Number(inv.discount || 0);
-      const taxPerc  = Number(inv.taxPerc || 0);
-      const shipping = Number(inv.shipping || 0);
-      const totalVal = Number(inv.balance || 0);
 
       const items = Array.isArray(inv.items) ? inv.items : [];
       if(!items.length){
-        rows.push([
-          no,poNo,invoiceNo,issueDate,dueDate,
-          serviceDate,durFrom,durTo,status,
-          "", "", "", "", "", "", "", "",
-          subtotal,discount,taxPerc,shipping,totalVal
-        ]);
+        // fallback row if no items
+        const desc = (inv.scope || inv.description || "").trim();
+        const unit = (inv.unit || "").trim();
+        const qty  = Number(inv.qty || 0);
+        const price = Number(inv.invoiceAmount || 0);
+        const total = qty*price || Number(inv.total||0) || Number(inv.balance||0) || 0;
+        rows.push([no,poNo,invoiceNo,invoiceDate,desc,unit,qty,price,total,durFrom,durTo]);
         return;
       }
 
-      items.forEach((it, itemIdx)=>{
-        const desc = (it.desc||"").trim();
-        const location = (it.location||"").trim();
-        const date = (it.date||"").trim();
-        const unit = (it.unit||"").trim();
-        const qty = Number(it.qty||0);
-        const price = Number(it.price||0);
-        const itemTotal = qty*price;
-
-        rows.push([
-          no,poNo,invoiceNo,issueDate,dueDate,
-          serviceDate,durFrom,durTo,status,
-          (itemIdx+1), desc, location, date, unit, qty, price, itemTotal,
-          subtotal,discount,taxPerc,shipping,totalVal
-        ]);
+      items.forEach((it)=>{
+        const desc = ((it.desc||"").trim() || (inv.scope||inv.description||""));
+        const unit = ((it.unit||"").trim() || (inv.unit||""));
+        const qty  = Number(it.qty || 0);
+        const price = Number(it.price || 0);
+        const total = qty*price;
+        rows.push([no,poNo,invoiceNo,invoiceDate,desc,unit,qty,price,total,durFrom,durTo]);
       });
     });
 
@@ -1324,13 +1430,11 @@ main {
             xmlns="http://www.w3.org/TR/REC-html40">
         <head>
           <meta charset="UTF-8">
-          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Items</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Report</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
         </head>
         <body>
           <table border="1">
-            <thead>
-              <tr>${headers.map(h=>`<th>${esc(h)}</th>`).join("")}</tr>
-            </thead>
+            <thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join("")}</tr></thead>
             <tbody>
               ${rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}
             </tbody>
@@ -1343,7 +1447,7 @@ main {
     const url = URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.href=url;
-    a.download="invoices-items-report.xls";
+    a.download="invoices-report.xls";
     a.click();
     URL.revokeObjectURL(url);
   }
