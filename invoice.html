@@ -591,6 +591,18 @@ main {
         <input id="f-due" type="date">
       </div>
       <div class="form-group">
+        <label for="f-service">Service Date</label>
+        <input id="f-service" type="date">
+      </div>
+      <div class="form-group">
+        <label for="f-dur-from">Duration From</label>
+        <input id="f-dur-from" type="date">
+      </div>
+      <div class="form-group">
+        <label for="f-dur-to">Duration To</label>
+        <input id="f-dur-to" type="date">
+      </div>
+      <div class="form-group">
         <label for="f-contract">Contract (PO)</label>
         <input id="f-contract" type="text">
       </div>
@@ -601,8 +613,7 @@ main {
           <option value="unpaid">Unpaid</option>
           <option value="paid">Paid</option>
         </select>
-      </div>
-    </div>
+      </div></div>
 
     <div class="form-grid">
       <div class="form-group">
@@ -723,9 +734,10 @@ main {
 
     if(!inv.poNo && inv.contract) inv.poNo = inv.contract;
     if(!inv.invoiceNo && inv.number) inv.invoiceNo = inv.number;
+    if(!inv.issueDate && inv.serviceDate) inv.issueDate = inv.serviceDate;
     if(!inv.serviceDate && inv.issueDate) inv.serviceDate = inv.issueDate;
 
-    if(!inv.durationFrom) inv.durationFrom = inv.issueDate || "";
+    if(!inv.durationFrom) inv.durationFrom = inv.serviceDate || inv.issueDate || "";
     if(!inv.durationTo)   inv.durationTo   = inv.dueDate   || "";
 
     if(inv.invoiceAmount == null) inv.invoiceAmount = Number(inv.subtotal || 0);
@@ -745,10 +757,10 @@ main {
     tr.className="item-row";
     tr.innerHTML=`
       <td class="no-cell"></td>
-      <td><textarea class="cell-desc">${data.desc || ""}</textarea></td>
-      <td><input class="cell-loc" value="${data.location || ""}"></td>
-      <td><input class="cell-date" value="${data.date || ""}"></td>
-      <td><input class="cell-unit" value="${data.unit || ""}"></td>
+      <td><textarea class="cell-desc" placeholder="Description...">${data.desc || ""}</textarea></td>
+      <td><input class="cell-loc" placeholder="Location" value="${data.location || ""}"></td>
+      <td><input class="cell-date" type="date" value="${data.date || ""}"></td>
+      <td><input class="cell-unit" placeholder="Unit" value="${data.unit || ""}"></td>
       <td><input class="cell-qty" type="number" min="0" step="0.01" value="${data.qty!=null?data.qty:1}"></td>
       <td><input class="cell-price" type="number" min="0" step="0.01" value="${data.price!=null?data.price:0}"></td>
       <td><input class="cell-total" type="text" readonly></td>
@@ -786,17 +798,30 @@ main {
     $("f-balance").value=formatIQD(balance);
   }
 
-  function readForm(inv){
-    inv.number=$("f-number").value.trim();
-    inv.issueDate=$("f-date").value.trim();
-    inv.dueDate=$("f-due").value.trim();
-    inv.contract=$("f-contract").value.trim();
-    inv.billTo=$("f-billto").value.trim();
-    inv.scope=$("f-scope").value.trim();
-    inv.note=$("f-note").value.trim();
-    inv.status=$("status-select").value;
-    inv.customerName=(inv.billTo.split("\n")[0]||"").trim();
+    function readForm(inv){
+    // Basic header fields
+    inv.number = $("f-number").value.trim();
+    inv.invoiceNo = inv.number;
 
+    inv.issueDate = $("f-date").value.trim();   // Issue/Created date
+    inv.dueDate   = $("f-due").value.trim();    // Payment due date
+
+    // Service & period fields (for reports/filters)
+    inv.serviceDate  = $("f-service").value.trim();
+    inv.durationFrom = $("f-dur-from").value.trim();
+    inv.durationTo   = $("f-dur-to").value.trim();
+
+    inv.contract = $("f-contract").value.trim();
+    inv.poNo = inv.contract;
+
+    inv.billTo = $("f-billto").value.trim();
+    inv.scope  = $("f-scope").value.trim();
+    inv.note   = $("f-note").value.trim();
+    inv.status = $("status-select").value;
+
+    inv.customerName = (inv.billTo.split("\n")[0]||"").trim();
+
+    // Items
     const rows=document.querySelectorAll("#items-body .item-row");
     inv.items=Array.from(rows).map(tr=>({
       desc:tr.querySelector(".cell-desc").value.trim(),
@@ -807,53 +832,64 @@ main {
       price:parseNumber(tr.querySelector(".cell-price").value)
     }));
 
+    // Totals
     inv.discount=parseNumber($("f-discount").value);
     inv.taxPerc=parseNumber($("f-tax").value);
     inv.shipping=parseNumber($("f-shipping").value);
     inv.subtotal=parseNumber($("f-subtotal").value);
     inv.balance=parseNumber($("f-balance").value);
 
-    inv.poNo = inv.contract;
-    inv.invoiceNo = inv.number;
-    inv.serviceDate = inv.issueDate;
+    // Backward-compatible fallbacks (if user left empty)
+    if(!inv.serviceDate)  inv.serviceDate  = inv.issueDate || "";
+    if(!inv.durationFrom) inv.durationFrom = inv.serviceDate || inv.issueDate || "";
+    if(!inv.durationTo)   inv.durationTo   = inv.dueDate || "";
 
-    /* ✅✅✅ (التعديل الأخير فقط) : نخزن DESCRIPTION أيضاً */
+    // DESCRIPTION (shown in dashboard/report/export)
     inv.description = getInvoiceDescription(inv);
     if(inv.description === "-") inv.description = "";
 
-    inv.durationFrom = inv.issueDate || "";
-    inv.durationTo   = inv.dueDate   || "";
-
+    // Unit/QTY summary
     const firstUnit = (inv.items[0] && inv.items[0].unit) ? inv.items[0].unit : "";
     const qtySum = inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
     inv.unit = firstUnit;
     inv.qty  = qtySum;
 
+    // Amounts
     inv.invoiceAmount = Number(inv.subtotal || 0);
     inv.total = Number(inv.balance || 0);
 
     normalizeInvoice(inv);
   }
 
-  function fillForm(inv){
-    $("f-number").value=inv.number||"";
-    $("f-date").value=inv.issueDate||todayStr();
-    $("f-due").value=inv.dueDate||"";
-    $("f-contract").value=inv.contract||"";
-    $("f-billto").value=inv.billTo||"";
-    $("f-scope").value=inv.scope||"";
-    $("f-note").value=inv.note||"";
-    $("status-select").value=inv.status||"draft";
+    function fillForm(inv){
+    inv = normalizeInvoice(inv);
+
+    $("f-number").value = inv.number || inv.invoiceNo || "";
+    $("f-date").value   = inv.issueDate || todayStr();
+    $("f-due").value    = inv.dueDate || "";
+
+    $("f-service").value   = inv.serviceDate || inv.issueDate || "";
+    $("f-dur-from").value  = inv.durationFrom || inv.serviceDate || inv.issueDate || "";
+    $("f-dur-to").value    = inv.durationTo || inv.dueDate || "";
+
+    $("f-contract").value = inv.contract || inv.poNo || "";
+    $("f-billto").value   = inv.billTo || "";
+    $("f-scope").value    = inv.scope || "";
+    $("f-note").value     = inv.note || "";
+    $("status-select").value = inv.status || "draft";
+
     const body=$("items-body");
     body.innerHTML="";
     const items=inv.items&&inv.items.length?inv.items:[{},{},{},{}];
     items.forEach(it=>{ const row=createItemRow(it); body.appendChild(row); });
     updateRowNumbers();
-    $("f-discount").value=inv.discount!=null?inv.discount:0;
-    $("f-tax").value=inv.taxPerc!=null?inv.taxPerc:0;
-    $("f-shipping").value=inv.shipping!=null?inv.shipping:0;
+
+    $("f-discount").value = inv.discount!=null?inv.discount:0;
+    $("f-tax").value      = inv.taxPerc!=null?inv.taxPerc:0;
+    $("f-shipping").value = inv.shipping!=null?inv.shipping:0;
+
     recalcTotals();
-    $("editor-subtitle").textContent=inv.number?`Editing ${inv.number}`:"New invoice";
+    $("editor-subtitle").textContent = (inv.number||inv.invoiceNo) ? `Editing ${(inv.number||inv.invoiceNo)}` : "New invoice";
   }
 
   function loadInvoices(){
@@ -1223,22 +1259,62 @@ main {
 
   function exportXls(){
     if(!invoices.length){alert("No invoices to export.");return;}
-    const headers=["NO.","PO No.","INVOICE NO.","SERVICE DATE","DESCRIPTION","DURATION FROM","DURATION TO","UNIT","QTY","INVOICE AMOUNT","TOTAL","STATUS"];
-    const rows=invoices.map((inv, idx)=>{
+
+    // ✅ Detailed export: one row per ITEM (so Qty/Price/Date/Location are always correct)
+    const headers=[
+      "NO.","PO No.","INVOICE NO.","ISSUE DATE","DUE DATE",
+      "SERVICE DATE","DURATION FROM","DURATION TO","STATUS",
+      "ITEM #","ITEM DESCRIPTION","ITEM LOCATION","ITEM DATE","UNIT","QTY","PRICE","ITEM TOTAL",
+      "INVOICE SUBTOTAL","DISCOUNT","TAX %","SHIPPING","INVOICE TOTAL"
+    ];
+
+    const rows=[];
+    invoices.forEach((inv, idx)=>{
       inv = normalizeInvoice(inv);
       const no = inv.no != null ? inv.no : (idx+1);
       const poNo = inv.poNo || inv.contract || "";
       const invoiceNo = inv.invoiceNo || inv.number || "";
-      const serviceDate = inv.serviceDate || inv.issueDate || "";
-      const desc = getInvoiceDescription(inv);
+      const issueDate = inv.issueDate || "";
+      const dueDate   = inv.dueDate || "";
+
+      const serviceDate = inv.serviceDate || "";
       const durFrom = inv.durationFrom || "";
-      const durTo = inv.durationTo || "";
-      const unit = inv.unit || (inv.items[0]?.unit || "");
-      const qty = inv.qty != null ? inv.qty : inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
-      const invoiceAmount = Number(inv.invoiceAmount != null ? inv.invoiceAmount : (inv.subtotal||0));
-      const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
-      const status = inv.status || "";
-      return [no,poNo,invoiceNo,serviceDate,desc,durFrom,durTo,unit,qty,invoiceAmount,totalVal,status];
+      const durTo   = inv.durationTo || "";
+      const status  = inv.status || "";
+
+      const subtotal = Number(inv.subtotal || 0);
+      const discount = Number(inv.discount || 0);
+      const taxPerc  = Number(inv.taxPerc || 0);
+      const shipping = Number(inv.shipping || 0);
+      const totalVal = Number(inv.balance || 0);
+
+      const items = Array.isArray(inv.items) ? inv.items : [];
+      if(!items.length){
+        rows.push([
+          no,poNo,invoiceNo,issueDate,dueDate,
+          serviceDate,durFrom,durTo,status,
+          "", "", "", "", "", "", "", "",
+          subtotal,discount,taxPerc,shipping,totalVal
+        ]);
+        return;
+      }
+
+      items.forEach((it, itemIdx)=>{
+        const desc = (it.desc||"").trim();
+        const location = (it.location||"").trim();
+        const date = (it.date||"").trim();
+        const unit = (it.unit||"").trim();
+        const qty = Number(it.qty||0);
+        const price = Number(it.price||0);
+        const itemTotal = qty*price;
+
+        rows.push([
+          no,poNo,invoiceNo,issueDate,dueDate,
+          serviceDate,durFrom,durTo,status,
+          (itemIdx+1), desc, location, date, unit, qty, price, itemTotal,
+          subtotal,discount,taxPerc,shipping,totalVal
+        ]);
+      });
     });
 
     const esc = (s)=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
@@ -1248,7 +1324,7 @@ main {
             xmlns="http://www.w3.org/TR/REC-html40">
         <head>
           <meta charset="UTF-8">
-          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Report</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
+          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Items</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
         </head>
         <body>
           <table border="1">
@@ -1267,10 +1343,12 @@ main {
     const url = URL.createObjectURL(blob);
     const a=document.createElement("a");
     a.href=url;
-    a.download="invoices-report.xls";
+    a.download="invoices-items-report.xls";
     a.click();
     URL.revokeObjectURL(url);
   }
+
+
 
   function exportPdf(){
     const filtered = invoices.filter(matchesFilters).map(normalizeInvoice);
