@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>نظام إدارة ساعات المولدات والمصاريف - إصدار مطوّر</title>
 
-  <style>
+  <script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=zUCS4dVHiZlxRBdWs2vDaK0I-0dXKEF7DA1a_QQalMFrb0fbkzJ_NOFO1Dhpq06QjM2crTLnKtTcQ9M-SjlAjz2PZedA5YoLLPb3clP1o9qIKDWJm6AWkMRJUx5cc_ra9HGhqSDNGgTLVsRCnj-00fLN6tABsKWgcKBIXWbcmHvT8OSLF4RbJP5gquYP-A0QXEWgn9emJ-Xb36kJ2FzSjeNzVyNk60jhzJAUjJjMm5Shl-99ILkMshHUG5pphGq3LXKuS-Gydsp40ZF6Q21ghOHoHGkvv9qMnQfKy9TlZ5ePIQqyONg4sPeBhbggsBu24InSVTiKSKjMb80-ebzJtQ" charset="UTF-8"></script><style>
     :root{
       --bg:#f4f5f7;
       --card:#ffffff;
@@ -768,6 +768,7 @@
                   <th>المبلغ</th>
                   <th>العملة</th>
                   <th>ملاحظة</th>
+                  <th>إجراءات</th>
                 </tr>
               </thead>
               <tbody id="rep-expenses-body"></tbody>
@@ -1190,6 +1191,15 @@
         renderUsersTable();
       }
     });
+
+    // حفظ صامت للبيانات بعد عمليات التعديل والحذف
+    function persistDataSilently(){
+      try{
+        localStorage.setItem(LOCAL_KEY, JSON.stringify({generators:state.generators, emergencyMaintenances}));
+      }catch(err){
+        console.error("تعذر الحفظ التلقائي", err);
+      }
+    }
 
     // util
     function todayStr(){
@@ -1725,7 +1735,13 @@
           }
         } else {
           if(confirm("تعيين هذه القراءة كخدمة مكتملة؟")){
-            gen.serviceHistory.push({date:d, meter:m});
+            gen.serviceHistory.push({
+              id: crypto.randomUUID(),
+              date:d,
+              meter:m,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            });
           }
         }
       }
@@ -1739,7 +1755,13 @@
             return;
           }
           if(!confirm("لم تُسجّل هذه القراءة كخدمة بعد. تعيينها كخدمة ثم إضافة مصروف؟")) return;
-          svc = {date:d, meter:m};
+          svc = {
+            id: crypto.randomUUID(),
+            date:d,
+            meter:m,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
           gen.serviceHistory.push(svc);
         }
 
@@ -1757,6 +1779,9 @@
         svc.cost = valCost.trim() ? Number(valCost.trim()) : null;
         svc.currency = valCurrency.trim().toUpperCase();
         svc.costNote = valNote.trim();
+        svc.id = svc.id || crypto.randomUUID();
+        svc.updatedAt = new Date().toISOString();
+        svc.createdAt = svc.createdAt || svc.updatedAt;
       }
 
       renderDetail();
@@ -1837,7 +1862,11 @@
         (gen.serviceHistory||[]).forEach(s=>{
           if(s.date<from || s.date>to) return;
           if(s.cost == null) return;
+          // ضمان وجود معرّف ثابت لكل مصروف قديم أو جديد
+          s.id = s.id || crypto.randomUUID();
           rows.push({
+            id:s.id,
+            genId:gen.id,
             gen:gen.name,
             date:s.date,
             meter:s.meter,
@@ -1890,7 +1919,7 @@
       const rows = buildExpensesReport();
       repExpensesBody.innerHTML = "";
       if(!rows.length){
-        repExpensesBody.innerHTML = "<tr><td colspan='6' class='muted'>لا توجد مصاريف في الفترة المحددة.</td></tr>";
+        repExpensesBody.innerHTML = "<tr><td colspan='7' class='muted'>لا توجد مصاريف في الفترة المحددة.</td></tr>";
         return;
       }
       rows.forEach(r=>{
@@ -1902,10 +1931,105 @@
           <td>${r.cost}</td>
           <td>${r.currency}</td>
           <td>${r.note}</td>
+          <td class="actions">
+            <button class="btn-small" data-action="edit-expense" data-gen-id="${r.genId}" data-service-id="${r.id}" style="font-size:11px;padding:3px 7px;">تعديل</button>
+            <button class="btn-small btn-danger" data-action="delete-expense" data-gen-id="${r.genId}" data-service-id="${r.id}" style="font-size:11px;padding:3px 7px;">حذف</button>
+          </td>
         `;
         repExpensesBody.appendChild(tr);
       });
     }
+
+    // تعديل أو حذف المصروف مباشرة من تبويب المصاريف
+    repExpensesBody.addEventListener("click", (e)=>{
+      const btn = e.target.closest("button[data-action]");
+      if(!btn) return;
+
+      if(!isAdmin()){
+        alert("تعديل وحذف المصاريف متاح للمشرف فقط.");
+        return;
+      }
+
+      const genId = btn.dataset.genId;
+      const serviceId = btn.dataset.serviceId;
+      const action = btn.dataset.action;
+      const gen = state.generators.find(g=>g.id===genId);
+      if(!gen) return;
+
+      const svc = (gen.serviceHistory||[]).find(h=>h.id===serviceId);
+      if(!svc){
+        alert("تعذر العثور على سجل المصروف.");
+        return;
+      }
+
+      if(action === "edit-expense"){
+        const newDate = prompt("تعديل تاريخ الخدمة:", svc.date || "");
+        if(newDate === null) return;
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(newDate.trim())){
+          alert("يرجى إدخال التاريخ بالصيغة YYYY-MM-DD.");
+          return;
+        }
+
+        const newMeterText = prompt("تعديل قراءة العداد:", String(svc.meter ?? ""));
+        if(newMeterText === null) return;
+        const newMeter = Number(newMeterText);
+        if(!Number.isFinite(newMeter) || newMeter < 0){
+          alert("قراءة العداد غير صالحة.");
+          return;
+        }
+
+        const newCostText = prompt("تعديل مبلغ المصروف:", String(svc.cost ?? ""));
+        if(newCostText === null) return;
+        const newCost = Number(newCostText);
+        if(!Number.isFinite(newCost) || newCost < 0){
+          alert("مبلغ المصروف غير صالح.");
+          return;
+        }
+
+        const newCurrency = prompt("تعديل العملة (IQD أو USD):", svc.currency || "IQD");
+        if(newCurrency === null) return;
+        const currency = newCurrency.trim().toUpperCase();
+        if(!["IQD","USD"].includes(currency)){
+          alert("العملة المسموحة هي IQD أو USD.");
+          return;
+        }
+
+        const newNote = prompt("تعديل الملاحظة:", svc.costNote || "");
+        if(newNote === null) return;
+
+        // تحديث القراءة المرتبطة أيضاً عند تغيير التاريخ أو العداد
+        const oldDate = svc.date;
+        const oldMeter = Number(svc.meter);
+        const linkedReading = (gen.readings||[]).find(r=>r.date===oldDate && Number(r.meter)===oldMeter);
+        if(linkedReading){
+          linkedReading.date = newDate.trim();
+          linkedReading.meter = newMeter;
+          gen.readings.sort(byDateAsc);
+        }
+
+        svc.date = newDate.trim();
+        svc.meter = newMeter;
+        svc.cost = newCost;
+        svc.currency = currency;
+        svc.costNote = newNote.trim();
+        svc.updatedAt = new Date().toISOString();
+        svc.createdAt = svc.createdAt || svc.updatedAt;
+      }
+
+      if(action === "delete-expense"){
+        if(!confirm("هل أنت متأكد من حذف هذا المصروف؟ ستبقى قراءة العداد محفوظة.")) return;
+        // حذف بيانات المصروف فقط مع إبقاء سجل الخدمة والقراءة
+        svc.cost = null;
+        svc.currency = "IQD";
+        svc.costNote = "";
+        svc.updatedAt = new Date().toISOString();
+      }
+
+      persistDataSilently();
+      renderGenList();
+      renderDetail();
+      buildReports();
+    });
 
     function renderOverviewReport(){
       const rows = buildOverviewReport();
@@ -2088,11 +2212,14 @@
             lastServiceDate: g.lastServiceDate || todayStr(),
             readings: Array.isArray(g.readings) ? g.readings.map(r=>({date:r.date, meter:Number(r.meter)})) : [],
             serviceHistory: Array.isArray(g.serviceHistory) ? g.serviceHistory.map(h=>({
+              id: h.id || crypto.randomUUID(),
               date:h.date,
               meter:Number(h.meter),
               cost: h.cost != null ? Number(h.cost) : null,
               currency: h.currency || "IQD",
-              costNote: h.costNote || ""
+              costNote: h.costNote || "",
+              createdAt: h.createdAt || new Date().toISOString(),
+              updatedAt: h.updatedAt || h.createdAt || new Date().toISOString()
             })) : []
           }));
           state = { generators:mappedGenerators };
@@ -2173,11 +2300,14 @@
                     meter: Number(r.meter)
                   })) : [],
                   serviceHistory: Array.isArray(g.serviceHistory) ? g.serviceHistory.map(h => ({
+                    id: h.id || crypto.randomUUID(),
                     date: h.date,
                     meter: Number(h.meter),
                     cost: h.cost != null ? Number(h.cost) : null,
                     currency: h.currency || "IQD",
-                    costNote: h.costNote || ""
+                    costNote: h.costNote || "",
+                    createdAt: h.createdAt || new Date().toISOString(),
+                    updatedAt: h.updatedAt || h.createdAt || new Date().toISOString()
                   })) : []
                 }))
               };
