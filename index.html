@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>نظام إدارة ساعات المولدات والمصاريف - إصدار مطوّر</title>
-
+  <title>منصة إدارة المولدات والمصاريف - الإصدار الكامل</title>
   <style>
     :root{
       --bg:#f4f5f7;
@@ -705,6 +704,7 @@
           <button class="tab-btn active" data-tab="summary">ملخص</button>
           <button class="tab-btn" data-tab="overview">شامل</button>
           <button class="tab-btn" data-tab="expenses">مصاريف</button>
+          <button class="tab-btn" data-tab="fuel">الوقود</button>
         </div>
 
         <div class="filters">
@@ -772,6 +772,59 @@
                 </tr>
               </thead>
               <tbody id="rep-expenses-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+
+        <div id="rep-fuel" class="report-tab" style="display:none;">
+          <p class="muted" style="margin:0 0 8px;">إدارة وتجميع وقود المولدات حسب الفترة المحددة، مع الكمية باللتر والسعر والكلفة ومعدل الاستهلاك لكل ساعة تشغيل.</p>
+
+          <h3 style="margin-top:0;">إضافة تعبئة وقود</h3>
+          <div class="emergency-grid">
+            <div class="field">
+              <label>المولد</label>
+              <select id="fuel-gen"><option value="">اختر المولد</option></select>
+            </div>
+            <div class="field">
+              <label>تاريخ التعبئة</label>
+              <input id="fuel-date" type="date">
+            </div>
+            <div class="field">
+              <label>الكمية (لتر)</label>
+              <input id="fuel-liters" type="number" min="0.01" step="0.01" placeholder="مثال: 250">
+            </div>
+            <div class="field">
+              <label>سعر اللتر (IQD)</label>
+              <input id="fuel-price" type="number" min="0" step="0.01" placeholder="مثال: 750">
+            </div>
+            <div class="field">
+              <label>ملاحظة (اختياري)</label>
+              <input id="fuel-note" placeholder="مثال: تعبئة الخزان الرئيسي">
+            </div>
+            <div class="field">
+              <button id="fuel-add" class="btn-primary" style="width:100%;">إضافة تعبئة الوقود</button>
+            </div>
+          </div>
+
+          <h3>ملخص استهلاك الوقود حسب المولد</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>المولد</th><th>ساعات التشغيل</th><th>عدد التعبئات</th><th>إجمالي اللترات</th>
+                <th>إجمالي الكلفة (IQD)</th><th>متوسط سعر اللتر</th><th>لتر/ساعة</th><th>كلفة/ساعة</th>
+              </tr></thead>
+              <tbody id="fuel-summary-body"></tbody>
+            </table>
+          </div>
+
+          <h3>تفاصيل تعبئات الوقود</h3>
+          <div class="table-wrap" style="max-height:260px;">
+            <table>
+              <thead><tr>
+                <th>التاريخ</th><th>المولد</th><th>الكمية (لتر)</th><th>سعر اللتر</th><th>المجموع (IQD)</th><th>ملاحظة</th><th>إجراءات</th>
+              </tr></thead>
+              <tbody id="fuel-body"></tbody>
             </table>
           </div>
         </div>
@@ -895,6 +948,7 @@
     // ====== الحالة العامة ======
     let state = { generators: [] };
     let emergencyMaintenances = [];
+    let fuelRecords = [];
     let selectedId = null;
     const LOCAL_KEY = "generatorSystemData_v1";
 
@@ -983,6 +1037,16 @@
     const repSummaryBody = $("rep-summary-body");
     const repOverviewBody = $("rep-overview-body");
     const repExpensesBody = $("rep-expenses-body");
+
+    // الوقود
+    const fuelGen = $("fuel-gen");
+    const fuelDate = $("fuel-date");
+    const fuelLiters = $("fuel-liters");
+    const fuelPrice = $("fuel-price");
+    const fuelNote = $("fuel-note");
+    const fuelAdd = $("fuel-add");
+    const fuelSummaryBody = $("fuel-summary-body");
+    const fuelBody = $("fuel-body");
 
     const expJSON = $("export-json");
     const impJSON = $("import-json");
@@ -1195,11 +1259,158 @@
     // حفظ صامت للبيانات بعد عمليات التعديل والحذف
     function persistDataSilently(){
       try{
-        localStorage.setItem(LOCAL_KEY, JSON.stringify({generators:state.generators, emergencyMaintenances}));
+        localStorage.setItem(LOCAL_KEY, JSON.stringify({generators:state.generators, emergencyMaintenances, fuelRecords}));
       }catch(err){
         console.error("تعذر الحفظ التلقائي", err);
       }
     }
+
+    // توحيد بنية سجل الصيانة وإضافة بيانات الإنشاء والتحديث للسجلات القديمة والجديدة
+    function normalizeServiceRecord(service = {}){
+      const now = new Date().toISOString();
+      const createdAt = service.createdAt || now;
+      return {
+        id: service.id || crypto.randomUUID(),
+        date: service.date || todayStr(),
+        meter: service.meter != null ? Number(service.meter) : 0,
+        cost: service.cost != null && service.cost !== "" ? Number(service.cost) : null,
+        currency: (service.currency || "IQD").toUpperCase(),
+        costNote: service.costNote || "",
+        createdAt,
+        updatedAt: service.updatedAt || createdAt
+      };
+    }
+
+    function normalizeAllServiceHistory(){
+      state.generators.forEach(gen=>{
+        gen.serviceHistory = Array.isArray(gen.serviceHistory)
+          ? gen.serviceHistory.map(normalizeServiceRecord)
+          : [];
+      });
+    }
+
+
+    function normalizeFuelRecords(list){
+      if(!Array.isArray(list)) return [];
+      return list.map(item=>{
+        const now = new Date().toISOString();
+        const createdAt = item.createdAt || now;
+        return {
+          id: item.id || crypto.randomUUID(),
+          genId: item.genId || "",
+          date: item.date || todayStr(),
+          liters: Number(item.liters || 0),
+          pricePerLiter: Number(item.pricePerLiter || 0),
+          currency: (item.currency || "IQD").toUpperCase(),
+          note: item.note || "",
+          createdAt,
+          updatedAt: item.updatedAt || createdAt
+        };
+      });
+    }
+
+    function renderFuelGeneratorOptions(){
+      if(!fuelGen) return;
+      const current = fuelGen.value;
+      fuelGen.innerHTML = '<option value="">اختر المولد</option>';
+      state.generators.forEach(g=>{
+        const opt = document.createElement("option");
+        opt.value = g.id;
+        opt.textContent = g.name;
+        fuelGen.appendChild(opt);
+      });
+      if(state.generators.some(g=>g.id===current)) fuelGen.value = current;
+    }
+
+    function operatingHoursInRange(gen, from, to){
+      const readings = (gen.readings||[]).filter(r=>r.date>=from && r.date<=to).sort(byDateAsc);
+      if(readings.length < 2) return 0;
+      return Math.max(0, Number(readings[readings.length-1].meter) - Number(readings[0].meter));
+    }
+
+    function buildFuelSummary(){
+      const {from, to} = parseRange();
+      return state.generators.map(gen=>{
+        const items = fuelRecords.filter(x=>x.genId===gen.id && x.date>=from && x.date<=to);
+        const liters = items.reduce((sum,x)=>sum + (Number(x.liters)||0),0);
+        const totalCost = items.reduce((sum,x)=>sum + ((Number(x.liters)||0)*(Number(x.pricePerLiter)||0)),0);
+        const hours = operatingHoursInRange(gen, from, to);
+        return {
+          genId:gen.id, name:gen.name, hours, count:items.length, liters, totalCost,
+          avgPrice:liters>0 ? totalCost/liters : 0,
+          litersPerHour:hours>0 ? liters/hours : 0,
+          costPerHour:hours>0 ? totalCost/hours : 0
+        };
+      });
+    }
+
+    function renderFuelTables(){
+      if(!fuelSummaryBody || !fuelBody) return;
+      const {from, to} = parseRange();
+      const summary = buildFuelSummary();
+      fuelSummaryBody.innerHTML = "";
+      let th=0, tc=0, tl=0, tcost=0;
+      summary.forEach(r=>{
+        th += r.hours; tc += r.count; tl += r.liters; tcost += r.totalCost;
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${r.name}</td><td>${r.hours.toFixed(2)}</td><td>${r.count}</td><td>${r.liters.toFixed(2)}</td><td>${r.totalCost.toFixed(2)}</td><td>${r.avgPrice.toFixed(2)}</td><td>${r.litersPerHour.toFixed(3)}</td><td>${r.costPerHour.toFixed(2)}</td>`;
+        fuelSummaryBody.appendChild(tr);
+      });
+      if(!summary.length){
+        fuelSummaryBody.innerHTML="<tr><td colspan='8' class='muted'>لا توجد مولدات مسجلة.</td></tr>";
+      }else{
+        const tr=document.createElement("tr");
+        tr.style.background="#f9fafb"; tr.style.fontWeight="700";
+        tr.innerHTML=`<td>الإجمالي الكلي</td><td>${th.toFixed(2)}</td><td>${tc}</td><td>${tl.toFixed(2)}</td><td>${tcost.toFixed(2)}</td><td>${tl>0?(tcost/tl).toFixed(2):"0.00"}</td><td>${th>0?(tl/th).toFixed(3):"0.000"}</td><td>${th>0?(tcost/th).toFixed(2):"0.00"}</td>`;
+        fuelSummaryBody.appendChild(tr);
+      }
+
+      const gens = new Map(state.generators.map(g=>[g.id,g.name]));
+      const items=fuelRecords.filter(x=>x.date>=from && x.date<=to).slice().sort((a,b)=>a.date.localeCompare(b.date));
+      fuelBody.innerHTML="";
+      if(!items.length){
+        fuelBody.innerHTML="<tr><td colspan='7' class='muted'>لا توجد تعبئات وقود في الفترة المحددة.</td></tr>";
+        return;
+      }
+      items.forEach(x=>{
+        const total=(Number(x.liters)||0)*(Number(x.pricePerLiter)||0);
+        const tr=document.createElement("tr");
+        tr.innerHTML=`<td>${x.date}</td><td>${gens.get(x.genId)||"-"}</td><td>${Number(x.liters).toFixed(2)}</td><td>${Number(x.pricePerLiter).toFixed(2)}</td><td>${total.toFixed(2)}</td><td>${x.note||""}</td><td class="actions"><button class="btn-small" data-action="edit-fuel" data-id="${x.id}" style="font-size:11px;padding:3px 7px;">تعديل</button><button class="btn-small btn-danger" data-action="delete-fuel" data-id="${x.id}" style="font-size:11px;padding:3px 7px;">حذف</button></td>`;
+        fuelBody.appendChild(tr);
+      });
+    }
+
+    fuelAdd.addEventListener("click",()=>{
+      if(!isAdmin()){ alert("إضافة الوقود متاحة للمشرف فقط."); return; }
+      const genId=fuelGen.value, date=fuelDate.value;
+      const liters=Number(fuelLiters.value), price=Number(fuelPrice.value);
+      if(!genId || !date || !Number.isFinite(liters) || liters<=0 || !Number.isFinite(price) || price<0){
+        alert("يرجى اختيار المولد وإدخال التاريخ والكمية وسعر اللتر بصورة صحيحة."); return;
+      }
+      const now=new Date().toISOString();
+      fuelRecords.push({id:crypto.randomUUID(),genId,date,liters,pricePerLiter:price,currency:"IQD",note:fuelNote.value.trim(),createdAt:now,updatedAt:now});
+      fuelLiters.value=""; fuelPrice.value=""; fuelNote.value=""; fuelDate.value=todayStr();
+      persistDataSilently(); renderFuelTables();
+    });
+
+    fuelBody.addEventListener("click",e=>{
+      const btn=e.target.closest("button[data-action]"); if(!btn) return;
+      if(!isAdmin()){ alert("تعديل وحذف الوقود متاح للمشرف فقط."); return; }
+      const item=fuelRecords.find(x=>x.id===btn.dataset.id); if(!item) return;
+      if(btn.dataset.action==="delete-fuel"){
+        if(!confirm("هل أنت متأكد من حذف تعبئة الوقود؟")) return;
+        fuelRecords=fuelRecords.filter(x=>x.id!==item.id);
+      }else{
+        const d=prompt("تاريخ التعبئة:",item.date); if(d===null) return;
+        const l=prompt("الكمية باللتر:",String(item.liters)); if(l===null) return;
+        const pr=prompt("سعر اللتر (IQD):",String(item.pricePerLiter)); if(pr===null) return;
+        const n=prompt("الملاحظة:",item.note||""); if(n===null) return;
+        const liters=Number(l), price=Number(pr);
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(d.trim()) || !Number.isFinite(liters)||liters<=0 || !Number.isFinite(price)||price<0){ alert("البيانات المدخلة غير صحيحة."); return; }
+        item.date=d.trim(); item.liters=liters; item.pricePerLiter=price; item.note=n.trim(); item.updatedAt=new Date().toISOString();
+      }
+      persistDataSilently(); renderFuelTables();
+    });
 
     // util
     function todayStr(){
@@ -1395,6 +1606,7 @@
         genList.appendChild(li);
       });
       renderEmergencyGeneratorOptions();
+      renderFuelGeneratorOptions();
     }
 
     // تفاصيل المولد
@@ -1529,6 +1741,7 @@
       genName.value = "";
       genSmr.value  = "";
       genDate.value = todayStr();
+      fuelDate.value = todayStr();
 
       renderGenList();
       renderDetail();
@@ -1558,6 +1771,7 @@
       if(!confirm("هل تريد حذف هذا المولد بكل بياناته بالتأكيد؟")) return;
       state.generators = state.generators.filter(g=>g.id!==selectedId);
       emergencyMaintenances = emergencyMaintenances.filter(e=>e.genId !== gen.id);
+      fuelRecords = fuelRecords.filter(e=>e.genId !== gen.id);
       selectedId = state.generators[0]?.id || null;
       renderGenList();
       renderDetail();
@@ -1735,13 +1949,13 @@
           }
         } else {
           if(confirm("تعيين هذه القراءة كخدمة مكتملة؟")){
-            gen.serviceHistory.push({
-              id: crypto.randomUUID(),
-              date:d,
-              meter:m,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString()
-            });
+            gen.serviceHistory.push(normalizeServiceRecord({
+              date: d,
+              meter: m,
+              cost: null,
+              currency: "IQD",
+              costNote: ""
+            }));
           }
         }
       }
@@ -1755,13 +1969,13 @@
             return;
           }
           if(!confirm("لم تُسجّل هذه القراءة كخدمة بعد. تعيينها كخدمة ثم إضافة مصروف؟")) return;
-          svc = {
-            id: crypto.randomUUID(),
-            date:d,
-            meter:m,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          };
+          svc = normalizeServiceRecord({
+            date: d,
+            meter: m,
+            cost: null,
+            currency: "IQD",
+            costNote: ""
+          });
           gen.serviceHistory.push(svc);
         }
 
@@ -1780,8 +1994,8 @@
         svc.currency = valCurrency.trim().toUpperCase();
         svc.costNote = valNote.trim();
         svc.id = svc.id || crypto.randomUUID();
+        svc.createdAt = svc.createdAt || new Date().toISOString();
         svc.updatedAt = new Date().toISOString();
-        svc.createdAt = svc.createdAt || svc.updatedAt;
       }
 
       renderDetail();
@@ -2075,6 +2289,7 @@
       renderSummaryReport();
       renderOverviewReport();
       renderExpensesReport();
+      renderFuelTables();
     }
 
     repRefresh.addEventListener("click", ()=>{ buildReports(); });
@@ -2135,20 +2350,17 @@
           globalAvg,
           ""
         ].join(","));
-      } else {
+      } else if(activeTab === "expenses") {
         const rows = buildExpensesReport();
         const header = ["المولد","تاريخ الخدمة","قراءة العداد","المبلغ","العملة","ملاحظة"];
         lines.push(header.join(","));
         rows.forEach(r=>{
-          lines.push([
-            `"${String(r.gen||"").replace(/"/g,'""')}"`,
-            r.date,
-            r.meter,
-            r.cost,
-            r.currency,
-            `"${String(r.note||"").replace(/"/g,'""')}"`,
-          ].join(","));
+          lines.push([`"${String(r.gen||"").replace(/"/g,'""')}"`,r.date,r.meter,r.cost,r.currency,`"${String(r.note||"").replace(/"/g,'""')}"`].join(","));
         });
+      } else {
+        const rows = buildFuelSummary();
+        lines.push(["المولد","ساعات التشغيل","عدد التعبئات","إجمالي اللترات","إجمالي الكلفة IQD","متوسط سعر اللتر","لتر لكل ساعة","كلفة لكل ساعة"].join(","));
+        rows.forEach(r=>lines.push([`"${String(r.name||"").replace(/"/g,'""')}"`,r.hours.toFixed(2),r.count,r.liters.toFixed(2),r.totalCost.toFixed(2),r.avgPrice.toFixed(2),r.litersPerHour.toFixed(3),r.costPerHour.toFixed(2)].join(",")));
       }
 
       const csvContent = "\ufeff" + lines.join("\n");
@@ -2158,7 +2370,8 @@
       let fnameBase;
       if(activeTab === "summary") fnameBase = "generators-summary-report";
       else if(activeTab === "overview") fnameBase = "generators-overview-report";
-      else fnameBase = "generators-expenses-report";
+      else if(activeTab === "expenses") fnameBase = "generators-expenses-report";
+      else fnameBase = "generators-fuel-report";
       a.href = url;
       a.download = fnameBase + ".csv";
       a.click();
@@ -2174,6 +2387,7 @@
         if(tab==="summary") $("rep-summary").style.display = "";
         if(tab==="overview") $("rep-overview").style.display = "";
         if(tab==="expenses") $("rep-expenses").style.display = "";
+        if(tab==="fuel") $("rep-fuel").style.display = "";
       });
     });
 
@@ -2182,7 +2396,7 @@
         alert("تصدير JSON متاح للمشرف فقط.");
         return;
       }
-      const fullData = {generators: state.generators, emergencyMaintenances};
+      const fullData = {generators: state.generators, emergencyMaintenances, fuelRecords};
       const blob = new Blob([JSON.stringify(fullData,null,2)],{type:"application/json"});
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -2211,19 +2425,14 @@
             lastServiceMeter: Number(g.lastServiceMeter||0),
             lastServiceDate: g.lastServiceDate || todayStr(),
             readings: Array.isArray(g.readings) ? g.readings.map(r=>({date:r.date, meter:Number(r.meter)})) : [],
-            serviceHistory: Array.isArray(g.serviceHistory) ? g.serviceHistory.map(h=>({
-              id: h.id || crypto.randomUUID(),
-              date:h.date,
-              meter:Number(h.meter),
-              cost: h.cost != null ? Number(h.cost) : null,
-              currency: h.currency || "IQD",
-              costNote: h.costNote || "",
-              createdAt: h.createdAt || new Date().toISOString(),
-              updatedAt: h.updatedAt || h.createdAt || new Date().toISOString()
-            })) : []
+            serviceHistory: Array.isArray(g.serviceHistory)
+              ? g.serviceHistory.map(normalizeServiceRecord)
+              : []
           }));
           state = { generators:mappedGenerators };
           emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
+          fuelRecords = normalizeFuelRecords(data.fuelRecords);
+          normalizeAllServiceHistory();
           selectedId = state.generators[0]?.id || null;
           renderGenList();
           renderDetail();
@@ -2238,7 +2447,7 @@
 
     saveLocalBtn.addEventListener("click", ()=>{
       try{
-        const fullData = {generators: state.generators, emergencyMaintenances};
+        const fullData = {generators: state.generators, emergencyMaintenances, fuelRecords};
         localStorage.setItem(LOCAL_KEY, JSON.stringify(fullData));
         alert("تم حفظ البيانات على هذا الجهاز بنجاح ✅");
       }catch(err){
@@ -2299,19 +2508,14 @@
                     date: r.date,
                     meter: Number(r.meter)
                   })) : [],
-                  serviceHistory: Array.isArray(g.serviceHistory) ? g.serviceHistory.map(h => ({
-                    id: h.id || crypto.randomUUID(),
-                    date: h.date,
-                    meter: Number(h.meter),
-                    cost: h.cost != null ? Number(h.cost) : null,
-                    currency: h.currency || "IQD",
-                    costNote: h.costNote || "",
-                    createdAt: h.createdAt || new Date().toISOString(),
-                    updatedAt: h.updatedAt || h.createdAt || new Date().toISOString()
-                  })) : []
+                  serviceHistory: Array.isArray(g.serviceHistory)
+                    ? g.serviceHistory.map(normalizeServiceRecord)
+                    : []
                 }))
               };
               emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
+              fuelRecords = normalizeFuelRecords(data.fuelRecords);
+              normalizeAllServiceHistory();
               selectedId = state.generators[0]?.id || null;
               renderGenList();
               renderDetail();
@@ -2344,16 +2548,14 @@
               date: r.date,
               meter: Number(r.meter)
             })) : [],
-            serviceHistory: Array.isArray(g.serviceHistory) ? g.serviceHistory.map(h => ({
-              date: h.date,
-              meter: Number(h.meter),
-              cost: h.cost != null ? Number(h.cost) : null,
-              currency: h.currency || "IQD",
-              costNote: h.costNote || ""
-            })) : []
+            serviceHistory: Array.isArray(g.serviceHistory)
+              ? g.serviceHistory.map(normalizeServiceRecord)
+              : []
           }))
         };
         emergencyMaintenances = normalizeEmergencyList(data.emergencyMaintenances);
+        fuelRecords = normalizeFuelRecords(data.fuelRecords);
+        normalizeAllServiceHistory();
         selectedId = state.generators[0]?.id || null;
         renderGenList();
         renderDetail();
@@ -2372,7 +2574,9 @@
       renderDetail();
       buildReports();
       renderEmergencyGeneratorOptions();
+      renderFuelGeneratorOptions();
       renderEmergencyTable();
+      renderFuelTables();
       loadInitialData();
     })();
 
