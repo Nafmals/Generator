@@ -1,1728 +1,512 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr" data-theme="navy-dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Nafithat – Advanced Invoice Manager (Local)</title>
-  <style>
-    * { box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nafmals Editable Invoice Platform</title>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=fr14xszLO4YiaS2dTfEvktstOzlQyukro9we_ujuFDKXP3qM_MAyStPYZJPcBLD1OYnf_a4MTZSGJp7LKmeZ0PKjyTDIMTL--e-hioBrcip8-oYyt63EWm5rkqVNHwgudOohEBjMHWRiiskG9pQHCmXZ7PxH6bT88Ea-_GZKYbK1uwfw51VKG9AzBGNDNkiT3a0AXNvug3Bhtw7mwQzQ2KIl-LYGT1esZ3dXpjztfd_l7a6qoeJRRv7yC1WkyunlxBz_PHAJxz0LbTsi5zx6e_2tnsNV9HVlmq9hBhgcZ2kN_IPorwFi3oagZcyUJOCr" charset="UTF-8"></script><script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f3f6fb;color:#14213d}header{background:#0f3760;color:white;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}h1{margin:0;font-size:24px}.wrap{max-width:1450px;margin:auto;padding:20px}.cards{display:grid;grid-template-columns:repeat(5,minmax(170px,1fr));gap:14px;margin-bottom:18px}.card{background:white;border-radius:14px;padding:16px;box-shadow:0 4px 14px #0001}.card small{color:#667085;font-weight:bold}.card div{font-size:23px;font-weight:bold;margin-top:8px}.controls{background:white;border-radius:14px;padding:14px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;gap:10px;box-shadow:0 4px 14px #0001;margin-bottom:18px}input,select,button,textarea{padding:10px;border:1px solid #d0d5dd;border-radius:8px;font-size:14px}button{background:#0f62fe;color:white;border:0;cursor:pointer;font-weight:bold}button.gray{background:#475467}button.green{background:#067647}button.red{background:#b42318}button.light{background:#e8eef8;color:#14213d}button.small{padding:7px 9px;font-size:12px}.tablebox{background:white;border-radius:14px;box-shadow:0 4px 14px #0001;overflow:auto}.paymentbox{background:white;border-radius:14px;box-shadow:0 4px 14px #0001;overflow:auto;margin-bottom:18px;padding:14px}.paymentbox h2{margin:0 0 10px;font-size:18px}.paymentbox table{min-width:900px}.paymentSummary{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px}.pill{background:#eef4ff;border:1px solid #d0d5dd;border-radius:999px;padding:8px 12px;font-weight:bold}table{width:100%;border-collapse:collapse;min-width:1250px}th,td{border-bottom:1px solid #eaecf0;padding:10px;text-align:left;font-size:13px;vertical-align:top}th{background:#eef4ff;position:sticky;top:0;z-index:1}td.num,th.num,.right{text-align:right}.status{font-weight:bold;padding:5px 9px;border-radius:999px;display:inline-block}.Paid{background:#dcfae6;color:#067647}.Unpaid{background:#fee4e2;color:#b42318}.Partial,.Partially{background:#fef0c7;color:#b54708}.modal{display:none;position:fixed;inset:0;background:#0008;align-items:center;justify-content:center;padding:20px;z-index:10}.modal-content{background:white;max-width:1150px;width:100%;max-height:92vh;overflow:auto;border-radius:16px;padding:20px}.topbar{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px}.invoice-head{display:grid;grid-template-columns:1fr 1fr;gap:20px;border-bottom:2px solid #0f3760;padding-bottom:12px;margin-bottom:16px}.invoice-title{font-size:28px;font-weight:bold;color:#0f3760}.edit-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:10px 0}.edit-grid label,.field label{display:block;color:#667085;font-size:12px;font-weight:bold;margin-bottom:4px}.edit-grid input,.edit-grid select,.field textarea,.invoice-head input,.invoice-head textarea{width:100%}.field textarea{min-height:70px}.invoice-table{min-width:0}.invoice-table input{width:100%;min-width:80px}.invoice-table .desc{min-width:280px}.totalbox{margin-left:auto;width:360px;border:1px solid #d0d5dd;border-radius:10px;overflow:hidden;margin-top:15px}.totalbox p{display:flex;justify-content:space-between;margin:0;padding:11px;border-bottom:1px solid #d0d5dd}.totalbox p:last-child{border-bottom:0;background:#eef4ff;font-weight:bold;font-size:18px}.footer-note{margin-top:18px;color:#475467;font-size:13px}.notice{background:#ecfdf3;color:#05603a;border:1px solid #abefc6;padding:10px;border-radius:10px;margin-bottom:12px;display:none}.hint{font-size:12px;color:#667085;margin-top:8px}@media(max-width:900px){.cards,.controls,.edit-grid,.invoice-head{grid-template-columns:1fr}.paymentSummary{display:block}.pill{display:block;margin-bottom:8px}}@media print{body>*:not(.modal){display:none}.modal{display:block;position:static;background:white;padding:0}.modal-content{max-height:none;box-shadow:none;border-radius:0}.noprint{display:none!important}input,select,textarea{border:0;padding:0;appearance:none;resize:none}th{background:#eef4ff!important}}
 
-    /* ========= THEME VARIABLES ========= */
-    :root {
-      --bg: #050816;
-      --text: #f9fafb;
-      --subtext: #9ca3af;
-      --topbar-bg: #050816;
-      --card-bg: radial-gradient(circle at top, #111827 0%, #020617 60%);
-      --card-border: rgba(148,163,184,0.25);
-      --shadow: 0 12px 25px rgba(15,23,42,0.7);
-
-      --surface-soft: rgba(15,23,42,0.7);
-      --surface-alt: rgba(15,23,42,0.9);
-      --border-soft: rgba(148,163,184,0.25);
-      --border-strong: rgba(55,65,81,0.9);
-
-      --input-bg: rgba(15,23,42,0.9);
-      --input-border: rgba(148,163,184,0.7);
-
-      --accent: #4f46e5;
-      --accent-soft: rgba(79,70,229,0.2);
-      --accent-ghost: rgba(249,250,251,0.05);
-
-      --danger: #b91c1c;
-      --danger-soft: #fee2e2;
-
-      --table-header-bg: rgba(15,23,42,0.9);
-      --table-row-hover: rgba(15,23,42,0.7);
-
-      --badge-paid-bg: #dcfce7;
-      --badge-paid-text: #166534;
-      --badge-unpaid-bg: #ffedd5;
-      --badge-unpaid-text: #9a3412;
-      --badge-overdue-bg: #fee2e2;
-      --badge-overdue-text: #b91c1c;
-      --badge-draft-bg: #e5e7eb;
-      --badge-draft-text: #374151;
-    }
-
-    /* Navy Dark (default) */
-    :root[data-theme="navy-dark"] {
-      --bg: #050816;
-      --text: #f9fafb;
-      --subtext: #9ca3af;
-      --topbar-bg: #050816;
-      --card-bg: radial-gradient(circle at top, #111827 0%, #020617 60%);
-      --card-border: rgba(148,163,184,0.25);
-      --shadow: 0 12px 25px rgba(15,23,42,0.7);
-      --surface-soft: rgba(15,23,42,0.7);
-      --surface-alt: rgba(15,23,42,0.9);
-      --border-soft: rgba(148,163,184,0.25);
-      --border-strong: rgba(55,65,81,0.9);
-      --input-bg: rgba(15,23,42,0.9);
-      --input-border: rgba(148,163,184,0.7);
-      --accent: #4f46e5;
-      --accent-soft: rgba(79,70,229,0.2);
-      --accent-ghost: rgba(249,250,251,0.05);
-      --danger: #b91c1c;
-      --danger-soft: #fee2e2;
-      --table-header-bg: rgba(15,23,42,0.9);
-      --table-row-hover: rgba(15,23,42,0.7);
-    }
-
-    /* Midnight Teal */
-    :root[data-theme="midnight-teal"] {
-      --bg: #020617;
-      --text: #e5f9ff;
-      --subtext: #7dd3fc;
-      --topbar-bg: #020617;
-      --card-bg: radial-gradient(circle at top, #022c22 0%, #020617 60%);
-      --card-border: rgba(45,212,191,0.35);
-      --shadow: 0 12px 24px rgba(15,23,42,0.8);
-      --surface-soft: rgba(15,23,42,0.7);
-      --surface-alt: rgba(15,23,42,0.95);
-      --border-soft: rgba(45,212,191,0.35);
-      --border-strong: rgba(15,118,110,0.9);
-      --input-bg: rgba(15,23,42,0.95);
-      --input-border: rgba(45,212,191,0.4);
-      --accent: #06b6d4;
-      --accent-soft: rgba(6,182,212,0.25);
-      --accent-ghost: rgba(8,47,73,0.7);
-      --danger: #f97373;
-      --danger-soft: #fee2e2;
-      --table-header-bg: rgba(8,47,73,0.95);
-      --table-row-hover: rgba(15,23,42,0.75);
-      --badge-paid-bg: #bbf7d0;
-      --badge-paid-text: #166534;
-      --badge-unpaid-bg: #fed7aa;
-      --badge-unpaid-text: #9a3412;
-      --badge-overdue-bg: #fecaca;
-      --badge-overdue-text: #b91c1c;
-      --badge-draft-bg: #e5e7eb;
-      --badge-draft-text: #374151;
-    }
-
-    /* Soft Light */
-    :root[data-theme="soft-light"] {
-      --bg: #f3f4f6;
-      --text: #111827;
-      --subtext: #6b7280;
-      --topbar-bg: #ffffff;
-      --card-bg: linear-gradient(135deg,#ffffff,#f9fafb);
-      --card-border: rgba(209,213,219,0.9);
-      --shadow: 0 6px 16px rgba(15,23,42,0.12);
-      --surface-soft: #f3f4f6;
-      --surface-alt: #ffffff;
-      --border-soft: rgba(209,213,219,0.9);
-      --border-strong: rgba(156,163,175,0.9);
-      --input-bg: #ffffff;
-      --input-border: rgba(209,213,219,0.9);
-      --accent: #2563eb;
-      --accent-soft: rgba(37,99,235,0.12);
-      --accent-ghost: rgba(229,231,235,0.7);
-      --danger: #b91c1c;
-      --danger-soft: #fee2e2;
-      --table-header-bg: #e5e7eb;
-      --table-row-hover: #f3f4f6;
-      --badge-paid-bg: #dcfce7;
-      --badge-paid-text: #166534;
-      --badge-unpaid-bg: #ffedd5;
-      --badge-unpaid-text: #9a3412;
-      --badge-overdue-bg: #fee2e2;
-      --badge-overdue-text: #b91c1c;
-      --badge-draft-bg: #e5e7eb;
-      --badge-draft-text: #374151;
-    }
-
-    /* Warm Sand */
-    :root[data-theme="warm-sand"] {
-      --bg: #fdf6e3;
-      --text: #1f2933;
-      --subtext: #7b6f52;
-      --topbar-bg: #f5e6c8;
-      --card-bg: linear-gradient(135deg,#fff7e6,#f5e6c8);
-      --card-border: rgba(226,191,139,0.9);
-      --shadow: 0 6px 16px rgba(120,53,15,0.2);
-      --surface-soft: #faecd8;
-      --surface-alt: #fffaf0;
-      --border-soft: rgba(226,191,139,0.9);
-      --border-strong: rgba(148,81,33,0.9);
-      --input-bg: #fffaf0;
-      --input-border: rgba(226,191,139,0.9);
-      --accent: #d97706;
-      --accent-soft: rgba(217,119,6,0.12);
-      --accent-ghost: rgba(254,243,199,0.9);
-      --danger: #b91c1c;
-      --danger-soft: #fee2e2;
-      --table-header-bg: #f5e6c8;
-      --table-row-hover: #faecd8;
-      --badge-paid-bg: #bbf7d0;
-      --badge-paid-text: #166534;
-      --badge-unpaid-bg: #fed7aa;
-      --badge-unpaid-text: #9a3412;
-      --badge-overdue-bg: #fecaca;
-      --badge-overdue-text: #b91c1c;
-      --badge-draft-bg: #e5e7eb;
-      --badge-draft-text: #374151;
-    }
-
-    /* Graphite */
-    :root[data-theme="graphite"] {
-      --bg: #0b0f19;
-      --text: #e5e7eb;
-      --subtext: #9ca3af;
-      --topbar-bg: #020617;
-      --card-bg: linear-gradient(135deg,#020617,#111827);
-      --card-border: rgba(55,65,81,0.9);
-      --shadow: 0 10px 24px rgba(0,0,0,0.8);
-      --surface-soft: #111827;
-      --surface-alt: #020617;
-      --border-soft: rgba(55,65,81,0.9);
-      --border-strong: rgba(31,41,55,0.9);
-      --input-bg: #020617;
-      --input-border: rgba(75,85,99,0.9);
-      --accent: #f97316;
-      --accent-soft: rgba(249,115,22,0.25);
-      --accent-ghost: rgba(31,41,55,0.8);
-      --danger: #f87171;
-      --danger-soft: #4b1113;
-      --table-header-bg: #020617;
-      --table-row-hover: #111827;
-      --badge-paid-bg: #bbf7d0;
-      --badge-paid-text: #166534;
-      --badge-unpaid-bg: #fed7aa;
-      --badge-unpaid-text: #9a3412;
-      --badge-overdue-bg: #fecaca;
-      --badge-overdue-text: #b91c1c;
-      --badge-draft-bg: #e5e7eb;
-      --badge-draft-text: #374151;
-    }
-
-    /* Forest */
-    :root[data-theme="forest"] {
-      --bg: #02130a;
-      --text: #ecfdf5;
-      --subtext: #6ee7b7;
-      --topbar-bg: #022c22;
-      --card-bg: radial-gradient(circle at top,#064e3b 0%,#02130a 60%);
-      --card-border: rgba(34,197,94,0.35);
-      --shadow: 0 10px 24px rgba(5,46,22,0.9);
-      --surface-soft: rgba(6,78,59,0.8);
-      --surface-alt: rgba(6,78,59,0.95);
-      --border-soft: rgba(34,197,94,0.4);
-      --border-strong: rgba(4,120,87,0.9);
-      --input-bg: rgba(6,78,59,0.95);
-      --input-border: rgba(34,197,94,0.45);
-      --accent: #22c55e;
-      --accent-soft: rgba(34,197,94,0.3);
-      --accent-ghost: rgba(22,101,52,0.8);
-      --danger: #f97373;
-      --danger-soft: #fee2e2;
-      --table-header-bg: rgba(6,95,70,0.95);
-      --table-row-hover: rgba(6,78,59,0.85);
-      --badge-paid-bg: #bbf7d0;
-      --badge-paid-text: #166534;
-      --badge-unpaid-bg: #fed7aa;
-      --badge-unpaid-text: #9a3412;
-      --badge-overdue-bg: #fecaca;
-      --badge-overdue-text: #b91c1c;
-      --badge-draft-bg: #e5e7eb;
-      --badge-draft-text: #374151;
-    }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    .topbar {
-      background: var(--topbar-bg);
-      border-bottom: 1px solid var(--border-soft);
-      padding: 10px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .brand { display:flex; flex-direction:column; gap:3px; }
-    .brand-title { font-weight:700; font-size:18px; }
-    .brand-sub { font-size:11px; color:var(--subtext); }
-    .topbar-middle { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
-    .pill-btn {
-      border:none;
-      border-radius:999px;
-      padding:6px 14px;
-      font-size:12px;
-      cursor:pointer;
-      background:var(--surface-alt);
-      color:var(--text);
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-    }
-    .pill-btn.active { background:var(--accent); color:#fff; }
-    .pill-btn.ghost { background:var(--accent-ghost); }
-    .topbar-right { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center; }
-    .pill-btn.danger { background:var(--danger-soft); color:var(--danger); }
-
-main {
-  padding:16px 20px 40px;
-  max-width:1350px;
-  width: calc(100% - 40px);
-  margin: 0 auto;
-}
-
-    .card {
-      background:var(--card-bg);
-      border-radius:16px;
-      padding:16px 18px;
-      border:1px solid var(--card-border);
-      box-shadow:var(--shadow);
-      margin-bottom:16px;
-    }
-
-    .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; gap:8px; }
-    .card-title { font-size:18px; font-weight:600; }
-    .card-sub { font-size:12px; color:var(--subtext); }
-
-    .filters-row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:12px; justify-content:space-between; }
-    .status-group { display:flex; gap:6px; flex-wrap:wrap; font-size:12px; }
-    .status-pill {
-      border-radius:999px;
-      padding:4px 10px;
-      border:1px solid var(--border-soft);
-      background:var(--surface-soft);
-      cursor:pointer;
-      color:var(--text);
-    }
-    .status-pill.active { background:var(--accent); border-color:var(--accent); }
-    .right-filters { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
-
-    select, input[type="text"], input[type="number"], input[type="date"], textarea {
-      border-radius:999px;
-      border:1px solid var(--input-border);
-      background:var(--input-bg);
-      color:var(--text);
-      padding:5px 10px;
-      font-size:12px;
-    }
-    textarea { border-radius:12px; }
-
-    .search-input {
-      display:flex; align-items:center; gap:6px;
-      padding:4px 10px;
-      border-radius:999px;
-      border:1px solid var(--input-border);
-      background:var(--input-bg);
-      font-size:12px;
-    }
-    .search-input input { border:none; outline:none; background:transparent; color:inherit; width:180px; }
-
-    .stats-row {
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .stat-card {
-      border-radius:16px;
-      padding:10px 12px;
-      background:linear-gradient(135deg,var(--surface-alt),var(--accent-soft));
-      border:1px solid var(--border-soft);
-      font-size:12px;
-      cursor:pointer;
-      transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
-    }
-    .stat-card:hover { transform: translateY(-1px); }
-    .stat-card.active { box-shadow:0 0 0 2px var(--accent-soft); border-color:var(--accent); }
-    .stat-label { color:var(--subtext); margin-bottom:4px; }
-    .stat-main { font-size:16px; font-weight:600; }
-    .stat-sub { font-size:11px; color:var(--subtext); }
-
-    table { width:100%; border-collapse:collapse; font-size:12px; }
-    thead { background:var(--table-header-bg); }
-    th, td { padding:6px 8px; border-bottom:1px solid var(--border-strong); text-align:left; white-space:nowrap; }
-    th { color:var(--subtext); font-weight:500; font-size:11px; }
-    tbody tr:hover { background:var(--table-row-hover); }
-    .text-muted { color:var(--subtext); }
-
-    th.sortable { cursor:pointer; }
-    .sort-ind { font-size:10px; margin-left:4px; opacity:0.7; }
-
-    .badge { border-radius:999px; padding:2px 8px; font-size:11px; font-weight:500; }
-    .badge-paid { background:var(--badge-paid-bg); color:var(--badge-paid-text); }
-    .badge-unpaid { background:var(--badge-unpaid-bg); color:var(--badge-unpaid-text); }
-    .badge-overdue { background:var(--badge-overdue-bg); color:var(--badge-overdue-text); }
-    .badge-draft { background:var(--badge-draft-bg); color:var(--badge-draft-text); }
-
-    .table-btn { border-radius:999px; border:none; padding:2px 8px; font-size:11px; cursor:pointer; }
-    .table-btn.edit { background:#dbeafe; color:#1d4ed8; }
-    .table-btn.del  { background:var(--danger-soft); color:var(--danger); }
-
-    .hidden { display:none; }
-
-    .form-grid {
-      display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-      gap:10px;
-      margin-bottom:10px;
-    }
-    .form-group { display:flex; flex-direction:column; gap:3px; font-size:12px; }
-    .form-group label { color:var(--text); }
-    .form-group textarea { min-height:60px; resize:vertical; }
-
-    .items-table {
-      margin-top:10px;
-      border-radius:12px;
-      overflow:hidden;
-      border:1px solid var(--border-strong);
-    }
-    .items-table th, .items-table td { background:var(--surface-alt); }
-    .items-table textarea,
-    .items-table input {
-      width:100%;
-      border-radius:6px;
-      border:1px solid var(--border-strong);
-      background:var(--input-bg);
-      color:var(--text);
-      font-size:11px;
-      padding:3px 5px;
-    }
-
-    .footer-buttons { margin-top:14px; display:flex; flex-wrap:wrap; gap:8px; }
-
-    .btn {
-      border-radius:999px;
-      border:none;
-      padding:6px 12px;
-      font-size:12px;
-      cursor:pointer;
-      display:inline-flex;
-      align-items:center;
-      gap:6px;
-    }
-    .btn-primary { background:var(--accent); color:#fff; }
-    .btn-secondary { background:var(--accent-ghost); color:var(--text); }
-    .btn-danger { background:var(--danger-soft); color:var(--danger); }
-
-    @media (max-width:640px){
-      .topbar{ flex-direction:column; align-items:flex-start; }
-      .topbar-middle,.topbar-right{ justify-content:flex-start; }
-    }
-  </style>
+:root{--page:#f3f6fb;--panel:#ffffff;--head:#0f3760;--accent:#0f62fe;--text:#14213d;--soft:#eef4ff;--border:#eaecf0;--shadow:#0001}
+body{background:var(--page)!important;color:var(--text)!important}header{background:var(--head)!important}.card,.controls,.tablebox,.modal-content{background:var(--panel)!important;box-shadow:0 4px 14px var(--shadow)!important}th{background:var(--soft)!important}button{background:var(--accent)}
+body.theme-midnight{--page:#0b1220;--panel:#111827;--head:#020617;--accent:#38bdf8;--text:#e5e7eb;--soft:#1f2937;--border:#374151;--shadow:#0008}body.theme-midnight input,body.theme-midnight select,body.theme-midnight textarea{background:#0f172a;color:#e5e7eb;border-color:#334155}body.theme-midnight th,body.theme-midnight td{border-color:#334155;color:#e5e7eb}
+body.theme-modern{--page:#f5f7fb;--panel:#ffffff;--head:#111827;--accent:#2563eb;--text:#111827;--soft:#eff6ff;--border:#e5e7eb;--shadow:#0002}
+body.theme-emerald{--page:#ecfdf5;--panel:#ffffff;--head:#064e3b;--accent:#059669;--text:#052e2b;--soft:#d1fae5;--border:#a7f3d0;--shadow:#064e3b22}
+body.theme-gold{--page:#fffbeb;--panel:#ffffff;--head:#78350f;--accent:#d97706;--text:#451a03;--soft:#fef3c7;--border:#fde68a;--shadow:#78350f22}
+.statusSelect{padding:6px 8px;border-radius:999px;font-weight:bold;min-width:125px}.autosave-badge{display:inline-block;margin-left:10px;padding:7px 10px;border-radius:999px;background:#dcfae6;color:#067647;font-size:12px;font-weight:bold}.themeSelect{padding:9px;border-radius:8px;border:1px solid #d0d5dd}.savebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.paymentForm{display:grid;grid-template-columns:1.2fr 1fr 1fr 1fr auto;gap:10px;margin:12px 0;padding:12px;background:var(--soft);border:1px solid var(--border);border-radius:12px}.paymentForm input{width:100%}.paymentActions{white-space:nowrap}.payments-view table input{width:100%;padding:7px}.payments-view table .amountInput{text-align:right}.dangerLink{background:#b42318!important;color:white!important}
+@media(max-width:900px){.paymentForm{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
+<header><h1>Nafmals Editable Invoice Platform</h1><div class="savebar"><select id="themePicker" class="themeSelect" onchange="changeTheme(this.value)"><option value="theme-modern">Modern</option><option value="theme-midnight">Midnight</option><option value="theme-emerald">Emerald</option><option value="theme-gold">Gold</option></select> <button onclick="saveAllChanges()" class="green">Save All Changes</button> <button onclick="openPaymentsPage()" class="light">Actual Received Payments</button> <button onclick="newInvoice()">New Invoice</button> <button onclick="downloadExcel()" class="green">Download Excel</button> <button onclick="document.getElementById('fileInput').click()" class="gray">Upload Excel</button><input id="fileInput" type="file" accept=".xlsx,.xls" hidden onchange="uploadExcel(event)"> <button onclick="resetToOriginal()" class="red">Reset Original</button><span id="autosaveBadge" class="autosave-badge">Auto Save ON</span></div></header>
+<div class="wrap">
+<div id="saveNotice" class="notice">Saved. Your edits are stored in this browser and will not change unless you edit/save again.</div>
+<div class="cards"><div class="card"><small>Total Records</small><div id="kpiRecords">0</div></div><div class="card"><small>Total Amount</small><div id="kpiAmount">0</div></div><div class="card"><small>Actual Received from Bank</small><div id="kpiReceived">0</div></div><div class="card"><small>Paid by Status</small><div id="kpiPaid">0</div></div><div class="card"><small>Outstanding by Status</small><div id="kpiUnpaid">0</div></div></div>
+<div class="controls"><input id="search" placeholder="Search invoice, PO, company, description..." oninput="render()"><select id="companyFilter" onchange="render()"><option value="">All Companies</option></select><select id="statusFilter" onchange="render()"><option value="">All Status</option><option value="Paid">Paid</option><option value="Unpaid">Unpaid</option><option value="Partially Paid">Partially Paid</option></select><input id="fromDate" type="date" onchange="render()"><input id="toDate" type="date" onchange="render()"></div>
 
-<div class="topbar">
-  <div class="brand">
-    <div class="brand-title">Nafithat Al-Amal Co.</div>
-    <div class="brand-sub">Advanced Invoice Management (Local)</div>
-  </div>
-  <div class="topbar-middle">
-    <button class="pill-btn active" id="tab-dashboard">Invoices Dashboard</button>
-    <button class="pill-btn" id="tab-report">Invoices Report</button>
-  </div>
-  <div class="topbar-right">
-    <select id="theme-select">
-      <option value="navy-dark">Navy Dark</option>
-      <option value="midnight-teal">Midnight Teal</option>
-      <option value="soft-light">Soft Light</option>
-      <option value="warm-sand">Warm Sand</option>
-      <option value="graphite">Graphite</option>
-      <option value="forest">Forest</option>
-    </select>
-
-    <button class="pill-btn ghost" id="btn-new">+ New Invoice</button>
-    <button class="pill-btn ghost" id="btn-save-data">💾 Save Data</button>
-    <button class="pill-btn ghost" id="btn-clear-filters">🧹 Clear Filters</button>
-    <button class="pill-btn ghost" id="btn-export-xls">⬇ Excel Report (XLS)</button>
-    <button class="pill-btn ghost" id="btn-export-pdf">⬇ PDF Report</button>
-
-    <button class="pill-btn ghost" id="btn-save-json">💾 Save JSON</button>
-    <button class="pill-btn ghost" id="btn-load-json">📂 Load JSON</button>
-    <button class="pill-btn danger" id="btn-reset">⟳ Reset</button>
-  </div>
+<div class="tablebox"><table><thead><tr><th>NO.</th><th>PO No.</th><th>Invoice No.</th><th>Invoice Date</th><th>Description</th><th>Unit</th><th class="num">QTY</th><th class="num">Unit Price</th><th class="num">Total</th><th>Duration From</th><th>Duration To</th><th>Company</th><th>Status</th><th>Action</th></tr></thead><tbody id="tbody"></tbody></table></div>
+<div class="hint">Important: all saved changes are stored in your browser LocalStorage. Status is shown on the main page but can be changed only from View/Edit, then press Save Invoice Changes.</div>
 </div>
 
-<main>
-  <!-- Dashboard -->
-  <section id="dashboard" class="card">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Invoices</div>
-        <div class="card-sub">Manage by status</div>
-      </div>
-    </div>
-
-    <div class="filters-row">
-      <div class="status-group">
-        <span class="status-pill active" data-filter="all">All</span>
-        <span class="status-pill" data-filter="paid">Paid</span>
-        <span class="status-pill" data-filter="unpaid">Unpaid</span>
-        <span class="status-pill" data-filter="draft">Draft</span>
-      </div>
-      <div class="right-filters">
-        <div>
-          <select id="po-filter">
-            <option value="all">All Contracts</option>
-          </select>
-        </div>
-
-        <div>
-          <select id="status-filter-select">
-            <option value="all">All</option>
-            <option value="paid">Paid</option>
-            <option value="unpaid">Unpaid</option>
-            <option value="draft">Draft</option>
-          </select>
-        </div>
-
-        <div><input id="date-from" type="date" title="DURATION FROM"></div>
-        <div><input id="date-to" type="date" title="DURATION TO"></div>
-
-        <div><input id="min-iqd" type="number" placeholder="Min IQD" min="0" step="1"></div>
-        <div><input id="max-iqd" type="number" placeholder="Max IQD" min="0" step="1"></div>
-
-        <div class="search-input">
-          🔍
-          <input id="search-input" type="text" placeholder="Search invoices (customer, number, contract)...">
-        </div>
-      </div>
-    </div>
-
-    <div class="stats-row">
-      <div class="stat-card active" data-type="total">
-        <div class="stat-label">Total Invoices</div>
-        <div class="stat-main" id="dash-total-amount">IQD 0</div>
-        <div class="stat-sub"><span id="dash-total-count">0</span> invoice(s)</div>
-      </div>
-      <div class="stat-card" data-type="due-soon">
-        <div class="stat-label">Due within 30 days</div>
-        <div class="stat-main" id="dash-due-amount">IQD 0</div>
-        <div class="stat-sub"><span id="dash-due-count">0</span> invoice(s)</div>
-      </div>
-      <div class="stat-card" data-type="paid">
-        <div class="stat-label">Paid</div>
-        <div class="stat-main" id="dash-paid-amount">IQD 0</div>
-        <div class="stat-sub"><span id="dash-paid-count">0</span> invoice(s)</div>
-      </div>
-      <div class="stat-card" data-type="unpaid">
-        <div class="stat-label">Unpaid</div>
-        <div class="stat-main" id="dash-unpaid-amount">IQD 0</div>
-        <div class="stat-sub"><span id="dash-unpaid-count">0</span> invoice(s)</div>
-      </div>
-    </div>
-
-    <table>
-      <thead>
-      <tr>
-        <th class="sortable" data-sort="no">NO. <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="poNo">PO No. <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="invoiceNo">INVOICE NO. <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="issueDate">INVOICE DATE <span class="sort-ind"></span></th>
-        <th>DESCRIPTION</th>
-        <th class="sortable" data-sort="durationFrom">DURATION FROM <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="durationTo">DURATION TO <span class="sort-ind"></span></th>
-        <th>UNIT</th>
-        <th class="sortable" data-sort="qty">QTY <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="invoiceAmount">INVOICE AMOUNT <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="total">TOTAL <span class="sort-ind"></span></th>
-        <th class="sortable" data-sort="status">STATUS <span class="sort-ind"></span></th>
-        <th>Actions</th>
-      </tr>
-      </thead>
-      <tbody id="invoice-table-body"></tbody>
-    </table>
-  </section>
-
-  <!-- Report -->
-  <section id="report" class="card hidden">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Invoices Report</div>
-        <div class="card-sub">Simple list of all invoices</div>
-      </div>
-    </div>
-
-    <table>
-      <thead>
-      <tr>
-        <th>NO.</th>
-        <th>PO No.</th>
-        <th>INVOICE NO.</th>
-        <th>SERVICE DATE</th>
-        <th>DESCRIPTION</th>
-        <th>DURATION FROM</th>
-        <th>DURATION TO</th>
-        <th>UNIT</th>
-        <th>QTY</th>
-        <th>INVOICE AMOUNT</th>
-        <th>TOTAL</th>
-        <th>STATUS</th>
-      </tr>
-      </thead>
-      <tbody id="report-body"></tbody>
-    </table>
-  </section>
-
-  <!-- Editor -->
-  <section id="editor" class="card hidden">
-    <div class="card-header">
-      <div>
-        <div class="card-title">Invoice Editor</div>
-        <div class="card-sub" id="editor-subtitle"></div>
-      </div>
-    </div>
-
-    <div class="form-grid">
-      <div class="form-group">
-        <label for="f-number">Invoice Number</label>
-        <input id="f-number" type="text">
-      </div>
-      <div class="form-group">
-        <label for="f-date">Issue Date</label>
-        <input id="f-date" type="date">
-      </div>
-<div class="form-group">
-        <label for="f-contract">Contract (PO)</label>
-        <input id="f-contract" type="text">
-      </div>
-      <div class="form-group">
-        <label for="status-select">Status</label>
-        <select id="status-select">
-          <option value="draft">Draft</option>
-          <option value="unpaid">Unpaid</option>
-          <option value="paid">Paid</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-grid">
-      <div class="form-group">
-        <label for="f-billto">Bill To</label>
-        <textarea id="f-billto"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="f-scope">Scope / Description</label>
-        <textarea id="f-scope"></textarea>
-      </div>
-      <div class="form-group">
-        <label for="f-note">Notes</label>
-        <textarea id="f-note"></textarea>
-      </div>
-    </div>
-
-    <div class="form-grid">
-</div>
-
-    <h4 style="margin-top:12px;margin-bottom:6px;font-size:13px;">Items</h4>
-    <table class="items-table">
-      <thead>
-      <tr>
-        <th>#</th>
-        <th>Description</th>
-        <th>Location</th>
-        <th>Duration From</th>
-              <th>Duration To</th>
-              <th>Unit</th>
-        <th>Qty</th>
-        <th>Price</th>
-        <th>Total</th>
-        <th>Del</th>
-      </tr>
-      </thead>
-      <tbody id="items-body"></tbody>
-    </table>
-    <button class="btn btn-secondary" id="btn-add-row" type="button" style="margin-top:6px;">+ Add row</button>
-
-    <div class="form-grid" style="margin-top:12px;">
-      <div class="form-group">
-        <label for="f-subtotal">Subtotal</label>
-        <input id="f-subtotal" type="text" readonly>
-      </div>
-      <div class="form-group">
-        <label for="f-discount">Discount</label>
-        <input id="f-discount" type="number" value="0">
-      </div>
-      <div class="form-group">
-        <label for="f-tax">Tax %</label>
-        <input id="f-tax" type="number" value="0">
-      </div>
-      <div class="form-group">
-        <label for="f-shipping">Shipping / Extra</label>
-        <input id="f-shipping" type="number" value="0">
-      </div>
-      <div class="form-group">
-        <label for="f-balance">Final Balance</label>
-        <input id="f-balance" type="text" readonly>
-      </div>
-    </div>
-
-    <div class="footer-buttons">
-      <button class="btn btn-primary" id="btn-save" type="button">💾 Save</button>
-      <button class="btn btn-secondary" id="btn-back" type="button">← Back</button>
-      <button class="btn btn-secondary" id="btn-print" type="button">🖨 Print</button>
-      <button class="btn btn-danger" id="btn-delete" type="button">Delete invoice</button>
-    </div>
-  </_toggle>
-  </section>
-</main>
-
-<input type="file" id="json-file-input" accept="application/json" style="display:none;">
-
+<div id="paymentsPage" class="modal"><div class="modal-content payments-view"><div class="topbar noprint"><h2 style="margin:0">Actual Received Payments from Bank</h2><div><button onclick="addPaymentRow()" class="green">Add Payment</button> <button onclick="savePayments()" class="green">Save Payments</button> <button onclick="downloadExcel()" class="green">Download Excel</button> <button onclick="closePaymentsPage()" class="red">Close</button></div></div><div class="paymentbox" style="box-shadow:none;margin-bottom:0"><div class="paymentSummary"><span class="pill">Total Invoices: <span id="payTotalInvoices">0</span></span><span class="pill">Actual Received: <span id="payActualReceived">0</span></span><span class="pill">Remaining Balance: <span id="payRemainingBalance">0</span></span></div><div class="paymentForm noprint"><input id="newPayBank" placeholder="Bank / Receipt No."><input id="newPayReference" placeholder="Reference e.g. SWIFT / Cash"><input id="newPayDate" type="date"><input id="newPayAmount" type="number" step="1" placeholder="Amount IQD"><button onclick="addPaymentFromForm()" class="green">Add</button></div><table><thead><tr><th>Bank</th><th>Reference</th><th>Date</th><th class="num">Amount</th><th class="noprint">Action</th></tr></thead><tbody id="paymentsBody"></tbody></table><div class="hint noprint">You can add, edit, or delete bank received payments here. Press Save Payments to keep changes after refresh.</div></div></div></div>
+<div id="invoiceModal" class="modal"><div class="modal-content"><div class="topbar noprint"><div><button onclick="saveCurrentInvoice()" class="green">Save Invoice Changes</button> <button onclick="addInvoiceItem()">Add Item</button> <button onclick="duplicateCurrentInvoice()" class="gray">Duplicate</button> <button onclick="deleteCurrentInvoice()" class="red">Delete Invoice</button></div><div><button onclick="window.print()">Print / PDF</button> <button class="red" onclick="closeInvoice()">Close</button></div></div><div id="invoiceView"></div></div></div>
 <script>
-  const STORAGE_KEY = "naf_advanced_invoice_local";
-  const THEME_KEY   = "naf_invoice_theme";
+const ORIGINAL_DATA = [{"NO.": 1, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00001", "INVOICE DATE": "2024-03-01", "DESCRIPTION": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 5500000, "TOTAL": 5500000, "DURATION FROM": "2024-03-01", "DURATION TO": "2024-03-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 2, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00001", "INVOICE DATE": "2024-03-01", "DESCRIPTION": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 5500000, "TOTAL": 5500000, "DURATION FROM": "2024-04-01", "DURATION TO": "2024-04-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 3, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00002", "INVOICE DATE": "2024-06-30", "DESCRIPTION": "Diesel Fuel for Generators POD 4", "UNIT": "Liters", "QTY": 2890, "INVOICE AMOUNT": 750, "TOTAL": 2167500, "DURATION FROM": "2024-03-01", "DURATION TO": "2024-03-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 4, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00002", "INVOICE DATE": "2024-06-30", "DESCRIPTION": "Diesel Fuel for Generators POD 6", "UNIT": "Liters", "QTY": 1100, "INVOICE AMOUNT": 750, "TOTAL": 825000, "DURATION FROM": "2024-04-01", "DURATION TO": "2024-04-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 5, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00002", "INVOICE DATE": "2024-06-30", "DESCRIPTION": "Diesel Fuel for Generators POD 7", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2024-06-01", "DURATION TO": "2024-06-15", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 6, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00002", "INVOICE DATE": "2024-06-30", "DESCRIPTION": "Diesel Fuel for Generators POD 8", "UNIT": "Liters", "QTY": 2000, "INVOICE AMOUNT": 750, "TOTAL": 1500000, "DURATION FROM": "2024-06-15", "DURATION TO": "2024-06-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 7, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00002", "INVOICE DATE": "2024-06-30", "DESCRIPTION": "Diesel Fuel for Generators POD 9", "UNIT": "Liters", "QTY": 2100, "INVOICE AMOUNT": 750, "TOTAL": 1575000, "DURATION FROM": "2024-07-01", "DURATION TO": "2024-07-18", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 8, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00003", "INVOICE DATE": "2024-05-01", "DESCRIPTION": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 5500000, "TOTAL": 5500000, "DURATION FROM": "2024-05-01", "DURATION TO": "2024-05-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 9, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00004", "INVOICE DATE": "2024-06-01", "DESCRIPTION": "Generator rental: 200KVA, including operators available 24/7 and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 5500000, "TOTAL": 5500000, "DURATION FROM": "2024-06-01", "DURATION TO": "2024-06-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 10, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00005", "INVOICE DATE": "2024-07-01", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2024-07-01", "DURATION TO": "2024-07-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 11, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00006", "INVOICE DATE": "2024-07-28", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2024-08-01", "DURATION TO": "2024-08-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 12, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00007", "INVOICE DATE": "2024-08-30", "DESCRIPTION": "Diesel Fuel for Generators POD 10", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2024-08-01", "DURATION TO": "2024-08-15", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 13, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00007", "INVOICE DATE": "2024-08-30", "DESCRIPTION": "Diesel Fuel for Generators POD 14", "UNIT": "Liters", "QTY": 2000, "INVOICE AMOUNT": 750, "TOTAL": 1500000, "DURATION FROM": "2024-08-15", "DURATION TO": "2024-08-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 14, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00008", "INVOICE DATE": "2024-10-16", "DESCRIPTION": "Diesel Fuel for Generators POD 15", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2024-09-01", "DURATION TO": "2024-09-15", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 15, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00008", "INVOICE DATE": "2024-10-16", "DESCRIPTION": "Diesel Fuel for Generators POD 17", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2024-09-15", "DURATION TO": "2024-09-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 16, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00008", "INVOICE DATE": "2024-10-16", "DESCRIPTION": "Diesel Fuel for Generators POD 18", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2024-10-01", "DURATION TO": "2024-10-15", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 17, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00009", "INVOICE DATE": "2024-09-30", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2024-09-01", "DURATION TO": "2024-09-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 18, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00010", "INVOICE DATE": "2024-10-30", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2024-10-01", "DURATION TO": "2024-10-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 19, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00011", "INVOICE DATE": "2024-12-31", "DESCRIPTION": "Diesel Fuel for Generators POD 19", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2024-10-15", "DURATION TO": "2024-10-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 20, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00011", "INVOICE DATE": "2024-12-31", "DESCRIPTION": "Diesel Fuel for Generators POD 20", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2024-11-01", "DURATION TO": "2024-11-15", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 21, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00011", "INVOICE DATE": "2024-12-31", "DESCRIPTION": "Diesel Fuel for Generators POD 22", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2024-11-15", "DURATION TO": "2024-11-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 22, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00011", "INVOICE DATE": "2024-12-31", "DESCRIPTION": "Diesel Fuel for Generators POD 23", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2024-12-01", "DURATION TO": "2024-12-12", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 23, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00012", "INVOICE DATE": "2024-12-31", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2024-11-01", "DURATION TO": "2024-11-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 24, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00012", "INVOICE DATE": "2024-12-31", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2024-12-01", "DURATION TO": "2024-12-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 25, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00013", "INVOICE DATE": "2025-01-06", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2025-01-01", "DURATION TO": "2025-01-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 26, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00014", "INVOICE DATE": "2025-03-24", "DESCRIPTION": "Diesel Fuel for Generators POD 24", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2025-01-01", "DURATION TO": "2025-01-15", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 27, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00014", "INVOICE DATE": "2025-03-24", "DESCRIPTION": "Diesel Fuel for Generators POD 25", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2025-01-15", "DURATION TO": "2025-01-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 28, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00014", "INVOICE DATE": "2025-03-24", "DESCRIPTION": "Diesel Fuel for Generators POD 28", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2025-02-01", "DURATION TO": "2025-02-15", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 29, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00014", "INVOICE DATE": "2025-03-24", "DESCRIPTION": "Diesel Fuel for Generators POD 29", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2025-01-15", "DURATION TO": "2025-01-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 30, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00014", "INVOICE DATE": "2025-03-24", "DESCRIPTION": "Diesel Fuel for Generators POD 31", "UNIT": "Liters", "QTY": 2000, "INVOICE AMOUNT": 750, "TOTAL": 1500000, "DURATION FROM": "2025-03-01", "DURATION TO": "2025-03-12", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 31, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00015", "INVOICE DATE": "2025-03-24", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2025-02-01", "DURATION TO": "2025-02-28", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 32, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00015", "INVOICE DATE": "2025-03-24", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2025-03-01", "DURATION TO": "2025-03-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 33, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00016", "INVOICE DATE": "2025-05-29", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2025-04-01", "DURATION TO": "2025-04-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 34, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00016", "INVOICE DATE": "2025-05-29", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2025-05-01", "DURATION TO": "2025-05-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 35, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00017", "INVOICE DATE": "2025-06-09", "DESCRIPTION": "Diesel Fuel for Generators POD 32", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2025-06-01", "DURATION TO": "2025-06-15", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 36, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00017", "INVOICE DATE": "2025-06-09", "DESCRIPTION": "Diesel Fuel for Generators POD 33", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2025-06-01", "DURATION TO": "2025-06-15", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 37, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00017", "INVOICE DATE": "2025-06-09", "DESCRIPTION": "Diesel Fuel for Generators POD 34", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2025-06-15", "DURATION TO": "2025-06-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 38, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00018", "INVOICE DATE": "2025-07-31", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2025-06-01", "DURATION TO": "2025-06-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 39, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00018", "INVOICE DATE": "2025-07-31", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 6750000, "TOTAL": 6750000, "DURATION FROM": "2025-07-01", "DURATION TO": "2025-07-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 40, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00019", "INVOICE DATE": "2025-07-31", "DESCRIPTION": "Diesel Fuel for Generators POD 35", "UNIT": "Liters", "QTY": 2000, "INVOICE AMOUNT": 750, "TOTAL": 1500000, "DURATION FROM": "2025-06-15", "DURATION TO": "2025-06-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 41, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00019", "INVOICE DATE": "2025-07-31", "DESCRIPTION": "Diesel Fuel for Generators POD 36", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2025-07-01", "DURATION TO": "2025-07-15", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 42, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00019", "INVOICE DATE": "2025-07-31", "DESCRIPTION": "Diesel Fuel for Generators POD 37", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2025-07-15", "DURATION TO": "2025-07-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 43, "PO No.": "PO00023", "INVOICE NO.": "CP-INV00019", "INVOICE DATE": "2025-07-31", "DESCRIPTION": "Diesel Fuel for Generators POD 38", "UNIT": "Liters", "QTY": 1000, "INVOICE AMOUNT": 750, "TOTAL": 750000, "DURATION FROM": "2025-07-15", "DURATION TO": "2025-07-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 44, "PO No.": 4500000353, "INVOICE NO.": "CP-INV-D-00001", "INVOICE DATE": "2025-02-11", "DESCRIPTION": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 12000000, "TOTAL": 12000000, "DURATION FROM": "2025-02-09", "DURATION TO": "2025-03-08", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 45, "PO No.": 4500000353, "INVOICE NO.": "CP-INV-D-00002", "INVOICE DATE": "2025-03-12", "DESCRIPTION": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 12000000, "TOTAL": 12000000, "DURATION FROM": "2025-03-09", "DURATION TO": "2025-04-08", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 46, "PO No.": 4500000353, "INVOICE NO.": "CP-INV-D-00003", "INVOICE DATE": "2025-04-06", "DESCRIPTION": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 12000000, "TOTAL": 12000000, "DURATION FROM": "2025-04-09", "DURATION TO": "2025-05-08", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 47, "PO No.": 4500000353, "INVOICE NO.": "CP-INV-D-00004", "INVOICE DATE": "2025-08-17", "DESCRIPTION": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 12000000, "TOTAL": 12000000, "DURATION FROM": "2025-08-01", "DURATION TO": "2025-08-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 48, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00022", "INVOICE DATE": "2025-08-16", "DESCRIPTION": "Provision of Generator Maintenance and Operation as per PO 4400013503", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 7200000, "TOTAL": 7200000, "DURATION FROM": "2025-08-01", "DURATION TO": "2025-08-31", "Status": "Paid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 49, "PO No.": 4500000353, "INVOICE NO.": "CP-INV-D-00005", "INVOICE DATE": "2025-09-13", "DESCRIPTION": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 12000000, "TOTAL": 12000000, "DURATION FROM": "2025-09-01", "DURATION TO": "2025-09-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 50, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00025", "INVOICE DATE": "2025-09-13", "DESCRIPTION": "Provision of Generator Maintenance and Operation as per PO 4400013503", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 7200000, "TOTAL": 7200000, "DURATION FROM": "2025-09-01", "DURATION TO": "2025-09-30", "Status": "Paid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 51, "PO No.": 4500000353, "INVOICE NO.": "CP-INV-D-00006", "INVOICE DATE": "2025-10-12", "DESCRIPTION": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 12000000, "TOTAL": 12000000, "DURATION FROM": "2025-10-01", "DURATION TO": "2025-10-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 52, "PO No.": 4400013837, "INVOICE NO.": "NA-2025-INV00024", "INVOICE DATE": "2025-08-28", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2025-08-01", "DURATION TO": "2025-08-31", "Status": "Paid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 53, "PO No.": 4500000353, "INVOICE NO.": "CP-INV-D-00007", "INVOICE DATE": "2025-11-06", "DESCRIPTION": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 12000000, "TOTAL": 12000000, "DURATION FROM": "2025-11-01", "DURATION TO": "2025-11-30", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 54, "PO No.": 4500000353, "INVOICE NO.": "CP-INV-D-00008", "INVOICE DATE": "2025-12-02", "DESCRIPTION": "Generators rental: 2x 150KVA, including operators available 24/7 and a 5000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 12000000, "TOTAL": 12000000, "DURATION FROM": "2025-12-01", "DURATION TO": "2025-12-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 55, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00030", "INVOICE DATE": "2025-10-30", "DESCRIPTION": "Provision of Generator Maintenance and Operation as per PO 4400013503", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 7200000, "TOTAL": 7200000, "DURATION FROM": "2025-10-01", "DURATION TO": "2025-10-31", "Status": "Paid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 56, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00035", "INVOICE DATE": "2025-11-06", "DESCRIPTION": "Provision of Generator Maintenance and Operation as per PO 4400013503", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 7200000, "TOTAL": 7200000, "DURATION FROM": "2025-11-02", "DURATION TO": "2025-11-30", "Status": "Paid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 57, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00039", "INVOICE DATE": "2025-12-02", "DESCRIPTION": "Provision of Generator Maintenance and Operation as per PO 4400013503", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 7200000, "TOTAL": 7200000, "DURATION FROM": "2025-12-03", "DURATION TO": "2025-12-31", "Status": "Paid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 58, "PO No.": 4400013837, "INVOICE NO.": "NA-2025-INV00026", "INVOICE DATE": "2025-09-13", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2025-09-01", "DURATION TO": "2025-09-30", "Status": "Paid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 59, "PO No.": 4400013837, "INVOICE NO.": "NA-2025-INV00031", "INVOICE DATE": "2025-10-12", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2025-10-01", "DURATION TO": "2025-10-31", "Status": "Paid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 60, "PO No.": 4400013837, "INVOICE NO.": "NA-2025-INV00036", "INVOICE DATE": "2025-11-06", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2025-11-01", "DURATION TO": "2025-11-30", "Status": "Paid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 61, "PO No.": 4400013837, "INVOICE NO.": "NA-2025-INV00040", "INVOICE DATE": "2025-12-17", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2025-12-01", "DURATION TO": "2025-12-31", "Status": "Paid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 62, "PO No.": 4400013503, "INVOICE NO.": "NA-2026-D-INV00041", "INVOICE DATE": "2026-01-17", "DESCRIPTION": "Provision of Generator Maintenance and Operation as per PO 4400013503", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 7200000, "TOTAL": 7200000, "DURATION FROM": "2026-01-01", "DURATION TO": "2026-01-31", "Status": "Unpaid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 63, "PO No.": 4400013837, "INVOICE NO.": "NA-2026-INV00043", "INVOICE DATE": "2026-01-21", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2026-01-01", "DURATION TO": "2026-01-31", "Status": "Paid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 64, "PO No.": 4400013837, "INVOICE NO.": "NA-2026-INV00045", "INVOICE DATE": "2026-02-13", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2026-02-01", "DURATION TO": "2026-02-28", "Status": "Unpaid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 65, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00046", "INVOICE DATE": "2026-02-26", "DESCRIPTION": "Provision of Generator Maintenance and Operation as per PO 4400013503", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 7200000, "TOTAL": 7200000, "DURATION FROM": "2026-02-01", "DURATION TO": "2026-02-28", "Status": "Unpaid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 66, "PO No.": 4500000353, "INVOICE NO.": "CP-INV-D-00009", "INVOICE DATE": "2026-02-17", "DESCRIPTION": "Rental of 2 Electric Power Generations : 150 KVA, including 24/7 operator, ATS, and a 5000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 12000000, "TOTAL": 12000000, "DURATION FROM": "2026-01-01", "DURATION TO": "2026-01-31", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 67, "PO No.": 4500000353, "INVOICE NO.": "CP-INV-D-00010", "INVOICE DATE": "2026-02-26", "DESCRIPTION": "Rental of 2 Electric Power Generations : 150 KVA, including 24/7 operator, ATS, and a 5000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 12000000, "TOTAL": 12000000, "DURATION FROM": "2026-02-01", "DURATION TO": "2026-01-28", "Status": "Paid", "Company": "Al Mustafa Office "}, {"NO.": 68, "PO No.": 4400013837, "INVOICE NO.": "NA-2026-INV00047", "INVOICE DATE": "2026-03-30", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2026-03-01", "DURATION TO": "2026-03-31", "Status": "Unpaid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 69, "PO No.": 4400013837, "INVOICE NO.": "NA-2026-INV00048", "INVOICE DATE": "2026-04-18", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2026-04-01", "DURATION TO": "2026-04-30", "Status": "Unpaid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 70, "PO No.": 4400015697, "INVOICE NO.": "NA-2026-INV00049", "INVOICE DATE": "2026-05-19", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2026-05-01", "DURATION TO": "2026-05-31", "Status": "Unpaid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 71, "PO No.": 4400015697, "INVOICE NO.": "NA-2026-INV00050", "INVOICE DATE": "2026-06-24", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2026-06-01", "DURATION TO": "2026-06-30", "Status": "Unpaid", "Company": "NAFITHAT AL-AMAL"}, {"NO.": 72, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-INV-00016", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "preventive Maintenance (30 kVA)", "UNIT": "EA", "QTY": 3, "INVOICE AMOUNT": 150000, "TOTAL": 450000, "DURATION FROM": "", "DURATION TO": "2025-05-29", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 73, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-INV-00016", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "Battery Charger ", "UNIT": "EA", "QTY": 2, "INVOICE AMOUNT": 60000, "TOTAL": 120000, "DURATION FROM": "", "DURATION TO": "2025-05-29", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 74, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-INV-00016", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "Water Pump", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 65000, "TOTAL": 65000, "DURATION FROM": "", "DURATION TO": "2025-05-29", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 75, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-INV-00016", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "Radiator Coolant", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 10000, "TOTAL": 10000, "DURATION FROM": "", "DURATION TO": "2025-05-29", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 76, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00017", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "site visit to Dyala ", "UNIT": "Trip", "QTY": 3, "INVOICE AMOUNT": 200000, "TOTAL": 600000, "DURATION FROM": "", "DURATION TO": "2025-05-01", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 77, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00017", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "preventive Maintenance (6x30 kVA units)", "UNIT": "EA", "QTY": 6, "INVOICE AMOUNT": 150000, "TOTAL": 900000, "DURATION FROM": "", "DURATION TO": "2025-05-01", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 78, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00017", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "cooling Fan (Tower 5)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 50000, "TOTAL": 50000, "DURATION FROM": "", "DURATION TO": "2025-05-01", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 79, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00017", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "Oil Bushing (Tower4)", "UNIT": "EA", "QTY": 2, "INVOICE AMOUNT": 40000, "TOTAL": 80000, "DURATION FROM": "", "DURATION TO": "2025-05-01", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 80, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00017", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "Starter Motor - Repaired (Tower 5)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 75000, "TOTAL": 75000, "DURATION FROM": "", "DURATION TO": "2025-05-01", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 81, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00017", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "Alternator K4100 (Tower 10)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 75000, "TOTAL": 75000, "DURATION FROM": "", "DURATION TO": "2025-05-01", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 82, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00017", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "Starter Hooks (Tower 5)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 40000, "TOTAL": 40000, "DURATION FROM": "", "DURATION TO": "2025-05-01", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 83, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00017", "INVOICE DATE": "2025-06-03", "DESCRIPTION": "V-Belt (Tower5)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 10000, "TOTAL": 10000, "DURATION FROM": "", "DURATION TO": "2025-05-01", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 84, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00018", "INVOICE DATE": "2025-06-08", "DESCRIPTION": "site visit to Dyala ", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": 200000, "TOTAL": 200000, "DURATION FROM": "", "DURATION TO": "2025-05-08", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 85, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00018", "INVOICE DATE": "2025-06-08", "DESCRIPTION": "Emergency Repair -Generator (30 kVA)", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 150000, "TOTAL": 150000, "DURATION FROM": "", "DURATION TO": "2025-05-08", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 86, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00018", "INVOICE DATE": "2025-06-08", "DESCRIPTION": "Water Pump (Supply & Installation)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 65000, "TOTAL": 65000, "DURATION FROM": "", "DURATION TO": "2025-05-08", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 87, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00018", "INVOICE DATE": "2025-06-08", "DESCRIPTION": "Radiator Coolant ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 10000, "TOTAL": 10000, "DURATION FROM": "", "DURATION TO": "2025-05-08", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 88, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00019", "INVOICE DATE": "2025-06-29", "DESCRIPTION": "site visit to Dyala ", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": 200000, "TOTAL": 200000, "DURATION FROM": "", "DURATION TO": "2025-06-26", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 89, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00019", "INVOICE DATE": "2025-06-29", "DESCRIPTION": "Emergency Repair -Generator (30 kVA)", "UNIT": "Lot", "QTY": 4, "INVOICE AMOUNT": 150000, "TOTAL": 600000, "DURATION FROM": "", "DURATION TO": "2025-06-26", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 90, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00019", "INVOICE DATE": "2025-06-29", "DESCRIPTION": "Battery", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 115000, "TOTAL": 115000, "DURATION FROM": "", "DURATION TO": "2025-06-26", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 91, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00019", "INVOICE DATE": "2025-06-29", "DESCRIPTION": "Battery Charger", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 60000, "TOTAL": 60000, "DURATION FROM": "", "DURATION TO": "2025-06-26", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 92, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00020", "INVOICE DATE": "2025-07-10", "DESCRIPTION": "site visit to Dyala ", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": 200000, "TOTAL": 200000, "DURATION FROM": "", "DURATION TO": "2025-07-08", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 93, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00020", "INVOICE DATE": "2025-07-10", "DESCRIPTION": "Emergency Repair -Generator (30 kVA)", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 150000, "TOTAL": 150000, "DURATION FROM": "", "DURATION TO": "2025-07-08", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 94, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00020", "INVOICE DATE": "2025-07-10", "DESCRIPTION": "Capacitor_for Generator (30 kVA)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 0, "TOTAL": 0, "DURATION FROM": "", "DURATION TO": "2025-07-08", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 95, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00020", "INVOICE DATE": "2025-07-10", "DESCRIPTION": "Brushes _ for the Alternator", "UNIT": "EA", "QTY": 2, "INVOICE AMOUNT": 0, "TOTAL": 0, "DURATION FROM": "", "DURATION TO": "2025-07-08", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 96, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "site visit", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": "    -", "TOTAL": "    -", "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 97, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Breather pipe outlet rerouting ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 5000, "TOTAL": 5000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 98, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Installed Digital hour meters", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 25000, "TOTAL": 25000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 99, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Replaced dynamo brushes ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 25000, "TOTAL": 25000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 100, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Breather pipe outlet rerouting ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 5000, "TOTAL": 5000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 101, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Installed Digital hour meters", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 25000, "TOTAL": 25000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 102, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Breather pipe outlet rerouting ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 5000, "TOTAL": 5000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 103, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Installed Digital hour meters", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 25000, "TOTAL": 25000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 104, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Breather pipe outlet rerouting ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 5000, "TOTAL": 5000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 105, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Installed Digital hour meters", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 25000, "TOTAL": 25000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 106, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Battery replaced", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 110000, "TOTAL": 110000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 107, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Breather pipe outlet rerouting ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 5000, "TOTAL": 5000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 108, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Installed Digital hour meters", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 25000, "TOTAL": 25000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 109, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Screen programming ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 5000, "TOTAL": 5000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 110, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Synchonizer adjustment ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 5000, "TOTAL": 5000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 111, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Breather pipe outlet rerouting ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 5000, "TOTAL": 5000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 112, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Installed Digital hour meters", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 25000, "TOTAL": 25000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 113, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Breather pipe outlet rerouting", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 5000, "TOTAL": 5000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 114, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Installed Digital hour meters", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 25000, "TOTAL": 25000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 115, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Breather pipe outlet rerouting", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 5000, "TOTAL": 5000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 116, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00021", "INVOICE DATE": "2025-08-05", "DESCRIPTION": "Installed Digital hour meters", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 25000, "TOTAL": 25000, "DURATION FROM": "", "DURATION TO": "2025-08-04", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 117, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00023", "INVOICE DATE": "2025-08-21", "DESCRIPTION": "Site visit", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": 200000, "TOTAL": 200000, "DURATION FROM": "", "DURATION TO": "2025-08-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 118, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00023", "INVOICE DATE": "2025-08-21", "DESCRIPTION": "preventive Maintenance (4x30 kVA units)", "UNIT": "EA", "QTY": 4, "INVOICE AMOUNT": 150000, "TOTAL": 600000, "DURATION FROM": "", "DURATION TO": "2025-08-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 119, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00023", "INVOICE DATE": "2025-08-21", "DESCRIPTION": "Replaced Capacitor ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 50000, "TOTAL": 50000, "DURATION FROM": "", "DURATION TO": "2025-08-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 120, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00023", "INVOICE DATE": "2025-08-21", "DESCRIPTION": "Brushes _ for the Alternator", "UNIT": "EA", "QTY": 2, "INVOICE AMOUNT": 5000, "TOTAL": 10000, "DURATION FROM": "", "DURATION TO": "2025-08-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 121, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00023", "INVOICE DATE": "2025-08-21", "DESCRIPTION": "Replaced Capacitor ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 50000, "TOTAL": 50000, "DURATION FROM": "", "DURATION TO": "2025-08-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 122, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00023", "INVOICE DATE": "2025-08-21", "DESCRIPTION": "Brushes _ for the Alternator", "UNIT": "EA", "QTY": 2, "INVOICE AMOUNT": 5000, "TOTAL": 10000, "DURATION FROM": "", "DURATION TO": "2025-08-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 123, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00023", "INVOICE DATE": "2025-08-21", "DESCRIPTION": "Brushes _ for the Alternator", "UNIT": "EA", "QTY": 2, "INVOICE AMOUNT": 5000, "TOTAL": 10000, "DURATION FROM": "", "DURATION TO": "2025-08-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 124, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00023", "INVOICE DATE": "2025-08-21", "DESCRIPTION": "Replaced Solenoid ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 25000, "TOTAL": 25000, "DURATION FROM": "", "DURATION TO": "2025-08-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 125, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00023", "INVOICE DATE": "2025-08-21", "DESCRIPTION": "Replaced Alternator K4100 \"dynamo\"", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 750000, "TOTAL": 750000, "DURATION FROM": "", "DURATION TO": "2025-08-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 126, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00023", "INVOICE DATE": "2025-08-21", "DESCRIPTION": "Replaced Harness", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 50000, "TOTAL": 50000, "DURATION FROM": "", "DURATION TO": "2025-08-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 127, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00028", "INVOICE DATE": "2025-09-27", "DESCRIPTION": "Site visit", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": 200000, "TOTAL": 200000, "DURATION FROM": "", "DURATION TO": "27-Seb-2025", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 128, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00028", "INVOICE DATE": "2025-09-27", "DESCRIPTION": "preventive Maintenance (4x30 kVA units)", "UNIT": "EA", "QTY": 4, "INVOICE AMOUNT": 150000, "TOTAL": 600000, "DURATION FROM": "", "DURATION TO": "27-Seb-2025", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 129, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00028", "INVOICE DATE": "2025-09-27", "DESCRIPTION": "Replaced cooling Fan", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 50000, "TOTAL": 50000, "DURATION FROM": "", "DURATION TO": "27-Seb-2025", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 130, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00028", "INVOICE DATE": "2025-09-27", "DESCRIPTION": "Brushes _ for the Alternator", "UNIT": "Lot", "QTY": 3, "INVOICE AMOUNT": 10000, "TOTAL": 30000, "DURATION FROM": "", "DURATION TO": "27-Seb-2025", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 131, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV-00028", "INVOICE DATE": "2025-09-27", "DESCRIPTION": "Replaced Alternator K4100 \"dynamo\"", "UNIT": "Lot", "QTY": 3, "INVOICE AMOUNT": 50000, "TOTAL": 150000, "DURATION FROM": "", "DURATION TO": "27-Seb-2025", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 132, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00029", "INVOICE DATE": "2025-10-06", "DESCRIPTION": "Site visit", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": 200000, "TOTAL": 200000, "DURATION FROM": "", "DURATION TO": "2025-10-06", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 133, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00029", "INVOICE DATE": "2025-10-06", "DESCRIPTION": "Emergency(1x30 kVA unit & Perkins 250 KVA )", "UNIT": "EA", "QTY": 2, "INVOICE AMOUNT": 150000, "TOTAL": 300000, "DURATION FROM": "", "DURATION TO": "2025-10-06", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 134, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00029", "INVOICE DATE": "2025-10-06", "DESCRIPTION": "Replaced Alternator K4100 \"dynamo\"", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 50000, "TOTAL": 50000, "DURATION FROM": "", "DURATION TO": "2025-10-06", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 135, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00029", "INVOICE DATE": "2025-10-06", "DESCRIPTION": "Starter Motor T400304 for Perkins T400304", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 500000, "TOTAL": 500000, "DURATION FROM": "", "DURATION TO": "2025-10-06", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 136, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00032", "INVOICE DATE": "2025-10-19", "DESCRIPTION": "Site visit", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": 200000, "TOTAL": 200000, "DURATION FROM": "", "DURATION TO": "2025-10-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 137, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00032", "INVOICE DATE": "2025-10-19", "DESCRIPTION": "preventive Maintenance (1x30 kVA units)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 150000, "TOTAL": 150000, "DURATION FROM": "", "DURATION TO": "2025-10-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 138, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00032", "INVOICE DATE": "2025-10-19", "DESCRIPTION": "Fuel Nozzles For K4100", "UNIT": "EA", "QTY": 4, "INVOICE AMOUNT": 85000, "TOTAL": 340000, "DURATION FROM": "", "DURATION TO": "2025-10-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 139, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00032", "INVOICE DATE": "2025-10-19", "DESCRIPTION": "Brushes _ for the Alternator Free of charge", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": "    -", "TOTAL": "", "DURATION FROM": "", "DURATION TO": "2025-10-19", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 140, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00033", "INVOICE DATE": "2025-10-21", "DESCRIPTION": "Site visit", "UNIT": "Trip", "QTY": 0, "INVOICE AMOUNT": 200000, "TOTAL": 200000, "DURATION FROM": "", "DURATION TO": "2025-10-21", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 141, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00033", "INVOICE DATE": "2025-10-21", "DESCRIPTION": "Emergency Maintenance (2x30 kVA units)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 150000, "TOTAL": 150000, "DURATION FROM": "", "DURATION TO": "2025-10-21", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 142, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00033", "INVOICE DATE": "2025-10-21", "DESCRIPTION": "Monitor \"Mebay\" for K4100", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 300000, "TOTAL": 300000, "DURATION FROM": "", "DURATION TO": "2025-10-21", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 143, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00033", "INVOICE DATE": "2025-10-21", "DESCRIPTION": "Replaced Alternator K4100 \"dynamo\"", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 75000, "TOTAL": 75000, "DURATION FROM": "", "DURATION TO": "2025-10-21", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 145, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00034", "INVOICE DATE": "2025-10-28", "DESCRIPTION": "Site visit", "UNIT": "Trip", "QTY": 0, "INVOICE AMOUNT": 200000, "TOTAL": "     -", "DURATION FROM": "", "DURATION TO": "2025-10-29", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 146, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00034", "INVOICE DATE": "2025-10-28", "DESCRIPTION": "Emergency Maintenance (1x250 kVA units)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 150000, "TOTAL": 150000, "DURATION FROM": "", "DURATION TO": "2025-10-29", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 147, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00034", "INVOICE DATE": "2025-10-28", "DESCRIPTION": "Starter Motor T400304 for Perkins", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 500000, "TOTAL": 500000, "DURATION FROM": "", "DURATION TO": "2025-10-29", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 148, "PO No.": 4400013837, "INVOICE NO.": "NA-2025-D-INV00036", "INVOICE DATE": "2025-11-06", "DESCRIPTION": "Rental of 2 Electric Power Generation : 200 KVA and 150 KVA, including 24/7 operator availability, 1 ATS, and a 3000-liter fuel tank.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 8650000, "TOTAL": 8650000, "DURATION FROM": "2025-11-01", "DURATION TO": "2025-11-30", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 149, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00037", "INVOICE DATE": "2025-11-21", "DESCRIPTION": "Site Visit", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": 200000, "TOTAL": 200000, "DURATION FROM": "", "DURATION TO": "2025-11-21", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 150, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00037", "INVOICE DATE": "2025-11-21", "DESCRIPTION": "Preventive Maintenance (4x30 kVA units)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 150000, "TOTAL": 150000, "DURATION FROM": "", "DURATION TO": "2025-11-21", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 151, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00037", "INVOICE DATE": "2025-11-21", "DESCRIPTION": "Supply of materials including gasket,radiator coolant,O-rings ,and related items.", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 750000, "TOTAL": 750000, "DURATION FROM": "", "DURATION TO": "2025-11-21", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 152, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00038", "INVOICE DATE": "2025-12-02", "DESCRIPTION": "site Visit", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": "     -", "TOTAL": "     -", "DURATION FROM": "", "DURATION TO": "2025-11-29", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 153, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00038", "INVOICE DATE": "2025-12-02", "DESCRIPTION": "preventive Maintenance (4x30 kVA units)", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 150000, "TOTAL": 150000, "DURATION FROM": "", "DURATION TO": "2025-11-29", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 154, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00038", "INVOICE DATE": "2025-12-02", "DESCRIPTION": "Supply of materials including Rocker Arm refurbishment and replacement as part of the engine maintenance along with engine oil filters water cookant o-rings and other related component .", "UNIT": "Lot", "QTY": 1, "INVOICE AMOUNT": 1150000, "TOTAL": 1150000, "DURATION FROM": "", "DURATION TO": "2025-11-29", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 155, "PO No.": 4400013503, "INVOICE NO.": "NA-2025-D-INV00038", "INVOICE DATE": "2025-12-02", "DESCRIPTION": "Motor fixing due to water ingress into the display screen", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": "     -", "TOTAL": "     -", "DURATION FROM": "", "DURATION TO": "2025-11-29", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 156, "PO No.": 4400013503, "INVOICE NO.": "NA-2026-D-INV00042", "INVOICE DATE": "2026-01-18", "DESCRIPTION": "site Visit", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": 200000, "TOTAL": 200000, "DURATION FROM": "", "DURATION TO": "2026-01-17", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 157, "PO No.": 4400013503, "INVOICE NO.": "NA-2026-D-INV00042", "INVOICE DATE": "2026-01-18", "DESCRIPTION": "Emergency Maintenance (1x250 kVA units)for Isuzu generators ", "UNIT": "EA", "QTY": 4, "INVOICE AMOUNT": 150000, "TOTAL": 600000, "DURATION FROM": "", "DURATION TO": "2026-01-17", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 158, "PO No.": 4400013503, "INVOICE NO.": "NA-2026-D-INV00042", "INVOICE DATE": "2026-01-18", "DESCRIPTION": "Replaced Alternator K4100 \"dynamo\"", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 100000, "TOTAL": 100000, "DURATION FROM": "", "DURATION TO": "2026-01-17", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 159, "PO No.": 4400013503, "INVOICE NO.": "NA-2026-D-INV00042", "INVOICE DATE": "2026-01-18", "DESCRIPTION": "Engine oil pressure sensor ", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 50000, "TOTAL": 50000, "DURATION FROM": "", "DURATION TO": "2026-01-17", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 160, "PO No.": 4400013503, "INVOICE NO.": "NA-2026-D-INV00044", "INVOICE DATE": "2026-01-31", "DESCRIPTION": "site Visit", "UNIT": "Trip", "QTY": 1, "INVOICE AMOUNT": 200000, "TOTAL": 200000, "DURATION FROM": "", "DURATION TO": "2026-01-30", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 161, "PO No.": 4400013503, "INVOICE NO.": "NA-2026-D-INV00044", "INVOICE DATE": "2026-01-31", "DESCRIPTION": "Emergency Maintenance (1x250 kVA units)for Isuzu generators ", "UNIT": "EA", "QTY": 2, "INVOICE AMOUNT": 150000, "TOTAL": 300000, "DURATION FROM": "", "DURATION TO": "2026-01-30", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 162, "PO No.": 4400013503, "INVOICE NO.": "NA-2026-D-INV00044", "INVOICE DATE": "2026-01-31", "DESCRIPTION": "Replaced Alternator K4100 \"dynamo\"", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 750000, "TOTAL": 750000, "DURATION FROM": "", "DURATION TO": "2026-01-30", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 163, "PO No.": 4400013503, "INVOICE NO.": "NA-2026-D-INV00044", "INVOICE DATE": "2026-01-31", "DESCRIPTION": "Starter Motor T400304 for Perkins", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 650000, "TOTAL": 650000, "DURATION FROM": "", "DURATION TO": "2026-01-30", "Status": "", "Company": "Al Mustafa Office "}, {"NO.": 164, "PO No.": 4400013503, "INVOICE NO.": "NA-2026-D-INV00044", "INVOICE DATE": "2026-01-31", "DESCRIPTION": "V-Belt for K4100", "UNIT": "EA", "QTY": 1, "INVOICE AMOUNT": 50000, "TOTAL": 50000, "DURATION FROM": "", "DURATION TO": "2026-01-30", "Status": "", "Company": "Al Mustafa Office "}];
 
-  let invoices = [];
-  let currentId = null;
-  let currentFilter = "all";
-  let currentPoFilter = "all";
-  let searchTerm = "";
-  let specialFilter = "none";
-  let sortField = "serviceDate";
-  let sortDir   = "asc";
-
-  let dateFrom = ""; // DURATION FROM
-  let dateTo   = ""; // DURATION TO
-  let minIQD   = null;
-  let maxIQD   = null;
-
-  function $(id){ return document.getElementById(id); }
-  function todayStr(){ const d=new Date(); return d.toISOString().slice(0,10); }
-  function generateId(){ return "inv-"+Math.random().toString(36).slice(2)+"-"+Date.now().toString(36); }
-  function formatIQD(num){ if(isNaN(num)) num=0; return "IQD "+Number(num).toLocaleString("en-US",{maximumFractionDigits:0}); }
-  function parseNumber(v){ if(typeof v!=="string") v=String(v||""); return Number(v.replace(/[^\d.-]/g,""))||0; }
-
-  /* ✅✅✅ (التعديل الأخير فقط) : وصف موحد */
-  function getInvoiceDescription(inv){
-    const d1 = (inv && inv.description != null) ? String(inv.description).trim() : "";
-    if(d1) return d1;
-
-    const d2 = (inv && inv.scope != null) ? String(inv.scope).trim() : "";
-    if(d2) return d2;
-
-    const firstItemDesc = (inv && inv.items && inv.items.length && inv.items[0] && inv.items[0].desc != null)
-      ? String(inv.items[0].desc).trim()
-      : "";
-    if(firstItemDesc) return firstItemDesc;
-
-    return "-";
+const DEFAULT_ACTUAL_PAYMENTS = [
+  {BANK:'CP-CR00001', REFERENCE:'Cash payment', DATE:'2024-03-03', AMOUNT:11000000000},
+  {BANK:'CP-CR00002', REFERENCE:'Cash payment', DATE:'2024-05-20', AMOUNT:5500000000},
+  {BANK:'TBI Bank', REFERENCE:'SWIFT', DATE:'2024-10-13', AMOUNT:15697678000},
+  {BANK:'TBI Bank', REFERENCE:'SWIFT', DATE:'2024-11-11', AMOUNT:21089467000},
+  {BANK:'National Islamic Bank', REFERENCE:'SWIFT', DATE:'2025-03-25', AMOUNT:27900000000},
+  {BANK:'National Islamic Bank', REFERENCE:'SWIFT', DATE:'2025-05-13', AMOUNT:33480000000},
+  {BANK:'National Islamic Bank', REFERENCE:'SWIFT', DATE:'2025-07-23', AMOUNT:17406000000},
+  {BANK:'National Islamic Bank', REFERENCE:'SWIFT', DATE:'2025-10-09', AMOUNT:15060550000},
+  {BANK:'National Islamic Bank', REFERENCE:'SWIFT', DATE:'2025-10-28', AMOUNT:16089000000},
+  {BANK:'National Islamic Bank', REFERENCE:'SWIFT', DATE:'2026-01-25', AMOUNT:43779500000},
+  {BANK:'National Islamic Bank', REFERENCE:'SWIFT', DATE:'2026-01-25', AMOUNT:88599000000},
+  {BANK:'National Islamic Bank', REFERENCE:'SWIFT', DATE:'2026-05-07', AMOUNT:22320000000},
+  {BANK:'National Islamic Bank', REFERENCE:'SWIFT', DATE:'2026-05-21', AMOUNT:8364550000}
+];
+const STORAGE_KEY = 'nafmals_invoice_platform_saved_v2';
+const PAYMENTS_KEY = 'nafmals_actual_received_payments_v1';
+const STATUS_KEY = 'nafmals_invoice_status_overrides_v1';
+let STATUS_OVERRIDES = loadStatusOverrides();
+let DATA = loadSavedData();
+let ACTUAL_PAYMENTS = loadSavedPayments();
+let CURRENT_INV = null;
+const CURRENCY = 'IQD';
+function n(v){let x=String(v??'').replace(/,/g,'').trim(); if(x==='-'||x==='')return 0; return Number(x)||0}
+function fmt(v){return new Intl.NumberFormat('en-US').format(Math.round(n(v)))+' '+CURRENCY}
+function displayStatus(v){const x=norm(v);return x||'Unpaid';}
+function effectiveStatus(r){const inv=norm(r && r['INVOICE NO.']); return displayStatus((inv && STATUS_OVERRIDES[inv]) || (r && r.Status));}
+function statusClass(v){const x=displayStatus(v).toLowerCase(); if(x==='paid')return 'Paid'; if(x.includes('partial'))return 'Partially'; return 'Unpaid';}
+function rowStatusClass(r){return statusClass(effectiveStatus(r));}
+function norm(v){return String(v ?? '').trim()}
+function esc(v){return String(v??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function excelSerialToISO(v){
+  const num = Number(v);
+  if(!Number.isFinite(num)) return '';
+  if(num > 100000000000){
+    const d = new Date(num);
+    return isNaN(d) ? '' : d.toISOString().slice(0,10);
   }
-  // ✅ Service label for reports (e.g., "Mar-24") derived from a date (Duration From preferred)
-  function serviceLabelFromDate(dateStr){
-    if(!dateStr) return "";
-    const d = new Date(dateStr + "T00:00:00");
-    if(Number.isNaN(d.getTime())) return "";
-    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    return months[d.getMonth()] + "-" + String(d.getFullYear()).slice(-2);
+  if(num < 20000 || num > 80000) return '';
+  const utc = Math.round((num - 25569) * 86400 * 1000);
+  const d = new Date(utc);
+  return isNaN(d) ? '' : d.toISOString().slice(0,10);
+}
+function normalizeDateValue(v){
+  if(v === null || v === undefined) return '';
+  if(v instanceof Date && !isNaN(v)) return v.toISOString().slice(0,10);
+  let x = String(v).trim();
+  if(!x || x==='-' || x==='0') return '';
+  if(/^\d+(\.\d+)?$/.test(x)){
+    const iso = excelSerialToISO(Number(x));
+    if(iso) return iso;
   }
-
-
-  function normalizeInvoice(inv){
-    if(!inv) return inv;
-    if(!inv.id) inv.id = generateId();
-    let raw = (inv.status==null?"draft":String(inv.status)).toLowerCase().trim();
-    if(!["paid","unpaid","overdue","draft"].includes(raw)) raw="draft";
-    inv.status = raw;
-    if(!Array.isArray(inv.items)) inv.items = [];
-
-    if(!inv.poNo && inv.contract) inv.poNo = inv.contract;
-    if(!inv.invoiceNo && inv.number) inv.invoiceNo = inv.number;
-    if(!inv.serviceDate && inv.issueDate) inv.serviceDate = inv.issueDate;
-
-    if(!inv.durationFrom) inv.durationFrom = inv.issueDate || "";
-    if(!inv.durationTo)   inv.durationTo   = inv.dueDate   || "";
-
-    if(inv.invoiceAmount == null) inv.invoiceAmount = Number(inv.subtotal || 0);
-    if(inv.total == null) inv.total = Number(inv.balance || 0);
-
-    /* ✅✅✅ (التعديل الأخير فقط) : احفظ الوصف داخل inv.description حتى لا يبقى فارغ */
-    if(!String(inv.description || "").trim()){
-      inv.description = getInvoiceDescription(inv);
-      if(inv.description === "-") inv.description = ""; // لا نخزن "-"، فقط للعرض
-    }
-
-    return inv;
+  const isoMatch = x.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+  if(isoMatch){
+    const y=isoMatch[1], m=isoMatch[2].padStart(2,'0'), d=isoMatch[3].padStart(2,'0');
+    return `${y}-${m}-${d}`;
   }
-
-  // ✅ تحديث الـ Items لكل فاتورة حسب معلومات الفاتورة (للتقارير)
-  // - يجعل لكل فاتورة Item واحد على الأقل
-  // - ويملأ الحقول الناقصة/ويحدثها لتطابق (الوصف/الوحدة/الكمية/السعر/التاريخ)
-  function syncInvoiceItems(inv, force=true){
-    if(!inv) return inv;
-    inv = normalizeInvoice(inv);
-
-    const desc = String((inv.scope || inv.description || "")).trim();
-    const unit = String(inv.unit || (inv.items && inv.items[0] && inv.items[0].unit) || "").trim();
-    const qty  = Number(inv.qty || 0) || (inv.items||[]).reduce((s,it)=>s+(Number(it.qty)||0),0) || 1;
-
-    // price per unit (INVOICE AMOUNT)
-    const invTotal = Number(inv.total || inv.balance || inv.subtotal || 0);
-    const pricePer = Number(inv.invoiceAmount || 0) || (qty ? (invTotal/qty) : invTotal);
-
-    const itemDate = (inv.durationFrom || inv.issueDate || "");
-
-    if(!Array.isArray(inv.items) || inv.items.length===0){
-      inv.items = [{desc:"", location:"", date:"", unit:"", qty:0, price:0}];
-    }
-
-    inv.items = inv.items.map((it, idx)=>{
-      it = it || {};
-      if(force || !it.desc) it.desc = desc;
-      if(force || !it.unit) it.unit = unit;
-      if(force || !it.qty)  it.qty  = qty;
-      if(force || !it.price) it.price = pricePer;
-      if(force || !it.date) it.date = itemDate;
-      if(it.location == null) it.location = "";
-      return it;
-    });
-
-    // keep invoice-level summary in sync too
-    inv.description = desc;
-    inv.serviceDate = serviceLabelFromDate(inv.issueDate || inv.durationFrom || "");
-    inv.invoiceAmount = pricePer;
-    inv.qty = qty;
-    inv.unit = unit;
-    inv.total = invTotal || (qty*pricePer);
-
-    return inv;
+  const monMap={jan:'01',feb:'02',mar:'03',apr:'04',may:'05',jun:'06',jul:'07',aug:'08',sep:'09',sept:'09',oct:'10',nov:'11',dec:'12'};
+  const dmyMon = x.match(/^(\d{1,2})[-\s]([A-Za-z]{3,5})[-\s](\d{2,4})$/);
+  if(dmyMon){
+    let y=dmyMon[3]; if(y.length===2) y='20'+y;
+    const m=monMap[dmyMon[2].toLowerCase()];
+    if(m) return `${y}-${m}-${dmyMon[1].padStart(2,'0')}`;
   }
-
-  function syncAllInvoices(force=true){
-    invoices = invoices.map(inv => syncInvoiceItems(inv, force));
+  const dmy = x.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if(dmy){
+    let y=dmy[3]; if(y.length===2) y='20'+y;
+    return `${y}-${dmy[2].padStart(2,'0')}-${dmy[1].padStart(2,'0')}`;
   }
-
-
-  function createItemRow(data={}){
-    const tr=document.createElement("tr");
-    tr.className="item-row";
-    tr.innerHTML=`
-      <td class="no-cell"></td>
-      <td><textarea class="cell-desc">${data.desc || ""}</textarea></td>
-      <td><input class="cell-loc" value="${data.location || ""}"></td>
-      <td><input class="cell-dfrom" type="date" value="${data.durationFrom || ""}"></td>
-      <td><input class="cell-dto" type="date" value="${data.durationTo || ""}"></td>
-      <td><input class="cell-unit" value="${data.unit || ""}"></td>
-      <td><input class="cell-qty" type="number" min="0" step="0.01" value="${data.qty!=null?data.qty:1}"></td>
-      <td><input class="cell-price" type="number" min="0" step="0.01" value="${data.price!=null?data.price:0}"></td>
-      <td><input class="cell-total" type="text" readonly></td>
-      <td><button type="button" class="table-btn del btn-remove-row">✕</button></td>`;
-    tr.querySelector(".cell-qty").addEventListener("input",recalcTotals);
-    tr.querySelector(".cell-price").addEventListener("input",recalcTotals);
-    tr.querySelector(".btn-remove-row").addEventListener("click",()=>{
-      tr.remove(); updateRowNumbers(); recalcTotals();
-    });
-    return tr;
-  }
-
-  function updateRowNumbers(){
-    const rows=document.querySelectorAll("#items-body .item-row");
-    rows.forEach((tr,idx)=>{ const cell=tr.querySelector(".no-cell"); if(cell) cell.textContent=idx+1; });
-  }
-
-  function recalcTotals(){
-    const rows=document.querySelectorAll("#items-body .item-row");
-    let subtotal=0;
-    rows.forEach(tr=>{
-      const qty=parseNumber(tr.querySelector(".cell-qty").value);
-      const price=parseNumber(tr.querySelector(".cell-price").value);
-      const total=qty*price;
-      tr.querySelector(".cell-total").value=formatIQD(total);
-      subtotal+=total;
-    });
-    const discount=parseNumber($("f-discount").value);
-    const taxPerc=parseNumber($("f-tax").value);
-    const shipping=parseNumber($("f-shipping").value);
-    const subLess=subtotal-discount;
-    const taxVal=subLess*(taxPerc/100);
-    const balance=subLess+taxVal+shipping;
-    $("f-subtotal").value=formatIQD(subtotal);
-    $("f-balance").value=formatIQD(balance);
-  }
-
-  function readForm(inv){
-    inv.number=$("f-number").value.trim();
-    inv.issueDate=$("f-date").value.trim();
-inv.contract=$("f-contract").value.trim();
-    inv.billTo=$("f-billto").value.trim();
-    inv.scope=$("f-scope").value.trim();
-    inv.note=$("f-note").value.trim();
-    inv.status=$("status-select").value;
-    inv.customerName=(inv.billTo.split("\n")[0]||"").trim();
-
-    const rows=document.querySelectorAll("#items-body .item-row");
-    inv.items=Array.from(rows).map(tr=>({
-      desc:tr.querySelector(".cell-desc").value.trim(),
-      location:tr.querySelector(".cell-loc").value.trim(),
-      durationFrom:tr.querySelector(".cell-dfrom").value.trim(),
-      durationTo:tr.querySelector(".cell-dto").value.trim(),
-      unit:tr.querySelector(".cell-unit").value.trim(),
-      qty:parseNumber(tr.querySelector(".cell-qty").value),
-      price:parseNumber(tr.querySelector(".cell-price").value)
-    }));
-
-    // ✅ propagate invoice header into items so report is always updated
-    inv.items = (inv.items || []).map(it=>{
-      const out = {...it};
-      // default description from scope/description
-      if(!out.desc) out.desc = inv.scope || inv.description || "";
-      // default unit/qty/price (use invoice-level unit/qty/invoiceAmount if available)
-      if(!out.unit) out.unit = inv.unit || "";
-      if((out.qty==null || out.qty==="") && inv.qty!=null) out.qty = inv.qty;
-      if((out.price==null || out.price==="") && inv.invoiceAmount!=null) out.price = inv.invoiceAmount;
-      // default item date from Duration From
-      if(!out.date) out.date = inv.durationFrom || inv.issueDate || "";
-      return out;
-    });
-
-    inv.discount=parseNumber($("f-discount").value);
-    inv.taxPerc=parseNumber($("f-tax").value);
-    inv.shipping=parseNumber($("f-shipping").value);
-    inv.subtotal=parseNumber($("f-subtotal").value);
-    inv.balance=parseNumber($("f-balance").value);
-
-    inv.poNo = inv.contract;
-    inv.invoiceNo = inv.number;
-    inv.serviceDate = inv.issueDate;
-
-    /* ✅✅✅ (التعديل الأخير فقط) : نخزن DESCRIPTION أيضاً */
-    inv.description = getInvoiceDescription(inv);
-    if(inv.description === "-") inv.description = "";
-
-    inv.durationFrom = inv.issueDate || "";
-    inv.durationTo   = inv.dueDate   || "";
-
-    const firstUnit = (inv.items[0] && inv.items[0].unit) ? inv.items[0].unit : "";
-    const qtySum = inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
-    inv.unit = firstUnit;
-    inv.qty  = qtySum;
-
-    inv.invoiceAmount = Number(inv.subtotal || 0);
-    inv.total = Number(inv.balance || 0);
-
-    normalizeInvoice(inv);
-  }
-
-  function fillForm(inv){
-    $("f-number").value=inv.number||"";
-    $("f-date").value=inv.issueDate||todayStr();
-$("f-contract").value=inv.contract||"";
-    $("f-billto").value=inv.billTo||"";
-    $("f-scope").value=inv.scope||"";
-    $("f-note").value=inv.note||"";
-    $("status-select").value=inv.status||"draft";
-    const body=$("items-body");
-    body.innerHTML="";
-    const items=inv.items && inv.items.length ? inv.items : [{}];
-    items.forEach(it=>{ const row=createItemRow(it); body.appendChild(row); });
-    updateRowNumbers();
-    $("f-discount").value=inv.discount!=null?inv.discount:0;
-    $("f-tax").value=inv.taxPerc!=null?inv.taxPerc:0;
-    $("f-shipping").value=inv.shipping!=null?inv.shipping:0;
-    recalcTotals();
-    $("editor-subtitle").textContent=inv.number?`Editing ${inv.number}`:"New invoice";
-  }
-
-  function loadInvoices(){
-    try{
-      const raw=localStorage.getItem(STORAGE_KEY);
-      if(raw){
-        const arr=JSON.parse(raw);
-        if(Array.isArray(arr)){ invoices=arr.map(normalizeInvoice); return; }
-      }
-    }catch(e){ console.error("Error loading invoices:",e); }
-    invoices=[];
-  syncAllInvoices(true);
-  }
-
-  function saveInvoices(){
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(invoices));
-    renderPoFilterOptions();
-    renderDashboard();
-    renderReport();
-  }
-
-  function isOverdue(inv){
-    if(inv.status==="paid") return false;
-    if(!inv.dueDate) return false;
-    const d=new Date(inv.dueDate);
-    const today=new Date(todayStr());
-    return d<today;
-  }
-
-  function isDueSoon(inv){
-    if(inv.status==="paid") return false;
-    if(!inv.dueDate) return false;
-    const d=new Date(inv.dueDate);
-    const today=new Date(todayStr());
-    const diff=(d-today)/(1000*60*60*24);
-    return diff>=0 && diff<=30;
-  }
-
-  function getStatusBadge(status,inv){
-    let cls="badge-draft",txt="Draft";
-    if(status==="paid"){cls="badge-paid";txt="Paid";}
-    else if(status==="unpaid"){
-      cls=isOverdue(inv)?"badge-overdue":"badge-unpaid";
-      txt=isOverdue(inv)?"Overdue":"Unpaid";
-    }
-    return `<span class="badge ${cls}">${txt}</span>`;
-  }
-
-  function renderPoFilterOptions(){
-    const select=$("po-filter");
-    if(!select) return;
-    const contracts=Array.from(new Set(invoices.map(inv=>inv.poNo || inv.contract).filter(Boolean)));
-    select.innerHTML=`<option value="all">All Contracts</option>`+
-      contracts.map(po=>`<option value="${po}">${po}</option>`).join("");
-  }
-
-  function matchesFilters(inv){
-    const poVal = inv.poNo || inv.contract || "";
-    if(currentPoFilter!=="all" && poVal!==currentPoFilter) return false;
-
-    if(currentFilter==="paid"   && inv.status!=="paid")   return false;
-    if(currentFilter==="unpaid" && inv.status!=="unpaid") return false;
-    if(currentFilter==="draft"  && inv.status!=="draft")  return false;
-    if(currentFilter==="overdue" && !isOverdue(inv))      return false;
-
-    if(specialFilter==="due-soon" && !isDueSoon(inv)) return false;
-
-    const durFrom = (inv.durationFrom || "").trim();
-    const durTo   = (inv.durationTo   || "").trim();
-
-    if(dateFrom){
-      if(!durFrom || durFrom < dateFrom) return false;
-    }
-    if(dateTo){
-      if(!durTo || durTo > dateTo) return false;
-    }
-
-    const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
-    if(minIQD != null && totalVal < minIQD) return false;
-    if(maxIQD != null && totalVal > maxIQD) return false;
-
-    if(searchTerm){
-      const term=searchTerm.toLowerCase();
-      const hay=[
-        inv.invoiceNo, inv.number,
-        inv.poNo, inv.contract,
-        inv.customerName,
-        inv.description, inv.scope,
-        inv.billTo
-      ].join(" ").toLowerCase();
-      if(!hay.includes(term)) return false;
-    }
+  const parsed = new Date(x);
+  if(!isNaN(parsed)) return parsed.toISOString().slice(0,10);
+  return x;
+}
+function displayDate(v){
+  const iso = normalizeDateValue(v);
+  if(!iso) return '';
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if(!m) return iso;
+  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${m[3]}-${months[Number(m[2])-1]}-${m[1]}`;
+}
+function cleanHeaderKey(k){return String(k??'').replace(/\s+/g,' ').trim();}
+function canonicalInvoiceKey(k){
+  const raw = cleanHeaderKey(k);
+  const u = raw.toUpperCase().replace(/[._-]+/g,' ').replace(/\s+/g,' ').trim();
+  const map = {
+    'NO':'NO.','NO.':'NO.','S NO':'NO.','#':'NO.',
+    'PO NO':'PO No.','PO NUMBER':'PO No.','PONO':'PO No.',
+    'INVOICE NO':'INVOICE NO.','INVOICE NO.':'INVOICE NO.','INVOICE NUMBER':'INVOICE NO.','INV NO':'INVOICE NO.','INV NUMBER':'INVOICE NO.',
+    'INVOICE DATE':'INVOICE DATE','DATE':'INVOICE DATE',
+    'DESCRIPTION':'DESCRIPTION','DESC':'DESCRIPTION','ITEM DESCRIPTION':'DESCRIPTION',
+    'UNIT':'UNIT','UOM':'UNIT',
+    'QTY':'QTY','QUANTITY':'QTY',
+    'INVOICE AMOUNT':'INVOICE AMOUNT','UNIT PRICE':'INVOICE AMOUNT','PRICE':'INVOICE AMOUNT','RATE':'INVOICE AMOUNT',
+    'TOTAL':'TOTAL','TOTAL AMOUNT':'TOTAL','AMOUNT':'TOTAL',
+    'DURATION FROM':'DURATION FROM','FROM':'DURATION FROM','PERIOD FROM':'DURATION FROM',
+    'DURATION TO':'DURATION TO','TO':'DURATION TO','PERIOD TO':'DURATION TO',
+    'STATUS':'Status','PAYMENT STATUS':'Status',
+    'COMPANY':'Company','CUSTOMER':'Company','VENDOR':'Company',
+    'BILLTO':'BillTo','BILL TO':'BillTo','REFERENCE':'Reference','REF':'Reference',
+    'HEADER COMPANY':'HeaderCompany','FOOTER NOTE':'FooterNote','NOTES':'FooterNote'
+  };
+  return map[u] || raw;
+}
+function normalizeDataRows(rows){
+  return (rows || []).map((r,idx)=>{
+    const x = {};
+    Object.keys(r || {}).forEach(k=>{ x[canonicalInvoiceKey(k)] = r[k]; });
+    ['INVOICE DATE','DURATION FROM','DURATION TO','DATE'].forEach(k=>{ if(k in x) x[k]=normalizeDateValue(x[k]); });
+    ['QTY','INVOICE AMOUNT','TOTAL'].forEach(k=>{ if(k in x) x[k]=n(x[k]); });
+    if(!x.TOTAL && (x.QTY || x['INVOICE AMOUNT'])) x.TOTAL = n(x.QTY) * n(x['INVOICE AMOUNT']);
+    if(!x['NO.']) x['NO.'] = idx + 1;
+    if(!('Status' in x)) x.Status = 'Unpaid';
+    return x;
+  });
+}
+function parseDate(v){const iso=normalizeDateValue(v);return iso ? new Date(iso+'T00:00:00') : null}
+function safeClone(obj){return JSON.parse(JSON.stringify(obj));}
+function storageAvailable(){try{localStorage.setItem('__test_save__','1');localStorage.removeItem('__test_save__');return true;}catch(e){return false;}}
+function loadStatusOverrides(){try{return JSON.parse(localStorage.getItem(STATUS_KEY)||'{}')||{};}catch(e){return {};}}
+function saveStatusOverrides(){try{localStorage.setItem(STATUS_KEY, JSON.stringify(STATUS_OVERRIDES));}catch(e){}}
+function setInvoiceStatus(inv,status){const key=norm(inv); const st=displayStatus(status); if(!key)return; STATUS_OVERRIDES[key]=st; DATA.forEach(r=>{if(norm(r['INVOICE NO.'])===key) r.Status=st;}); saveStatusOverrides();}
+function saveAll(){
+  try{
+    DATA = normalizeDataRows(DATA);
+    const payload = JSON.stringify(DATA);
+    localStorage.setItem(STORAGE_KEY, payload);
+    localStorage.setItem('nafmals_invoice_platform_saved_latest', payload);
+    localStorage.setItem('nafmals_invoice_platform_saved_v2', payload);
+    localStorage.setItem('nafmals_invoice_last_saved_at', new Date().toISOString());
+    saveStatusOverrides();
+    localStorage.setItem(PAYMENTS_KEY, JSON.stringify(normalizePaymentRows(ACTUAL_PAYMENTS)));
+    showNotice('Saved successfully. Refresh tested: data will reload from this browser.');
     return true;
+  }catch(e){
+    alert('Save failed. Your browser may be blocking LocalStorage. Please allow site data/cookies or use Download Excel as backup.');
+    return false;
   }
-
-  function compareForSort(a, b, field) {
-    const get = (inv, key) => (inv[key] == null ? "" : inv[key]);
-    let va, vb;
-
-    switch(field){
-      case "no":
-        va = Number(get(a,"no") || 0);
-        vb = Number(get(b,"no") || 0);
-        return va - vb;
-
-      case "poNo":       va=(a.poNo||a.contract||""); vb=(b.poNo||b.contract||""); break;
-      case "invoiceNo":  va=(a.invoiceNo||a.number||""); vb=(b.invoiceNo||b.number||""); break;
-      case "serviceDate": va=(a.serviceDate||a.issueDate||""); vb=(b.serviceDate||b.issueDate||""); break;
-      case "durationFrom": va=(a.durationFrom||""); vb=(b.durationFrom||""); break;
-      case "durationTo":   va=(a.durationTo||""); vb=(b.durationTo||""); break;
-
-      case "qty":
-        va = Number(a.qty || 0);
-        vb = Number(b.qty || 0);
-        return va - vb;
-
-      case "invoiceAmount":
-        va = Number(a.invoiceAmount != null ? a.invoiceAmount : (a.subtotal||0));
-        vb = Number(b.invoiceAmount != null ? b.invoiceAmount : (b.subtotal||0));
-        return va - vb;
-
-      case "total":
-        va = Number(a.total != null ? a.total : (a.balance||0));
-        vb = Number(b.total != null ? b.total : (b.balance||0));
-        return va - vb;
-
-      case "status":     va=(a.status||""); vb=(b.status||"");    break;
-      default:
-        va=""; vb="";
-    }
-    if(va>vb) return 1;
-    if(va<vb) return -1;
-    return 0;
-  }
-
-  function updateSortIndicators(){
-    document.querySelectorAll("th.sortable").forEach(th=>{
-      const span=th.querySelector(".sort-ind");
-      if(!span) return;
-      const field=th.dataset.sort;
-      if(field===sortField){
-        span.textContent = sortDir === "asc" ? "▲" : "▼";
-      }else{
-        span.textContent = "";
+}
+function loadSavedData(){
+  try{
+    const keys=[STORAGE_KEY,'nafmals_invoice_platform_saved_latest','nafmals_invoice_platform_saved_v2','nafmals_invoice_platform_saved_v1'];
+    for(const k of keys){
+      const s=localStorage.getItem(k);
+      if(s){
+        const parsed=JSON.parse(s);
+        if(Array.isArray(parsed) && parsed.length) return normalizeDataRows(parsed);
       }
-    });
-  }
-
-  function renderDashboard(){
-    const tbody=$("invoice-table-body");
-    if(!tbody) return;
-    tbody.innerHTML="";
-
-    const filtered=invoices.filter(matchesFilters);
-
-    filtered.sort((a,b)=>{
-      const res = compareForSort(a,b,sortField);
-      return sortDir === "asc" ? res : -res;
-    });
-
-    let totalAmount=0,paidAmount=0,unpaidAmount=0;
-    let totalCount=filtered.length,paidCount=0,unpaidCount=0;
-    let dueSoonAmount=0,dueSoonCount=0;
-
-    filtered.forEach((inv, idx)=>{
-      const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
-      totalAmount += totalVal;
-
-      if(inv.status==="paid"){ paidAmount += totalVal; paidCount++; }
-      if(inv.status==="unpaid"){ unpaidAmount += totalVal; unpaidCount++; }
-      if(isDueSoon(inv)){ dueSoonAmount += totalVal; dueSoonCount++; }
-
-      const no = inv.no != null ? inv.no : (idx+1);
-      const poNo = inv.poNo || inv.contract || "";
-      const invoiceNo = inv.invoiceNo || inv.number || "";
-      const invoiceDate = serviceLabelFromDate(inv.issueDate || inv.durationFrom || "");
-
-      /* ✅✅✅ (التعديل الأخير فقط) : استخدم الوصف الصحيح */
-      const desc = getInvoiceDescription(inv);
-
-      const durFrom = inv.durationFrom || "";
-      const durTo = inv.durationTo || "";
-      const unit = inv.unit || (inv.items[0]?.unit || "");
-      const qty = inv.qty != null ? inv.qty : inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
-      const invoiceAmount = Number(inv.invoiceAmount != null ? inv.invoiceAmount : (inv.subtotal||0));
-      const statusBadge = getStatusBadge(inv.status, inv);
-
-      const tr=document.createElement("tr");
-      tr.innerHTML=`
-        <td>${no}</td>
-        <td>${poNo}</td>
-        <td>${invoiceNo}</td>
-        <td>${invoiceDate}</td>
-        <td class="text-muted">${String(desc).length>45 ? String(desc).slice(0,45)+"..." : (desc||"-")}</td>
-        <td>${durFrom}</td>
-        <td>${durTo}</td>
-        <td>${unit||""}</td>
-        <td>${qty||0}</td>
-        <td>${formatIQD(invoiceAmount)}</td>
-        <td>${formatIQD(totalVal)}</td>
-        <td>${statusBadge}</td>
-        <td>
-          <button class="table-btn edit" onclick="editInvoice('${inv.id}')">Edit</button>
-          <button class="table-btn del" onclick="deleteInvoiceById('${inv.id}')">Delete</button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
-
-    $("dash-total-amount").textContent=formatIQD(totalAmount);
-    $("dash-total-count").textContent=totalCount;
-    $("dash-paid-amount").textContent=formatIQD(paidAmount);
-    $("dash-paid-count").textContent=paidCount;
-    $("dash-unpaid-amount").textContent=formatIQD(unpaidAmount);
-    $("dash-unpaid-count").textContent=unpaidCount;
-    $("dash-due-amount").textContent=formatIQD(dueSoonAmount);
-    $("dash-due-count").textContent=dueSoonCount;
-
-    updateSortIndicators();
-  }
-
-  function renderReport(){
-    const tbody=$("report-body");
-    if(!tbody) return;
-    tbody.innerHTML="";
-    invoices.map(normalizeInvoice).forEach((inv, idx)=>{
-      const no = inv.no != null ? inv.no : (idx+1);
-      const poNo = inv.poNo || inv.contract || "";
-      const invoiceNo = inv.invoiceNo || inv.number || "";
-      const serviceDate = inv.serviceDate || inv.issueDate || "";
-
-      /* ✅ تقرير: وصف كامل */
-      const desc = getInvoiceDescription(inv);
-
-      const durFrom = inv.durationFrom || "";
-      const durTo = inv.durationTo || "";
-      const unit = inv.unit || (inv.items[0]?.unit || "");
-      const qty = inv.qty != null ? inv.qty : inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
-      const invoiceAmount = Number(inv.invoiceAmount != null ? inv.invoiceAmount : (inv.subtotal||0));
-      const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
-
-      const row=document.createElement("tr");
-      row.innerHTML=`
-        <td>${no}</td>
-        <td>${poNo}</td>
-        <td>${invoiceNo}</td>
-        <td>${serviceDate}</td>
-        <td class="text-muted">${desc || "-"}</td>
-        <td>${durFrom}</td>
-        <td>${durTo}</td>
-        <td>${unit||""}</td>
-        <td>${qty||0}</td>
-        <td>${formatIQD(invoiceAmount)}</td>
-        <td>${formatIQD(totalVal)}</td>
-        <td>${inv.status||""}</td>`;
-      tbody.appendChild(row);
-    });
-  }
-
-  function showDashboard(){
-    $("dashboard").classList.remove("hidden");
-    $("report").classList.add("hidden");
-    $("editor").classList.add("hidden");
-    $("tab-dashboard").classList.add("active");
-    $("tab-report").classList.remove("active");
-  }
-  function showReport(){
-    $("dashboard").classList.add("hidden");
-    $("report").classList.remove("hidden");
-    $("editor").classList.add("hidden");
-    $("tab-dashboard").classList.remove("active");
-    $("tab-report").classList.add("active");
-  }
-  function showEditor(){
-    $("dashboard").classList.add("hidden");
-    $("report").classList.add("hidden");
-    $("editor").classList.remove("hidden");
-  }
-
-  function createNewInvoice(){
-    currentId=null;
-    const empty=normalizeInvoice({
-      id:generateId(),
-      number:"",
-      issueDate:todayStr(),
-      dueDate:"",
-      contract:"",
-      billTo:"",
-      customerName:"",
-      scope:"",
-      note:"",
-      items:[],
-      subtotal:0,
-      discount:0,
-      taxPerc:0,
-      shipping:0,
-      balance:0,
-      status:"draft",
-      createdAt:new Date().toISOString(),
-      updatedAt:new Date().toISOString()
-    });
-    fillForm(empty);
-    showEditor();
-  }
-
-  function editInvoice(id){
-    const inv=invoices.find(i=>i.id===id);
-    if(!inv) return;
-    currentId=id;
-    fillForm(inv);
-    showEditor();
-  }
-
-  function saveCurrentInvoice(){
-    let inv=currentId?invoices.find(i=>i.id===currentId):null;
-    if(!inv){
-      inv={id:generateId(),createdAt:new Date().toISOString()};
-      invoices.push(inv);
-      currentId=inv.id;
     }
-    readForm(inv);
-    inv = syncInvoiceItems(inv, true);
-    inv.updatedAt=new Date().toISOString();
-    saveInvoices();
-    alert("Invoice saved ✅");
-    showDashboard();
-  }
-
-  function deleteInvoiceById(id){
-    if(!confirm("Delete this invoice?")) return;
-    invoices=invoices.filter(i=>i.id!==id);
-    if(currentId===id) currentId=null;
-    saveInvoices();
-  }
-
-  function deleteCurrentInvoice(){
-    if(!currentId){ alert("No invoice selected."); return; }
-    deleteInvoiceById(currentId);
-    showDashboard();
-  }
-
-  function importJsonFromFile(file){
-    const reader=new FileReader();
-    reader.onload=e=>{
-      try{
-        const data=JSON.parse(e.target.result);
-        if(!Array.isArray(data)){alert("Invalid JSON (must be array of invoices).");return;}
-        invoices=data.map(normalizeInvoice);
-        currentId=null;
-        saveInvoices();
-        alert("JSON data loaded ✅");
-        showDashboard();
-      }catch(err){
-        console.error(err);
-        alert("Failed to read JSON file.");
-      }
-    };
-    reader.readAsText(file);
-  }
-
-  function exportJson(){
-    const blob=new Blob([JSON.stringify(invoices,null,2)],{type:"application/json"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download="invoices-backup.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  
-  // ✅ Update Items for ALL invoices based on invoice header fields
-  // Rules:
-  // - If item.desc empty => use invoice.scope (Description)
-  // - If item.date empty => use invoice.durationFrom
-  // - If item.unit empty => use invoice.unit (or first existing unit)
-  // - If item.qty empty/0 => use invoice.qty if available (otherwise keep)
-  // - If item.price empty/0 => use invoice.invoiceAmount if available (otherwise keep)
-  function updateItemsForInvoice(inv){
-    inv = normalizeInvoice(inv);
-
-    const fallbackDesc = (inv.scope || inv.description || "").trim();
-    const fallbackFrom = (inv.issueDate || "").trim();
-    const fallbackTo = "";
-
-    // try to derive default unit/qty/price from existing items if header not present
-    let headerUnit = (inv.unit || "").trim();
-    let headerQty  = Number(inv.qty || 0);
-    let headerPrice = Number(inv.invoiceAmount || 0);
-
-    const items = Array.isArray(inv.items) ? inv.items : [];
-    if(!headerUnit){
-      const firstUnit = items.find(it => (it.unit||"").trim())?.unit;
-      if(firstUnit) headerUnit = String(firstUnit).trim();
+  }catch(e){}
+  return normalizeDataRows(safeClone(ORIGINAL_DATA));
+}
+function normalizePaymentRows(rows){
+  return (rows||[]).map(p=>({
+    BANK: norm(p.BANK ?? p.Bank ?? p.bank ?? ''),
+    REFERENCE: norm(p.REFERENCE ?? p.Reference ?? p.reference ?? ''),
+    DATE: normalizeDateValue(p.DATE ?? p.Date ?? p.date ?? ''),
+    AMOUNT: n(p.AMOUNT ?? p.Amount ?? p.amount ?? 0)
+  })).filter(p=>p.BANK || p.REFERENCE || p.DATE || p.AMOUNT);
+}
+function loadSavedPayments(){
+  try{
+    const s=localStorage.getItem(PAYMENTS_KEY);
+    if(s){
+      const parsed=JSON.parse(s);
+      if(Array.isArray(parsed)) return normalizePaymentRows(parsed);
     }
-    if(!headerQty){
-      const qsum = items.reduce((s,it)=> s + (Number(it.qty)||0), 0);
-      if(qsum) headerQty = qsum;
+  }catch(e){}
+  return normalizePaymentRows(safeClone(DEFAULT_ACTUAL_PAYMENTS));
+}
+function savePayments(){
+  try{
+    ACTUAL_PAYMENTS = normalizePaymentRows(ACTUAL_PAYMENTS);
+    localStorage.setItem(PAYMENTS_KEY, JSON.stringify(ACTUAL_PAYMENTS));
+    const total=filtered().reduce((a,r)=>a+n(r.TOTAL),0);
+    renderPayments(total);
+    showNotice('Payments saved successfully and will stay after refresh.');
+    return true;
+  }catch(e){
+    alert('Payment save failed. Please allow browser site data/localStorage.');
+    return false;
+  }
+}
+function showNotice(msg='Saved. Your edits are stored in this browser and will stay after refresh.'){
+  const x=document.getElementById('saveNotice');
+  if(!x) return;
+  x.textContent=msg;
+  x.style.display='block';
+  setTimeout(()=>x.style.display='none',3000);
+}
+function setupFilters(){
+  const cf=document.getElementById('companyFilter');
+  if(!cf) return;
+  const current=cf.value;
+  const companies=[...new Set(DATA.map(r=>norm(r.Company)).filter(Boolean))].sort();
+  cf.innerHTML='<option value="">All Companies</option>'+companies.map(c=>`<option ${c===current?'selected':''}>${esc(c)}</option>`).join('');
+}
+function filtered(){
+  const searchEl=document.getElementById('search');
+  const companyEl=document.getElementById('companyFilter');
+  const statusEl=document.getElementById('statusFilter');
+  const fromEl=document.getElementById('fromDate');
+  const toEl=document.getElementById('toDate');
+  const s=norm(searchEl?searchEl.value:'').toLowerCase();
+  const co=norm(companyEl?companyEl.value:'');
+  const st=norm(statusEl?statusEl.value:'');
+  const fd=parseDate(fromEl?fromEl.value:'');
+  const td=parseDate(toEl?toEl.value:'');
+  return DATA.filter(r=>{
+    const text=Object.values(r).join(' ').toLowerCase();
+    const d=parseDate(r['INVOICE DATE']);
+    return (!s||text.includes(s))&&(!co||norm(r.Company)===co)&&(!st||effectiveStatus(r)===st)&&(!fd||d>=fd)&&(!td||d<=td);
+  });
+}
+
+function actualReceivedTotal(){return ACTUAL_PAYMENTS.reduce((a,p)=>a+n(p.AMOUNT),0)}
+function renderPayments(totalInvoices){
+  ACTUAL_PAYMENTS = normalizePaymentRows(ACTUAL_PAYMENTS);
+  const received=actualReceivedTotal();
+  const balance=totalInvoices-received;
+  const body=document.getElementById('paymentsBody');
+  if(body){
+    body.innerHTML=ACTUAL_PAYMENTS.map((p,i)=>`<tr><td><input value="${esc(p.BANK)}" onchange="updatePayment(${i},'BANK',this.value)"></td><td><input value="${esc(p.REFERENCE)}" onchange="updatePayment(${i},'REFERENCE',this.value)"></td><td><input type="date" value="${esc(normalizeDateValue(p.DATE))}" onchange="updatePayment(${i},'DATE',this.value)"></td><td class="num"><input class="amountInput" type="number" step="1" value="${n(p.AMOUNT)}" onchange="updatePayment(${i},'AMOUNT',this.value)"></td><td class="noprint"><button class="small red" onclick="deletePayment(${i})">Delete</button></td></tr>`).join('');
+  }
+  const ids={payTotalInvoices:fmt(totalInvoices),payActualReceived:fmt(received),payRemainingBalance:fmt(balance),kpiReceived:fmt(received),kpiBalanceReceived:fmt(balance)};
+  Object.keys(ids).forEach(id=>{const el=document.getElementById(id); if(el) el.textContent=ids[id];});
+}
+function updatePayment(index,field,value){
+  if(!ACTUAL_PAYMENTS[index]) return;
+  if(field==='AMOUNT') ACTUAL_PAYMENTS[index][field]=n(value);
+  else if(field==='DATE') ACTUAL_PAYMENTS[index][field]=normalizeDateValue(value);
+  else ACTUAL_PAYMENTS[index][field]=value;
+  savePayments();
+}
+function addPaymentFromForm(){
+  const bank=document.getElementById('newPayBank').value;
+  const ref=document.getElementById('newPayReference').value;
+  const date=document.getElementById('newPayDate').value;
+  const amount=document.getElementById('newPayAmount').value;
+  if(!bank && !ref && !date && !amount){alert('Please enter payment details.');return;}
+  ACTUAL_PAYMENTS.push({BANK:bank,REFERENCE:ref,DATE:date,AMOUNT:n(amount)});
+  ['newPayBank','newPayReference','newPayDate','newPayAmount'].forEach(id=>document.getElementById(id).value='');
+  savePayments();
+}
+function addPaymentRow(){
+  ACTUAL_PAYMENTS.push({BANK:'',REFERENCE:'',DATE:new Date().toISOString().slice(0,10),AMOUNT:0});
+  savePayments();
+}
+function deletePayment(index){
+  if(!confirm('Delete this payment?')) return;
+  ACTUAL_PAYMENTS.splice(index,1);
+  savePayments();
+}
+function render(){
+  setupFilters();
+  const rows=filtered();
+  let paid=0,unpaid=0,total=0;
+  rows.forEach(r=>{total+=n(r.TOTAL); if(effectiveStatus(r).toLowerCase()==='paid') paid+=n(r.TOTAL); else unpaid+=n(r.TOTAL);});
+  document.getElementById('kpiRecords').textContent=rows.length;
+  document.getElementById('kpiAmount').textContent=fmt(total);
+  document.getElementById('kpiPaid').textContent=fmt(paid);
+  document.getElementById('kpiUnpaid').textContent=fmt(unpaid);
+  renderPayments(total);
+  document.getElementById('tbody').innerHTML=rows.map(r=>`<tr><td>${esc(r['NO.'])}</td><td>${esc(r['PO No.'])}</td><td><b>${esc(r['INVOICE NO.'])}</b></td><td>${esc(displayDate(r['INVOICE DATE']))}</td><td>${esc(r.DESCRIPTION)}</td><td>${esc(r.UNIT)}</td><td class="num">${n(r.QTY).toLocaleString()}</td><td class="num">${fmt(r['INVOICE AMOUNT'])}</td><td class="num"><b>${fmt(r.TOTAL)}</b></td><td>${esc(displayDate(r['DURATION FROM']))}</td><td>${esc(displayDate(r['DURATION TO']))}</td><td>${esc(r.Company)}</td><td><span class="status ${rowStatusClass(r)}">${esc(effectiveStatus(r))}</span></td><td><button class="small" onclick="showInvoice('${encodeURIComponent(norm(r['INVOICE NO.']))}')">View/Edit</button></td></tr>`).join('');
+}
+function saveAllChanges(){
+  if(CURRENT_INV !== null && document.getElementById('ed_invoice')) saveCurrentInvoice();
+  else { saveAll(); render(); }
+}
+function changeTheme(theme){
+  document.body.classList.remove('theme-modern','theme-midnight','theme-emerald','theme-gold');
+  document.body.classList.add(theme || 'theme-modern');
+  localStorage.setItem('nafmals_invoice_theme', theme || 'theme-modern');
+}
+function loadTheme(){
+  const theme=localStorage.getItem('nafmals_invoice_theme') || 'theme-modern';
+  changeTheme(theme);
+  const picker=document.getElementById('themePicker');
+  if(picker) picker.value=theme;
+}
+function quickUpdateStatus(invEncoded,value){
+  // Kept only for old cached pages. Main-page status editing is disabled; use View/Edit.
+  const inv=decodeURIComponent(invEncoded);
+  DATA.forEach(r=>{if(norm(r['INVOICE NO.'])===norm(inv)) r.Status=value;});
+  saveAll();render();
+}
+function invoiceItems(inv){return DATA.filter(r=>norm(r['INVOICE NO.'])===norm(inv))}
+function showInvoice(invEncoded){const inv=decodeURIComponent(invEncoded);CURRENT_INV=inv;drawInvoiceEditor(inv);document.getElementById('invoiceModal').style.display='flex'}
+function drawInvoiceEditor(inv){const items=invoiceItems(inv);if(!items.length)return;const first=items[0];const total=items.reduce((a,r)=>a+n(r.TOTAL),0);document.getElementById('invoiceView').innerHTML=`
+<div class="invoice-head">
+ <div><div class="invoice-title">INVOICE</div><textarea id="ed_company_header">${esc(first.HeaderCompany||'Nafithat Al-Amal Co.\nFormerly Al-Mustafa Office\nBaghdad, Iraq')}</textarea></div>
+ <div class="edit-grid" style="grid-template-columns:1fr 1fr"><div><label>Invoice No.</label><input id="ed_invoice" value="${esc(first['INVOICE NO.'])}"></div><div><label>PO No.</label><input id="ed_po" value="${esc(first['PO No.'])}"></div><div><label>Invoice Date</label><input id="ed_date" type="date" value="${esc(normalizeDateValue(first['INVOICE DATE']))}"></div><div><label>Status - editable only here</label><select id="ed_status" onchange="saveStatusFromEditor(this.value)" oninput="saveStatusFromEditor(this.value)" onblur="saveStatusFromEditor(this.value)"><option value="Paid" ${effectiveStatus(first)==='Paid'?'selected':''}>Paid</option><option value="Unpaid" ${effectiveStatus(first)==='Unpaid'?'selected':''}>Unpaid</option><option value="Partially Paid" ${effectiveStatus(first)==='Partially Paid'?'selected':''}>Partially Paid</option></select></div></div>
+</div>
+<div class="edit-grid"><div><label>Bill To</label><input id="ed_billto" value="${esc(first.BillTo||'Crescent Petroleum')}"></div><div><label>Company</label><input id="ed_company" value="${esc(first.Company)}"></div><div><label>Currency</label><input id="ed_currency" value="IQD" disabled></div><div><label>Extra Ref.</label><input id="ed_ref" value="${esc(first.Reference||'')}"></div></div>
+<table class="invoice-table"><thead><tr><th>Description</th><th>Unit</th><th class="right">Qty</th><th class="right">Unit Price</th><th class="right">Total</th><th>Duration From</th><th>Duration To</th><th class="noprint">Action</th></tr></thead><tbody id="editItems">${items.map((r,i)=>itemRowHtml(r,i)).join('')}</tbody></table>
+<div class="totalbox"><p><span>Subtotal</span><span id="ed_subtotal">${fmt(total)}</span></p><p><span>Grand Total</span><span id="ed_grand">${fmt(total)}</span></p></div>
+<div class="field"><label>Payment / Footer Note</label><textarea id="ed_note">${esc(first.FooterNote||'Payment is considered settled only when funds are successfully credited to the beneficiary account. Returned, rejected, or reversed SWIFT transfers remain outstanding.')}</textarea></div>`;calcEditTotals(); attachEditorAutosave();}
+function attachEditorAutosave(){
+  const box=document.getElementById('invoiceView');
+  if(!box) return;
+  box.querySelectorAll('input,select,textarea').forEach(el=>{
+    el.addEventListener('change',()=>{ if(CURRENT_INV) saveCurrentInvoiceSilent(); });
+    el.addEventListener('input',()=>{ if(CURRENT_INV) { clearTimeout(window.__invoiceSaveTimer); window.__invoiceSaveTimer=setTimeout(saveCurrentInvoiceSilent,350); } });
+  });
+}
+function saveCurrentInvoiceSilent(){
+  if(CURRENT_INV === null || !document.getElementById('ed_invoice')) return;
+  const newInv=norm(document.getElementById('ed_invoice').value);
+  if(!newInv) return;
+  const rows=collectEditorRows();
+  const selectedStatus = document.getElementById('ed_status') ? displayStatus(document.getElementById('ed_status').value) : 'Unpaid';
+  rows.forEach(r=>r.Status=selectedStatus);
+  if(norm(CURRENT_INV)!==newInv) delete STATUS_OVERRIDES[norm(CURRENT_INV)];
+  STATUS_OVERRIDES[newInv]=selectedStatus;
+  saveStatusOverrides();
+  DATA=DATA.filter(r=>norm(r['INVOICE NO.'])!==norm(CURRENT_INV)).concat(rows);
+  renumber();
+  CURRENT_INV=newInv;
+  try{
+    DATA = normalizeDataRows(DATA);
+    const payload=JSON.stringify(DATA);
+    localStorage.setItem(STORAGE_KEY,payload);
+    localStorage.setItem('nafmals_invoice_platform_saved_latest',payload);
+    localStorage.setItem('nafmals_invoice_platform_saved_v2',payload);
+  }catch(e){}
+  render();
+}
+
+function saveStatusFromEditor(value){
+  const stEl=document.getElementById('ed_status');
+  const invEl=document.getElementById('ed_invoice');
+  if(!stEl || !invEl) return;
+  const selectedStatus = displayStatus(value || stEl.value);
+  stEl.value = selectedStatus;
+  const invKey = norm(invEl.value || CURRENT_INV);
+  setInvoiceStatus(invKey, selectedStatus);
+  if(CURRENT_INV !== null && norm(CURRENT_INV)!==invKey){ delete STATUS_OVERRIDES[norm(CURRENT_INV)]; CURRENT_INV=invKey; }
+  saveCurrentInvoiceSilent();
+  setInvoiceStatus(invKey, selectedStatus);
+  saveAll();
+  render();
+  if(document.getElementById('ed_status')) document.getElementById('ed_status').value=selectedStatus;
+  showNotice('Status saved successfully.');
+}
+
+function itemRowHtml(r,i){return `<tr><td><input class="desc" value="${esc(r.DESCRIPTION)}"></td><td><input class="unit" value="${esc(r.UNIT)}"></td><td><input class="qty right" type="number" step="0.001" value="${esc(r.QTY)}" oninput="calcEditTotals()"></td><td><input class="price right" type="number" step="0.001" value="${esc(n(r['INVOICE AMOUNT']))}" oninput="calcEditTotals()"></td><td><input class="total right" type="number" step="0.001" value="${esc(n(r.TOTAL))}" oninput="calcEditTotals(true)"></td><td><input class="from" type="date" value="${esc(normalizeDateValue(r['DURATION FROM']))}"></td><td><input class="to" type="date" value="${esc(normalizeDateValue(r['DURATION TO']))}"></td><td class="noprint"><button class="small red" onclick="this.closest('tr').remove();calcEditTotals()">Delete</button></td></tr>`}
+function calcEditTotals(manual=false){let sum=0;document.querySelectorAll('#editItems tr').forEach(tr=>{const qty=n(tr.querySelector('.qty').value), price=n(tr.querySelector('.price').value);const totalInput=tr.querySelector('.total');if(!manual) totalInput.value=Math.round(qty*price);sum+=n(totalInput.value);});const a=document.getElementById('ed_subtotal'),b=document.getElementById('ed_grand');if(a)a.textContent=fmt(sum);if(b)b.textContent=fmt(sum)}
+function addInvoiceItem(){if(CURRENT_INV === null)return;const tbody=document.getElementById('editItems');tbody.insertAdjacentHTML('beforeend', itemRowHtml({'DESCRIPTION':'','UNIT':'EA','QTY':1,'INVOICE AMOUNT':0,'TOTAL':0,'DURATION FROM':'','DURATION TO':''}, tbody.children.length));calcEditTotals()}
+function collectEditorRows(){const rows=[];document.querySelectorAll('#editItems tr').forEach((tr,i)=>{const qty=n(tr.querySelector('.qty').value), price=n(tr.querySelector('.price').value), total=n(tr.querySelector('.total').value);rows.push({'NO.':'','PO No.':norm(document.getElementById('ed_po').value),'INVOICE NO.':norm(document.getElementById('ed_invoice').value),'INVOICE DATE':normalizeDateValue(document.getElementById('ed_date').value),'DESCRIPTION':tr.querySelector('.desc').value,'UNIT':tr.querySelector('.unit').value,'QTY':qty,'INVOICE AMOUNT':price,'TOTAL':total,'DURATION FROM':normalizeDateValue(tr.querySelector('.from').value),'DURATION TO':normalizeDateValue(tr.querySelector('.to').value),'Status':displayStatus(document.getElementById('ed_status').value),'Company':document.getElementById('ed_company').value,'BillTo':document.getElementById('ed_billto').value,'Reference':document.getElementById('ed_ref').value,'HeaderCompany':document.getElementById('ed_company_header').value,'FooterNote':document.getElementById('ed_note').value})});return rows}
+function renumber(){DATA.forEach((r,i)=>r['NO.']=i+1)}
+function saveCurrentInvoice(){if(CURRENT_INV === null)return;const newInv=norm(document.getElementById('ed_invoice').value);if(!newInv){alert('Invoice No. is required');return}const rows=collectEditorRows(); const selectedStatus=displayStatus(document.getElementById('ed_status').value); rows.forEach(r=>r.Status=selectedStatus); if(norm(CURRENT_INV)!==newInv) delete STATUS_OVERRIDES[norm(CURRENT_INV)]; STATUS_OVERRIDES[newInv]=selectedStatus; saveStatusOverrides(); DATA=DATA.filter(r=>norm(r['INVOICE NO.'])!==norm(CURRENT_INV)).concat(rows);renumber();CURRENT_INV=newInv;saveAll();render();drawInvoiceEditor(CURRENT_INV);showNotice('Invoice changes saved successfully.')}
+function deleteCurrentInvoice(){
+  if(CURRENT_INV === null) return;
+  const key = norm(CURRENT_INV);
+  const label = key || '(blank invoice number)';
+  if(!confirm('Delete invoice '+label+' and all its rows?')) return;
+  const before = DATA.length;
+  DATA = DATA.filter(r => norm(r['INVOICE NO.']) !== key);
+  if(DATA.length === before){
+    alert('No matching invoice rows found to delete.');
+    return;
+  }
+  if(STATUS_OVERRIDES && Object.prototype.hasOwnProperty.call(STATUS_OVERRIDES,key)){
+    delete STATUS_OVERRIDES[key];
+    saveStatusOverrides();
+  }
+  renumber();
+  saveAll();
+  render();
+  closeInvoice();
+  showNotice('Invoice deleted successfully.');
+}
+function duplicateCurrentInvoice(){if(CURRENT_INV === null)return;saveCurrentInvoice();const rows=invoiceItems(CURRENT_INV).map(r=>Object.assign({},r));const suffix='-COPY';rows.forEach(r=>r['INVOICE NO.']=norm(r['INVOICE NO.'])+suffix);DATA=DATA.concat(rows);renumber();CURRENT_INV=rows[0]['INVOICE NO.'];saveAll();render();drawInvoiceEditor(CURRENT_INV)}
+function newInvoice(){const today=new Date().toISOString().slice(0,10);const inv='NEW-INV-'+Date.now();DATA.push({'NO.':DATA.length+1,'PO No.':'','INVOICE NO.':inv,'INVOICE DATE':today,'DESCRIPTION':'','UNIT':'EA','QTY':1,'INVOICE AMOUNT':0,'TOTAL':0,'DURATION FROM':'','DURATION TO':'','Status':'Unpaid','Company':'Nafithat Al-Amal Co.','BillTo':'Crescent Petroleum'});saveAll();render();showInvoice(encodeURIComponent(inv))}
+function closeInvoice(){document.getElementById('invoiceModal').style.display='none';CURRENT_INV=null}
+function isoToExcelDate(iso){
+  const v = normalizeDateValue(iso);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v)) return v || '';
+  const d = new Date(v + 'T00:00:00Z');
+  return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+function allInvoiceHeaders(){
+  const preferred=['NO.','PO No.','INVOICE NO.','INVOICE DATE','DESCRIPTION','UNIT','QTY','INVOICE AMOUNT','TOTAL','DURATION FROM','DURATION TO','Company','Status','BillTo','Reference','HeaderCompany','FooterNote'];
+  const extra=[];
+  DATA.forEach(r=>Object.keys(r||{}).forEach(k=>{if(!preferred.includes(k)&&!extra.includes(k)) extra.push(k)}));
+  return preferred.concat(extra);
+}
+function fitWorksheet(ws, headers, dateHeaders, moneyHeaders){
+  const range=XLSX.utils.decode_range(ws['!ref']||'A1:A1');
+  ws['!cols']=headers.map(h=>({wch: Math.min(Math.max(String(h).length+3, h==='DESCRIPTION'?42:14), h==='DESCRIPTION'?60:28)}));
+  for(let C=range.s.c; C<=range.e.c; ++C){
+    const h=headers[C] || '';
+    for(let R=range.s.r+1; R<=range.e.r; ++R){
+      const cell=ws[XLSX.utils.encode_cell({r:R,c:C})];
+      if(!cell) continue;
+      if(dateHeaders.includes(h) && cell.v instanceof Date){ cell.t='d'; cell.z='dd-mmm-yyyy'; }
+      if(moneyHeaders.includes(h) && typeof cell.v==='number'){ cell.t='n'; cell.z='#,##0'; }
     }
-    if(!headerPrice){
-      const firstPrice = items.find(it => Number(it.price)||0)?.price;
-      if(firstPrice) headerPrice = Number(firstPrice);
+  }
+}
+function downloadExcel(){
+  DATA = normalizeDataRows(DATA);
+  ACTUAL_PAYMENTS = normalizePaymentRows(ACTUAL_PAYMENTS);
+  const wb=XLSX.utils.book_new();
+  const headers=allInvoiceHeaders();
+  const exportRows=DATA.map(r=>{
+    const o={}; headers.forEach(h=>{ o[h]=r[h] ?? ''; });
+    o['INVOICE DATE']=isoToExcelDate(r['INVOICE DATE']);
+    o['DURATION FROM']=isoToExcelDate(r['DURATION FROM']);
+    o['DURATION TO']=isoToExcelDate(r['DURATION TO']);
+    o['Status']=effectiveStatus(r);
+    o['QTY']=n(o['QTY']); o['INVOICE AMOUNT']=n(o['INVOICE AMOUNT']); o['TOTAL']=n(o['TOTAL']);
+    return o;
+  });
+  const ws=XLSX.utils.json_to_sheet(exportRows,{header:headers, cellDates:true});
+  fitWorksheet(ws, headers, ['INVOICE DATE','DURATION FROM','DURATION TO'], ['QTY','INVOICE AMOUNT','TOTAL']);
+  XLSX.utils.book_append_sheet(wb,ws,'Invoices');
+  const payHeaders=['BANK','REFERENCE','DATE','AMOUNT'];
+  const paymentsRows=ACTUAL_PAYMENTS.map(p=>({BANK:p.BANK,REFERENCE:p.REFERENCE,DATE:isoToExcelDate(p.DATE),AMOUNT:n(p.AMOUNT)}));
+  const paymentsWs=XLSX.utils.json_to_sheet(paymentsRows,{header:payHeaders, cellDates:true});
+  fitWorksheet(paymentsWs, payHeaders, ['DATE'], ['AMOUNT']);
+  XLSX.utils.book_append_sheet(wb,paymentsWs,'Actual Received');
+  const summary=[
+    ['Total Invoice Amount', DATA.reduce((a,r)=>a+n(r.TOTAL),0)],
+    ['Actual Received From Bank', ACTUAL_PAYMENTS.reduce((a,p)=>a+n(p.AMOUNT),0)],
+    ['Balance', DATA.reduce((a,r)=>a+n(r.TOTAL),0)-ACTUAL_PAYMENTS.reduce((a,p)=>a+n(p.AMOUNT),0)],
+    ['Total Records', DATA.length],
+    ['Export Date', new Date()]
+  ];
+  const sumWs=XLSX.utils.aoa_to_sheet(summary);
+  sumWs['!cols']=[{wch:28},{wch:22}];
+  ['B1','B2','B3'].forEach(a=>{if(sumWs[a]) sumWs[a].z='#,##0';});
+  if(sumWs['B5']) {sumWs['B5'].t='d'; sumWs['B5'].z='dd-mmm-yyyy hh:mm';}
+  XLSX.utils.book_append_sheet(wb,sumWs,'Summary');
+  XLSX.writeFile(wb,'Nafmals_Invoices_Full_Data.xlsx',{cellDates:true});
+}
+function uploadExcel(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(ev){
+    const wb=XLSX.read(ev.target.result,{type:'array', cellDates:true});
+    const invoiceSheetName = wb.SheetNames.find(n=>/invoice/i.test(n)) || wb.SheetNames[0];
+    const ws=wb.Sheets[invoiceSheetName];
+    const imported=normalizeDataRows(XLSX.utils.sheet_to_json(ws,{defval:'', raw:true}));
+    const paySheetName = wb.SheetNames.find(n=>/actual|received|payment|bank/i.test(n));
+    let importedPayments=[];
+    if(paySheetName){ importedPayments = normalizePaymentRows(XLSX.utils.sheet_to_json(wb.Sheets[paySheetName],{defval:'', raw:true})); }
+    if(confirm('Replace current invoice data with uploaded Excel? Press Cancel to add it to existing data.')) DATA=imported; else DATA=DATA.concat(imported);
+    if(importedPayments.length){
+      if(confirm('Import Actual Received Payments from Excel? Press OK to replace current payments, Cancel to add them.')) ACTUAL_PAYMENTS=importedPayments; else ACTUAL_PAYMENTS=ACTUAL_PAYMENTS.concat(importedPayments);
+      ACTUAL_PAYMENTS=normalizePaymentRows(ACTUAL_PAYMENTS);
     }
+    renumber();saveAll();render();
+    if(document.getElementById('paymentsPage').style.display==='block') renderPayments(filtered().reduce((a,r)=>a+n(r.TOTAL),0));
+    showNotice('Excel uploaded successfully. All numbers, dates, invoices, and bank payment data were loaded.');
+  };
+  reader.readAsArrayBuffer(file);e.target.value='';
+}
+function resetToOriginal(){if(!confirm('This will remove saved browser edits and restore the original embedded data. Continue?'))return;localStorage.removeItem(STORAGE_KEY);localStorage.removeItem('nafmals_invoice_platform_saved_latest');localStorage.removeItem('nafmals_invoice_platform_saved_v2');localStorage.removeItem('nafmals_invoice_platform_saved_v1');localStorage.removeItem(STATUS_KEY);localStorage.removeItem(PAYMENTS_KEY);STATUS_OVERRIDES={};DATA=normalizeDataRows(safeClone(ORIGINAL_DATA));ACTUAL_PAYMENTS=normalizePaymentRows(safeClone(DEFAULT_ACTUAL_PAYMENTS));renumber();render();showNotice()}
 
-    // Apply defaults where fields are empty
-    if(!items.length){
-      // if no items, create one row from invoice header fields
-      inv.items = [{
-        desc: fallbackDesc,
-        location: "",
-        durationFrom: fallbackFrom,
-        durationTo: fallbackTo,
-        unit: headerUnit,
-        qty: headerQty || 1,
-        price: headerPrice || 0
-      }];
-    } else {
-      inv.items = items.map(it=>{
-        const out = {...it};
-        if(!(out.desc||"").trim() && fallbackDesc) out.desc = fallbackDesc;
-        if(!(out.durationFrom||"").trim() && fallbackFrom) out.durationFrom = fallbackFrom;
-        if(!(out.durationTo||"").trim() && fallbackTo) out.durationTo = fallbackTo;
-        if(!(out.unit||"").trim() && headerUnit) out.unit = headerUnit;
+function openPaymentsPage(){
+  const total=filtered().reduce((a,r)=>a+n(r.TOTAL),0);
+  renderPayments(total);
+  document.getElementById('paymentsPage').style.display='flex';
+}
+function closePaymentsPage(){
+  document.getElementById('paymentsPage').style.display='none';
+}
 
-        const q = Number(out.qty||0);
-        if((!q || q===0) && headerQty) out.qty = headerQty;
-
-        const p = Number(out.price||0);
-        if((!p || p===0) && headerPrice) out.price = headerPrice;
-
-        return out;
-      });
-    }
-
-    // Recalculate totals
-    inv.subtotal = inv.items.reduce((s,it)=> s + (Number(it.qty)||0)*(Number(it.price)||0), 0);
-    inv.balance = inv.subtotal - Number(inv.discount||0);
-    const taxPerc = Number(inv.taxPerc||0);
-    if(taxPerc){
-      inv.balance += inv.balance * (taxPerc/100);
-    }
-    inv.balance += Number(inv.shipping||0);
-
-    // Keep header summaries aligned
-    inv.total = inv.balance;
-    inv.invoiceAmount = headerPrice || inv.invoiceAmount || 0;
-
-    return normalizeInvoice(inv);
-  }
-
-  function updateItemsForAllInvoices(){
-    invoices = invoices.map(updateItemsForInvoice);
-    saveInvoices();
-    renderDashboard();
-    renderReport();
-  }
-
-function exportXls(){
-    if(!invoices.length){alert("No invoices to export.");return;}
-
-    // Ensure items are updated before export
-    syncAllInvoices(true);
-
-    // ✅ Requested layout (one row per Item, with invoice info)
-    const headers=["NO.","PO No.","INVOICE NO.","INVOICE DATE","DESCRIPTION","UNIT","QTY","INVOICE AMOUNT","TOTAL","DURATION FROM","DURATION TO"];
-
-    const rows=[];
-    invoices.forEach((inv, idx)=>{
-      inv = normalizeInvoice(inv);
-      const no = inv.no != null ? inv.no : (idx+1);
-      const poNo = inv.poNo || inv.contract || "";
-      const invoiceNo = inv.invoiceNo || inv.number || "";
-
-      const invoiceDate = serviceLabelFromDate(inv.issueDate || inv.durationFrom || "");
-      const durFrom = inv.durationFrom || "";
-      const durTo   = inv.durationTo || "";
-
-      const items = Array.isArray(inv.items) ? inv.items : [];
-      if(!items.length){
-        // fallback row if no items
-        const desc = (inv.scope || inv.description || "").trim();
-        const unit = (inv.unit || "").trim();
-        const qty  = Number(inv.qty || 0);
-        const price = Number(inv.invoiceAmount || 0);
-        const total = qty*price || Number(inv.total||0) || Number(inv.balance||0) || 0;
-        rows.push([no,poNo,invoiceNo,invoiceDate,desc,unit,qty,price,total,durFrom,durTo]);
-        return;
-      }
-
-      items.forEach((it)=>{
-        const desc = ((it.desc||"").trim() || (inv.scope||inv.description||""));
-        const unit = ((it.unit||"").trim() || (inv.unit||""));
-        const qty  = Number(it.qty || 0);
-        const price = Number(it.price || 0);
-        const total = qty*price;
-        rows.push([no,poNo,invoiceNo,invoiceDate,desc,unit,qty,price,total,durFrom,durTo]);
-      });
-    });
-
-    const esc = (s)=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-    const html = `
-      <html xmlns:o="urn:schemas-microsoft-com:office:office"
-            xmlns:x="urn:schemas-microsoft-com:office:excel"
-            xmlns="http://www.w3.org/TR/REC-html40">
-        <head>
-          <meta charset="UTF-8">
-          <!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Report</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]-->
-        </head>
-        <body>
-          <table border="1">
-            <thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join("")}</tr></thead>
-            <tbody>
-              ${rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `.trim();
-
-    const blob = new Blob([html], {type:"application/vnd.ms-excel"});
-    const url = URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download="invoices-report.xls";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-
-
-  function exportPdf(){
-    const filtered = invoices.filter(matchesFilters).map(normalizeInvoice);
-    const headers=["NO.","PO No.","INVOICE NO.","SERVICE DATE","DESCRIPTION","DURATION FROM","DURATION TO","UNIT","QTY","INVOICE AMOUNT","TOTAL","STATUS"];
-    const rows = filtered.map((inv, idx)=>{
-      const no = inv.no != null ? inv.no : (idx+1);
-      const poNo = inv.poNo || inv.contract || "";
-      const invoiceNo = inv.invoiceNo || inv.number || "";
-      const serviceDate = inv.serviceDate || inv.issueDate || "";
-      const desc = getInvoiceDescription(inv);
-      const durFrom = inv.durationFrom || "";
-      const durTo = inv.durationTo || "";
-      const unit = inv.unit || (inv.items[0]?.unit || "");
-      const qty = inv.qty != null ? inv.qty : inv.items.reduce((s,it)=>s + (Number(it.qty)||0), 0);
-      const invoiceAmount = Number(inv.invoiceAmount != null ? inv.invoiceAmount : (inv.subtotal||0));
-      const totalVal = Number(inv.total != null ? inv.total : (inv.balance||0));
-      const status = inv.status || "";
-      return [no,poNo,invoiceNo,serviceDate,desc,durFrom,durTo,unit,qty,formatIQD(invoiceAmount),formatIQD(totalVal),status];
-    });
-
-    const esc = (s)=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-
-    const win = window.open("", "_blank");
-    win.document.open();
-    win.document.write(`
-      <html>
-        <head>
-          <meta charset="UTF-8" />
-          <title>Invoices Report</title>
-          <style>
-            body{font-family: Arial, sans-serif; padding:16px;}
-            h2{margin:0 0 10px;}
-            .meta{font-size:12px; margin-bottom:10px;}
-            table{width:100%; border-collapse:collapse; font-size:11px;}
-            th,td{border:1px solid #999; padding:6px 6px; text-align:left; vertical-align:top;}
-            th{background:#eee;}
-          </style>
-        </head>
-        <body>
-          <h2>Invoices Report</h2>
-          <div class="meta">
-            Filters:
-            Status=${esc(currentFilter)} |
-            PO=${esc(currentPoFilter)} |
-            DurationFrom=${esc(dateFrom||"-")} |
-            DurationTo=${esc(dateTo||"-")} |
-            Min=${esc(minIQD==null?"-":minIQD)} |
-            Max=${esc(maxIQD==null?"-":maxIQD)} |
-            Search=${esc(searchTerm||"-")}
-          </div>
-          <table>
-            <thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join("")}</tr></thead>
-            <tbody>
-              ${rows.map(r=>`<tr>${r.map(c=>`<td>${esc(c)}</td>`).join("")}</tr>`).join("")}
-            </tbody>
-          </table>
-          <script>
-            window.onload = function(){ window.print(); };
-          <\/script>
-        </body>
-      </html>
-    `);
-    win.document.close();
-  }
-
-  function resetSystem(){
-    if(!confirm("Reset all invoices (local only)?")) return;
-    invoices=[];
-    currentId=null;
-    saveInvoices();
-  }
-
-  function saveDataNow(){
-    saveInvoices();
-    alert("Data saved ✅");
-  }
-
-  function clearAllFilters(){
-    currentFilter = "all";
-    currentPoFilter = "all";
-    searchTerm = "";
-    specialFilter = "none";
-    dateFrom = "";
-    dateTo = "";
-    minIQD = null;
-    maxIQD = null;
-
-    const po = $("po-filter"); if(po) po.value = "all";
-    const dd = $("status-filter-select"); if(dd) dd.value = "all";
-    const df = $("date-from"); if(df) df.value = "";
-    const dt = $("date-to"); if(dt) dt.value = "";
-    const min = $("min-iqd"); if(min) min.value = "";
-    const max = $("max-iqd"); if(max) max.value = "";
-    const s = $("search-input"); if(s) s.value = "";
-
-    document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
-    const allPill = document.querySelector('.status-pill[data-filter="all"]');
-    if(allPill) allPill.classList.add("active");
-
-    document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
-    const totalCard = document.querySelector('.stat-card[data-type="total"]');
-    if(totalCard) totalCard.classList.add("active");
-
-    renderDashboard();
-  }
-
-  function applyTheme(name){
-    document.documentElement.setAttribute("data-theme", name);
-    localStorage.setItem(THEME_KEY, name);
-    const sel = $("theme-select");
-    if(sel) sel.value = name;
-  }
-
-  function initTheme(){
-    const stored = localStorage.getItem(THEME_KEY) || "navy-dark";
-    applyTheme(stored);
-  }
-
-  function setupEvents(){
-    $("tab-dashboard").addEventListener("click",showDashboard);
-    $("tab-report").addEventListener("click",showReport);
-
-    $("btn-new").addEventListener("click",createNewInvoice);
-    $("btn-save").addEventListener("click",saveCurrentInvoice);
-    $("btn-back").addEventListener("click",showDashboard);
-    $("btn-print").addEventListener("click",()=>window.print());
-    $("btn-delete").addEventListener("click",deleteCurrentInvoice);
-
-    $("btn-save-json").addEventListener("click",exportJson);
-    $("btn-reset").addEventListener("click",resetSystem);
-
-    $("btn-load-json").addEventListener("click",()=>$("json-file-input").click());
-    $("json-file-input").addEventListener("change",e=>{
-      const file=e.target.files[0];
-      if(file) importJsonFromFile(file);
-      e.target.value="";
-    });
-
-    $("btn-save-data").addEventListener("click",saveDataNow);
-    $("btn-clear-filters").addEventListener("click",clearAllFilters);
-    $("btn-export-xls").addEventListener("click",exportXls);
-    $("btn-export-pdf").addEventListener("click",exportPdf);
-
-    document.querySelectorAll(".status-pill").forEach(btn=>{
-      btn.addEventListener("click",()=>{
-        document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
-        btn.classList.add("active");
-        currentFilter = btn.dataset.filter;
-        specialFilter = "none";
-
-        document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
-        const totalCard = document.querySelector('.stat-card[data-type="total"]');
-        if(totalCard && currentFilter==="all") totalCard.classList.add("active");
-
-        const dd = $("status-filter-select");
-        if(dd) dd.value = currentFilter;
-
-        renderDashboard();
-      });
-    });
-
-    document.querySelectorAll(".stat-card").forEach(card=>{
-      card.addEventListener("click",()=>{
-        document.querySelectorAll(".stat-card").forEach(c=>c.classList.remove("active"));
-        card.classList.add("active");
-
-        const t = card.dataset.type;
-        specialFilter = "none";
-
-        if(t === "paid"){
-          currentFilter = "paid";
-        } else if(t === "unpaid"){
-          currentFilter = "unpaid";
-        } else if(t === "due-soon"){
-          currentFilter = "all";
-          specialFilter = "due-soon";
-        } else {
-          currentFilter = "all";
-        }
-
-        document.querySelectorAll(".status-pill").forEach(b=>b.classList.remove("active"));
-        const pill = document.querySelector(`.status-pill[data-filter="${currentFilter}"]`)
-                || document.querySelector(`.status-pill[data-filter="all"]`);
-        if(pill) pill.classList.add("active");
-
-        const dd = $("status-filter-select");
-        if(dd) dd.value = currentFilter;
-
-        renderDashboard();
-      });
-    });
-
-    $("po-filter").addEventListener("change",e=>{
-      currentPoFilter=e.target.value;
-      renderDashboard();
-    });
-
-    $("search-input").addEventListener("input",e=>{
-      searchTerm=e.target.value.trim();
-      renderDashboard();
-    });
-
-    $("btn-add-row").addEventListener("click",()=>{
-      const row=createItemRow();
-      $("items-body").appendChild(row);
-      updateRowNumbers();
-      recalcTotals();
-    });
-
-    $("f-discount").addEventListener("input",recalcTotals);
-    $("f-tax").addEventListener("input",recalcTotals);
-    $("f-shipping").addEventListener("input",recalcTotals);
-
-    document.querySelectorAll("th.sortable").forEach(th=>{
-      th.addEventListener("click", ()=>{
-        const field = th.dataset.sort;
-        if(sortField === field){
-          sortDir = (sortDir === "asc") ? "desc" : "asc";
-        } else {
-          sortField = field;
-          sortDir = "asc";
-        }
-        renderDashboard();
-      });
-    });
-
-    $("theme-select").addEventListener("change", e => applyTheme(e.target.value));
-
-    $("status-filter-select").addEventListener("change", e => {
-      currentFilter = e.target.value;
-      specialFilter = "none";
-
-      document.querySelectorAll(".status-pill").forEach(b => b.classList.remove("active"));
-      const pill = document.querySelector(`.status-pill[data-filter="${currentFilter}"]`)
-                || document.querySelector(`.status-pill[data-filter="all"]`);
-      if(pill) pill.classList.add("active");
-
-      document.querySelectorAll(".stat-card").forEach(c => c.classList.remove("active"));
-      const totalCard = document.querySelector('.stat-card[data-type="total"]');
-      if(totalCard && currentFilter==="all") totalCard.classList.add("active");
-
-      renderDashboard();
-    });
-
-    $("date-from").addEventListener("change", e => { dateFrom = e.target.value || ""; renderDashboard(); });
-    $("date-to").addEventListener("change", e => { dateTo = e.target.value || ""; renderDashboard(); });
-
-    $("min-iqd").addEventListener("input", e => { minIQD = e.target.value.trim()==="" ? null : parseNumber(e.target.value); renderDashboard(); });
-    $("max-iqd").addEventListener("input", e => { maxIQD = e.target.value.trim()==="" ? null : parseNumber(e.target.value); renderDashboard(); });
-
-    window.editInvoice=editInvoice;
-    window.deleteInvoiceById=deleteInvoiceById;
-  }
-
-  function init(){
-    initTheme();
-    setupEvents();
-    loadInvoices();
-    renderPoFilterOptions();
-    renderDashboard();
-    renderReport();
-    showDashboard();
-  }
-
-  if(document.readyState==="loading"){
-    document.addEventListener("DOMContentLoaded",init);
-  } else {
-    init();
-  }
+window.addEventListener('beforeunload',()=>{ if(CURRENT_INV && document.getElementById('ed_invoice')) saveCurrentInvoiceSilent(); else { try{localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));}catch(e){} } });
+loadTheme();
+render();
 </script>
-
 </body>
 </html>
