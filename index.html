@@ -696,6 +696,15 @@
                 </tr>
               </thead>
               <tbody id="log-body"></tbody>
+              <tfoot id="log-fuel-totals">
+                <tr style="font-weight:700;background:#f9fafb;">
+                  <td colspan="7">الإجمالي للفترات المعروضة</td>
+                  <td id="log-total-fuel-liters">0.00</td>
+                  <td id="log-average-fuel-price">0.00</td>
+                  <td id="log-total-fuel-cost">0.00</td>
+                  <td>-</td>
+                </tr>
+              </tfoot>
             </table>
           </div>
         </div>
@@ -1631,6 +1640,12 @@
         mBar.style.width = "0%";
         mBar.className = "progress-bar-in";
         logBody.innerHTML = "";
+        const totalLitersEl = $("log-total-fuel-liters");
+        const averagePriceEl = $("log-average-fuel-price");
+        const totalCostEl = $("log-total-fuel-cost");
+        if(totalLitersEl) totalLitersEl.textContent = "0.00 لتر";
+        if(averagePriceEl) averagePriceEl.textContent = "0.00 IQD";
+        if(totalCostEl) totalCostEl.textContent = "0.00 IQD";
         return;
       }
 
@@ -1663,6 +1678,8 @@
     function renderLog(gen){
       logBody.innerHTML = "";
       const readings = (gen.readings||[]).slice().sort(byDateAsc);
+      let displayedFuelLiters = 0;
+      let displayedFuelCost = 0;
 
       function baselineForDate(dateStr){
         const hist = (gen.serviceHistory||[]).slice().sort(byDateAsc);
@@ -1695,6 +1712,8 @@
         const periodFuelLiters = periodFuel.reduce((sum,f)=>sum + (Number(f.liters)||0), 0);
         const periodFuelCost = periodFuel.reduce((sum,f)=>sum + ((Number(f.liters)||0) * (Number(f.pricePerLiter)||0)), 0);
         const avgFuelPrice = periodFuelLiters > 0 ? periodFuelCost / periodFuelLiters : 0;
+        displayedFuelLiters += periodFuelLiters;
+        displayedFuelCost += periodFuelCost;
 
         const tr = document.createElement("tr");
         const stRow = since >= 200 ? "due-row" : (since>=160 ? "soon-row" : "");
@@ -1726,6 +1745,17 @@
       if(!readings.length){
         logBody.innerHTML = "<tr><td colspan='11' class='muted'>لا توجد قراءات بعد لهذا المولد.</td></tr>";
       }
+
+      const totalLitersEl = $("log-total-fuel-liters");
+      const averagePriceEl = $("log-average-fuel-price");
+      const totalCostEl = $("log-total-fuel-cost");
+      const weightedAveragePrice = displayedFuelLiters > 0
+        ? displayedFuelCost / displayedFuelLiters
+        : 0;
+
+      if(totalLitersEl) totalLitersEl.textContent = displayedFuelLiters.toFixed(2) + " لتر";
+      if(averagePriceEl) averagePriceEl.textContent = weightedAveragePrice.toFixed(2) + " IQD";
+      if(totalCostEl) totalCostEl.textContent = displayedFuelCost.toFixed(2) + " IQD";
     }
 
     function showError(el, msg){
