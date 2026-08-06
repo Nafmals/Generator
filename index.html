@@ -738,16 +738,19 @@
         </div>
 
         <div id="rep-overview" class="report-tab" style="display:none;">
-          <p class="muted" style="margin:0 0 6px;">تقرير شامل لكل مولد: تشغيل + مصاريف + مؤشرات إضافية للفترة المحددة.</p>
+          <p class="muted" style="margin:0 0 6px;">تقرير شامل لكل مولد: ساعات التشغيل + مصاريف الصيانة + كميات ومصاريف الوقود خلال الفترة المحددة.</p>
           <div class="table-wrap">
             <table>
               <thead>
                 <tr>
                   <th>المولد</th>
                   <th>إجمالي ساعات التشغيل</th>
+                  <th>مصاريف الصيانة (IQD)</th>
+                  <th>كمية الوقود (لتر)</th>
+                  <th>مصاريف الوقود (IQD)</th>
                   <th>إجمالي المصاريف (IQD)</th>
                   <th>عدد خدمات الصيانة</th>
-                  <th>معدل الكلفة لكل ساعة</th>
+                  <th>إجمالي الكلفة لكل ساعة</th>
                   <th>آخر تاريخ صيانة</th>
                 </tr>
               </thead>
@@ -2056,15 +2059,33 @@
           }
         });
 
+        // كميات ومصاريف الوقود الخاصة بهذا المولد خلال الفترة المحددة
+        const fuelInRange = fuelRecords.filter(f=>f.genId===gen.id && f.date>=from && f.date<=to);
+        const fuelLiters = fuelInRange.reduce((sum,f)=>sum + (Number(f.liters)||0), 0);
+        const fuelCostIQD = fuelInRange.reduce((sum,f)=>{
+          return sum + ((Number(f.liters)||0) * (Number(f.pricePerLiter)||0));
+        }, 0);
+
+        const totalExpensesIQD = costIQD + fuelCostIQD;
         let avgPerHour = 0;
         if(hours>0){
-          avgPerHour = costIQD / hours;
+          avgPerHour = totalExpensesIQD / hours;
         }
 
         const trueLast = lastServiceInfo(gen);
         const lastServiceDate = trueLast.date || "";
 
-        rows.push({name:gen.name, hours, costIQD, svcCount:servicesInRange.length, avgPerHour, lastServiceDate});
+        rows.push({
+          name:gen.name,
+          hours,
+          costIQD,
+          fuelLiters,
+          fuelCostIQD,
+          totalExpensesIQD,
+          svcCount:servicesInRange.length,
+          avgPerHour,
+          lastServiceDate
+        });
       });
       return rows;
     }
@@ -2249,23 +2270,32 @@
       const rows = buildOverviewReport();
       repOverviewBody.innerHTML = "";
       if(!rows.length){
-        repOverviewBody.innerHTML = "<tr><td colspan='6' class='muted'>لا توجد بيانات في الفترة المحددة.</td></tr>";
+        repOverviewBody.innerHTML = "<tr><td colspan='9' class='muted'>لا توجد بيانات في الفترة المحددة.</td></tr>";
         return;
       }
       let totalHours = 0;
-      let totalIQD = 0;
+      let totalMaintenanceIQD = 0;
+      let totalFuelLiters = 0;
+      let totalFuelIQD = 0;
+      let totalExpensesIQD = 0;
       let totalSvc = 0;
       rows.forEach(r=>{
         totalHours += Number(r.hours) || 0;
-        totalIQD += Number(r.costIQD) || 0;
+        totalMaintenanceIQD += Number(r.costIQD) || 0;
+        totalFuelLiters += Number(r.fuelLiters) || 0;
+        totalFuelIQD += Number(r.fuelCostIQD) || 0;
+        totalExpensesIQD += Number(r.totalExpensesIQD) || 0;
         totalSvc += Number(r.svcCount) || 0;
         const tr = document.createElement("tr");
         tr.innerHTML = `
           <td>${r.name}</td>
-          <td>${r.hours}</td>
-          <td>${r.costIQD}</td>
+          <td>${Number(r.hours).toFixed(2)}</td>
+          <td>${Number(r.costIQD).toFixed(2)}</td>
+          <td>${Number(r.fuelLiters).toFixed(2)}</td>
+          <td>${Number(r.fuelCostIQD).toFixed(2)}</td>
+          <td>${Number(r.totalExpensesIQD).toFixed(2)}</td>
           <td>${r.svcCount}</td>
-          <td>${r.avgPerHour ? r.avgPerHour.toFixed(2) : 0}</td>
+          <td>${r.avgPerHour ? r.avgPerHour.toFixed(2) : "0.00"}</td>
           <td>${r.lastServiceDate || ""}</td>
         `;
         repOverviewBody.appendChild(tr);
@@ -2273,11 +2303,14 @@
       const totalRow = document.createElement("tr");
       totalRow.style.background = "#f9fafb";
       totalRow.style.fontWeight = "700";
-      const globalAvg = totalHours>0 ? (totalIQD/totalHours).toFixed(2) : 0;
+      const globalAvg = totalHours>0 ? (totalExpensesIQD/totalHours).toFixed(2) : "0.00";
       totalRow.innerHTML = `
         <td>الإجمالي الكلي</td>
-        <td>${totalHours}</td>
-        <td>${totalIQD}</td>
+        <td>${totalHours.toFixed(2)}</td>
+        <td>${totalMaintenanceIQD.toFixed(2)}</td>
+        <td>${totalFuelLiters.toFixed(2)}</td>
+        <td>${totalFuelIQD.toFixed(2)}</td>
+        <td>${totalExpensesIQD.toFixed(2)}</td>
         <td>${totalSvc}</td>
         <td>${globalAvg}</td>
         <td></td>
@@ -2325,27 +2358,36 @@
         ].join(","));
       } else if(activeTab === "overview"){
         const rows = buildOverviewReport();
-        const header = ["المولد","إجمالي ساعات التشغيل","إجمالي المصاريف (IQD)","عدد خدمات الصيانة","معدل الكلفة لكل ساعة","آخر تاريخ صيانة"];
+        const header = ["المولد","إجمالي ساعات التشغيل","مصاريف الصيانة (IQD)","كمية الوقود (لتر)","مصاريف الوقود (IQD)","إجمالي المصاريف (IQD)","عدد خدمات الصيانة","إجمالي الكلفة لكل ساعة","آخر تاريخ صيانة"];
         lines.push(header.join(","));
-        let totalHours = 0, totalIQD = 0, totalSvc = 0;
+        let totalHours = 0, totalMaintenanceIQD = 0, totalFuelLiters = 0, totalFuelIQD = 0, totalExpensesIQD = 0, totalSvc = 0;
         rows.forEach(r=>{
           totalHours += Number(r.hours) || 0;
-          totalIQD += Number(r.costIQD) || 0;
+          totalMaintenanceIQD += Number(r.costIQD) || 0;
+          totalFuelLiters += Number(r.fuelLiters) || 0;
+          totalFuelIQD += Number(r.fuelCostIQD) || 0;
+          totalExpensesIQD += Number(r.totalExpensesIQD) || 0;
           totalSvc += Number(r.svcCount) || 0;
           lines.push([
             `"${String(r.name||"").replace(/"/g,'""')}"`,
-            r.hours,
-            r.costIQD,
+            Number(r.hours).toFixed(2),
+            Number(r.costIQD).toFixed(2),
+            Number(r.fuelLiters).toFixed(2),
+            Number(r.fuelCostIQD).toFixed(2),
+            Number(r.totalExpensesIQD).toFixed(2),
             r.svcCount,
-            r.avgPerHour ? r.avgPerHour.toFixed(2) : 0,
+            r.avgPerHour ? r.avgPerHour.toFixed(2) : "0.00",
             `"${String(r.lastServiceDate||"").replace(/"/g,'""')}"`,
           ].join(","));
         });
-        const globalAvg = totalHours>0 ? (totalIQD/totalHours).toFixed(2) : 0;
+        const globalAvg = totalHours>0 ? (totalExpensesIQD/totalHours).toFixed(2) : "0.00";
         lines.push([
           `"الإجمالي الكلي"`,
-          totalHours,
-          totalIQD,
+          totalHours.toFixed(2),
+          totalMaintenanceIQD.toFixed(2),
+          totalFuelLiters.toFixed(2),
+          totalFuelIQD.toFixed(2),
+          totalExpensesIQD.toFixed(2),
           totalSvc,
           globalAvg,
           ""
