@@ -689,6 +689,9 @@
                   <th>الاستحقاق التالي</th>
                   <th>حالة</th>
                   <th>مصروف الخدمة</th>
+                  <th>كمية الوقود (لتر)</th>
+                  <th>متوسط سعر اللتر (IQD)</th>
+                  <th>مصروف الوقود (IQD)</th>
                   <th>إجراءات</th>
                 </tr>
               </thead>
@@ -1682,6 +1685,17 @@
         const prev = readings[idx-1];
         const weekly = prev ? (Number(r.meter) - Number(prev.meter)) : "";
 
+        // الوقود المصروف خلال فترة التشغيل بين القراءة السابقة وهذه القراءة.
+        // للقراءة الأولى، يتم احتساب تعبئات الوقود المسجلة في نفس يوم القراءة فقط.
+        const periodFuel = fuelRecords.filter(f=>{
+          if(f.genId !== gen.id || !f.date) return false;
+          if(prev) return f.date > prev.date && f.date <= r.date;
+          return f.date === r.date;
+        });
+        const periodFuelLiters = periodFuel.reduce((sum,f)=>sum + (Number(f.liters)||0), 0);
+        const periodFuelCost = periodFuel.reduce((sum,f)=>sum + ((Number(f.liters)||0) * (Number(f.pricePerLiter)||0)), 0);
+        const avgFuelPrice = periodFuelLiters > 0 ? periodFuelCost / periodFuelLiters : 0;
+
         const tr = document.createElement("tr");
         const stRow = since >= 200 ? "due-row" : (since>=160 ? "soon-row" : "");
         if(stRow) tr.classList.add(stRow);
@@ -1697,6 +1711,9 @@
           <td>${next}</td>
           <td>${svc ? "<span class='chip'>خدمة مكتملة</span>" : ""}</td>
           <td>${costTxt}${noteTxt ? "<br><span class='muted'>"+noteTxt+"</span>" : ""}</td>
+          <td>${periodFuelLiters > 0 ? periodFuelLiters.toFixed(2) : "-"}</td>
+          <td>${periodFuelLiters > 0 ? avgFuelPrice.toFixed(2) : "-"}</td>
+          <td>${periodFuelLiters > 0 ? periodFuelCost.toFixed(2) : "-"}</td>
           <td class="actions">
             <button class="btn-small" data-action="mark" data-date="${r.date}" data-meter="${r.meter}" style="font-size:11px;padding:3px 7px;">🔧 خدمة</button>
             <button class="btn-small" data-action="expense" data-date="${r.date}" data-meter="${r.meter}" style="font-size:11px;padding:3px 7px;">💰 مصروف</button>
@@ -1707,7 +1724,7 @@
       });
 
       if(!readings.length){
-        logBody.innerHTML = "<tr><td colspan='8' class='muted'>لا توجد قراءات بعد لهذا المولد.</td></tr>";
+        logBody.innerHTML = "<tr><td colspan='11' class='muted'>لا توجد قراءات بعد لهذا المولد.</td></tr>";
       }
     }
 
